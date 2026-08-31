@@ -18,6 +18,19 @@ const FPS=30, MAXW=4, MINDUR=0.85;
 const words=c=>c.w.map(w=>w.t).join(' ');
 if(MODE==='off'){ try{fs.unlinkSync(W+'behind.json');}catch(e){} console.log('انلغى التأثير.'); process.exit(0); }
 
+/* ── ماك فقط (مضاف): القصّ يعتمد على Vision عبر swiftc ── */
+if(['build','cutout','headout'].indexOf(MODE)>=0){
+  let hasSwift=false;
+  if(process.platform==='darwin'){
+    try{ hasSwift = cp.spawnSync('swiftc',['--version'],{stdio:'ignore'}).status===0; }catch(e){ hasSwift=false; }
+  }
+  if(!hasSwift){
+    console.log('⛔ «الكلام ورا الشخص» يحتاج ماك + swiftc — نظامك: '+process.platform);
+    console.log('   بقية السكل يشتغل عادي: الكابشن والموشن قرافكس والمؤثرات والختام.');
+    process.exit(20);
+  }
+}
+
 if(MODE==='plan'){
   console.log('الجُمل اللي تنفع يمرّ كلامها ورا الشخص (قصيرة وواضحة):');
   let n=0;
