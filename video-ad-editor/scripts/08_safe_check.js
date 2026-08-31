@@ -35,7 +35,26 @@ function resolvePuppeteer(){
   }
   throw new Error('ما لقيت puppeteer-core — ثبّته: npm i puppeteer-core');
 }
-const CHROME=process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+/* ── كروم: يلقاه على ويندوز وماك ولينكس (مضاف) ── */
+const {pathToFileURL}=require('url');
+const fileURL=p=>pathToFileURL(p).href;
+function findChrome(){
+  if(process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const LA=process.env.LOCALAPPDATA||'';
+  const PF=process.env.ProgramFiles||'C:/Program Files';
+  const P86=process.env['ProgramFiles(x86)']||'C:/Program Files (x86)';
+  const cands=[
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    PF+'/Google/Chrome/Application/chrome.exe',
+    P86+'/Google/Chrome/Application/chrome.exe',
+    LA+'/Google/Chrome/Application/chrome.exe',
+    PF+'/Microsoft/Edge/Application/msedge.exe',
+    P86+'/Microsoft/Edge/Application/msedge.exe',
+    '/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'];
+  for(const c of cands){ try{ if(c && fs.existsSync(c)) return c; }catch(e){} }
+  throw new Error('ما لقيت كروم — حدّد CHROME_PATH');
+}
+const CHROME=findChrome();
 /* بكسلان مصمتان (أحمر وأخضر) يحلّان محل صورة الفيديو.
    نرسم كل لحظة مرتين: البكسل اللي يتغيّر بينهما = مكان الفيديو، واللي يثبت = رسمك أنت.
    بهالطريقة الفحص ما يعتمد على ألوان الثيم إطلاقاً. */
@@ -65,7 +84,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   p.on('pageerror',e=>console.log('PAGEERR',e.message));
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
-  await p.goto('file://'+W+'compose.html',{waitUntil:'networkidle0'});
+  await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
   const FF=THEME.font||'Cairo';
   await p.evaluate(f=>Promise.all([document.fonts.load('900 100px '+f),
     document.fonts.load('700 40px '+f),document.fonts.load('800 55px '+f)]).then(()=>document.fonts.ready),FF);
@@ -145,7 +164,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     if(fs.existsSync(W+'vfr')){
       const NVF=fs.readdirSync(W+'vfr').filter(f=>f.endsWith('.jpg')).length;
       const i=Math.min(NVF,Math.max(1,Math.round(worst.at*FPS)+1));
-      await p.evaluate(s=>window.setFrame(s),'file://'+W+'vfr/'+String(i).padStart(5,'0')+'.jpg');
+      await p.evaluate(s=>window.setFrame(s),fileURL(W+'vfr/'+String(i).padStart(5,'0')+'.jpg'));
     }else{ await p.evaluate(s=>window.setFrame(s),FLAT_A); }   // بلا فريمات: اللون المسطّح يكفي للمعاينة
     const d=await p.evaluate((t,zones)=>{
       window.draw(t);
