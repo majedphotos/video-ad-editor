@@ -1,0 +1,9 @@
+{
+  "theme": { "bg":"#F3EFEA","ink":"#1F1F1D","acc":"#D97757","clay":"#BD5D3A","mut":"#8A847A",
+             "font":"Cairo","handle":"@handle" },
+  "total": 46.078,
+  "outro": 5.2,
+  "sfx": true,
+  "stage": [ {"s":0,"e":99,"m":"FULL"} ],
+  "outro_copy": { "line":"", "recap":[], "cta_top":"علّق بكلمة", "cta_word":"فيديو", "tail":"" }
+}

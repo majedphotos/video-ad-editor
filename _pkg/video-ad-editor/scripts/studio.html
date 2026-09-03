@@ -1,34 +1,42 @@
 <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
-<canvas id="cv" width="1080" height="1920"></canvas>
-<img id="LOGO" src="logo.png"><img id="VF"><img id="PRS">
+<style>
+html,body{margin:0;background:#141413;color:#F3EFEA;font-family:'Cairo',system-ui,sans-serif;height:100%;overflow:hidden}
+#stage{display:flex;height:100%}
+#left{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding:14px}
+#cv{height:calc(100vh - 28px);width:auto;border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.6)}
+#panel{flex:1;padding:22px 26px;overflow-y:auto;border-right:1px solid rgba(243,239,234,.10)}
+h2{margin:0 0 4px;font-size:19px;font-weight:800}
+.sub{color:#8A847A;font-size:13px;margin-bottom:16px}
+#tl{width:100%;margin:10px 0 4px}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+button{background:#D97757;color:#fff;border:0;border-radius:9px;padding:9px 16px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+button.alt{background:rgba(243,239,234,.10)}
+#tm{font-family:ui-monospace,monospace;font-size:14px;color:#D97757;min-width:120px}
+.sc{display:block;width:100%;text-align:right;background:rgba(243,239,234,.05);border:1px solid rgba(243,239,234,.08);
+ border-radius:11px;padding:9px 13px;margin-bottom:6px;color:#F3EFEA;font-family:inherit;font-size:14px;cursor:pointer}
+.sc:hover{background:rgba(217,119,87,.18)}
+.sc b{color:#D97757;font-family:ui-monospace,monospace;font-size:12px;margin-left:9px}
+.sc.on{background:rgba(217,119,87,.28);border-color:#D97757}
+#LOGO,#VF{display:none}
+</style></head><body>
+<div id="stage"><div id="panel"><h2>استوديو الإعلان — كل مشهد ورسمه</h2><div class="sub">اسحب الشريط أو اضغط أي مشهد. كل إطار يُرسم الحين بنفس الكود اللي طلّع الفيديو.</div><input id="tl" type="range" min="0" max="1537" value="0"><div class="row"><button id="pl">تشغيل</button><button class="alt" id="bk">-1 ث</button><button class="alt" id="fw">+1 ث</button><span id="tm"></span></div><div id="list"></div></div><div id="left"><canvas id="cv" width="1080" height="1920"></canvas></div></div>
+<img id="LOGO" src="logo.png"><img id="VF">
 <script>
 const C=document.getElementById('cv'),X=C.getContext('2d');
 const LOGO=document.getElementById('LOGO'), VF=document.getElementById('VF');
 const W=1080,H=1920;
-/* ── الألوان والخط تجي من theme.json — لا تكتب لوناً ثابتاً هني ── */
 let BG='#F3EFEA',INK='#1F1F1D',ACC='#D97757',CLAY='#BD5D3A',MUT='#8A847A',FONT='Cairo',HANDLE='@handle';
-let FACE_ANCH=0.30;   /* أين يقع وجه المتحدث داخل كرت الفيديو: 0 = فوق · 1 = تحت (theme.json ← faceAnchor) */
-let GRID=true;        /* شبكة خفيفة بالخلفية (theme.json ← grid:false يوقفها) */
-let BADGE_UNTIL=0;    /* ⛔ شارة الحساب مطفية (قرار ماجد ٢ سبتمبر): اسمه ظاهر بالمنصة نفسها
-                         وبكرت النهاية، وفوق الشاشة مساحة للرسم. theme.json ← badgeUntil:3 تعيدها */
 let CAPS=[],VEND=0,OUTRO=0,DUR=0;
 function init(d){
   CAPS=d.cards;VEND=d.total;OUTRO=d.outro;DUR=VEND+OUTRO;
-  BEHIND=d.behind||null;
   const t=d.theme||{};
   BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; CLAY=t.clay||CLAY; MUT=t.mut||MUT;
   FONT=t.font||FONT; HANDLE=t.handle||HANDLE;
-  if(typeof t.faceAnchor==='number') FACE_ANCH=t.faceAnchor;
-  if(typeof t.badgeUntil==='number') BADGE_UNTIL=t.badgeUntil;
-  if(typeof t.badge==='boolean') BADGE_UNTIL=t.badge?3:0;   /* توافق: مشاريع كتبت badge:false */
-  if(typeof t.grid==='boolean') GRID=t.grid;
   if(t.logo){const L=document.getElementById('LOGO'); if(L.getAttribute('src')!==t.logo) L.src=t.logo;}
   if(FONT!=='Cairo'){const l=document.createElement('link');l.rel='stylesheet';
     l.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(FONT)+':wght@400;600;700;800;900&display=swap';
     document.head.appendChild(l);}
-  return preloadBroll();   /* يرجّع Promise — المحرّك ينتظر تحميل لقطات البي-رول (إن وُجدت) */
 }
 /* ---------- utils ---------- */
 /* ألوان مشتقّة من الثيم — لا تكتب rgba ثابتة */
@@ -54,19 +62,10 @@ function card(x,y,w,h,r,al){X.save();X.globalAlpha*=(al===undefined?1:al);sh(44,
 function T(s,x,y,f,c,al,dir){X.save();X.font=f;X.fillStyle=c;X.textAlign=al||'center';X.textBaseline='middle';if(dir)X.direction=dir;X.fillText(s,x,y);X.restore();}
 /* ---------- video staging ---------- */
 const R_FULL={x:0,y:0,w:1080,h:1920,r:0};
-const R_STAGE={x:190,y:470,w:700,h:620,r:44};
-const R_SIDE={x:120,y:480,w:840,h:560,r:44};
-/* الفيديو تحت والشرح فوق — للحظات المعلومات الكثيرة. يدخل حزام انستقرام عن قصد:
-   ما فيه نص تحت أصلاً، والمغطّى جزء من الصورة لا من الكلام. راس المتحدث ينقص من فوق. */
-const R_LOWER={x:350,y:1370,w:380,h:520,r:32};   /* كرت صغير تحت — للبي-رول واللوحات الكبيرة */
-/* ⛔ الافتراضي لأي لحظة فيها رسم (معتمد من المستخدم): الرسم فوق (y 280-520) ← الكابشن تحته مباشرة ← وجه المتحدث تحت
-   بكرت 9:16 كامل بلا قصّ. عين المشاهد تمشي بخط واحد من فوق لتحت. لا تستخدم R_STAGE/R_SIDE (الفيديو بالنص + رسم فوق الراس
-   + كابشن تحت = ثلاث نقاط تركيز، المشاهد يتوه). R_STAGE/R_SIDE باقيتان للتوافق فقط. */
-const R_DOWN={x:214,y:760,w:652,h:1160,r:40};
-/* 🆕 v2.5 «شرح كامل» (R_OFF): المتحدث يختفي — كرته ينزلق تحت الشاشة (نفس مقاس R_LOWER بس y=1920)
-   والشاشة كلها للرسم. صوته يكمّل والكابشن يبقى تحت عند 1460. مرة أو مرتين بالفيديو، 4-8 ثوانٍ، عند
-   الأرقام والقوائم — لا بالهوك. مثال بالمشاهد: {s:12.4,e:18.9,m:R_OFF} */
-const R_OFF={x:350,y:1920,w:380,h:520,r:32,off:true};
+const R_STAGE={x:190,y:660,w:700,h:700,r:44};
+const R_SIDE={x:120,y:700,w:840,h:620,r:44};
+const R_LOWER={x:350,y:1370,w:380,h:520,r:32};
+const R_DOWN={x:214,y:760,w:652,h:1160,r:40};   /* الافتراضي للحظات الرسم: رسم فوق ← كابشن ← وجه تحت */
 const SCENES=[
  {s:0.00,e:3.32,m:R_FULL},{s:3.32,e:8.00,m:R_DOWN},{s:8.00,e:11.45,m:R_FULL},
  {s:11.45,e:15.36,m:R_DOWN},{s:15.36,e:18.56,m:R_DOWN},{s:18.56,e:20.42,m:R_FULL},
@@ -74,18 +73,7 @@ const SCENES=[
  {s:30.75,e:34.90,m:R_DOWN},{s:34.90,e:38.38,m:R_DOWN},{s:38.38,e:39.76,m:R_FULL},
  {s:39.76,e:42.82,m:R_DOWN},{s:42.82,e:99,m:R_FULL}];
 const TR=0.42;
-/* الكرت المرن: يصغر نسبة وتناسب (9:16) حسب أسفل الرسم (gb) وعدد أسطر الكابشن بهاللحظة — فلا يتزاحم شي */
-const CAPH=l=>l*LH+PADY*2;
-function rDown(gb,lines){const top=gb+40+CAPH(lines)+50;return {x:0,y:top,w:1080,h:1920-top,r:0};}
-let _RES=false;
-function resolveScenes(){ if(_RES||!CAPS.length)return; _RES=true;
-  SCENES.forEach(s=>{ if(s.m!==R_DOWN)return; const gb=s.gb||500; let lines=1;
-    CAPS.forEach(c=>{ if(c.e>s.s&&c.s<s.e) lines=Math.max(lines,layout(c.w).length); });
-    s.m=rDown(gb,lines); }); }
-const isFull=R=>R.w>=1079&&R.h>=1919;   /* ملء الشاشة حقيقةً — لا تعتمد على r */
-function vtarget(t){ resolveScenes(); let i=SCENES.findIndex(s=>t>=s.s&&t<s.e); if(i<0)i=SCENES.length-1; return SCENES[i].m; }
 function vrect(t){
-  resolveScenes();
   let i=SCENES.findIndex(s=>t>=s.s&&t<s.e); if(i<0)i=SCENES.length-1;
   let a=SCENES[i].m,b=a,k=1;
   if(t<SCENES[i].s+TR&&i>0){a=SCENES[i-1].m;b=SCENES[i].m;k=eio(pr(t,SCENES[i].s,SCENES[i].s+TR));}
@@ -94,7 +82,7 @@ function vrect(t){
 function drawVideo(t){
   const R=vrect(t), sw=VF.naturalWidth||1080, shh=VF.naturalHeight||1920;
   const sc=Math.max(R.w/sw,R.h/shh), cw=R.w/sc, ch=R.h/sc;
-  const sx=(sw-cw)/2, sy=(shh-ch)*FACE_ANCH;
+  const sx=(sw-cw)/2, sy=(shh-ch)*0.26;
   X.save();
   if(R.r>0.5){sh(70,26,0.26);X.fillStyle='#000';rr(R.x,R.y,R.w,R.h,R.r);X.fill();nsh();}
   rr(R.x,R.y,R.w,R.h,R.r);X.clip();
@@ -131,54 +119,34 @@ function iCheck(x,y,s,c,k){X.save();X.strokeStyle=c;X.lineWidth=s*0.13;X.lineCap
   else{X.lineTo(x+p[1][0]*s,y+p[1][1]*s);const q=(k-0.5)/0.5;X.lineTo(x+lerp(p[1][0],p[2][0],q)*s,y+lerp(p[1][1],p[2][1],q)*s);}
   X.stroke();X.restore();}
 /* ---------- persistent chrome ---------- */
-/* شبكة خفيفة بالخلفية: تعطي عمقاً وتمنع الفراغ الميت، وخفيفة كفاية ما تسحب النظر
-   عن الرسم. تُرسم قبل الفيديو فالجزء اللي تحته ما يبين. */
-function grid(){ if(!GRID) return; X.save();
-  X.strokeStyle=cINK(0.075); X.lineWidth=1.5;
-  for(let x=60;x<W;x+=60){X.beginPath();X.moveTo(x+0.5,0);X.lineTo(x+0.5,H);X.stroke();}
-  for(let y=60;y<H;y+=60){X.beginPath();X.moveTo(0,y+0.5);X.lineTo(W,y+0.5);X.stroke();}
-  X.restore();}
 function badge(t){
-  /* الشارة أول الفيديو بس ثم تختفي: اسمه مكتوب بالمنصة نفسها وبكرت النهاية،
-     وبقاؤها طول الفيديو ياكل أعلى الشاشة اللي يحتاجه الرسم بـR_DOWN.
-     theme.json ← badgeUntil (ثوانٍ) · 0 = تختفي من أول · -1 = تبقى طول الفيديو */
-  if(!BADGE_UNTIL) return;                       /* 0 = مطفية نهائياً */
-  let a=pr(t,0.25,0.7);
-  if(BADGE_UNTIL>0) a*=1-pr(t,BADGE_UNTIL,BADGE_UNTIL+0.4);
-  if(t>VEND-0.3)a*=1-pr(t,VEND-0.3,VEND);
+  let a=pr(t,0.25,0.7); if(t>VEND-0.3)a*=1-pr(t,VEND-0.3,VEND);
   if(a<=0)return; X.save();X.globalAlpha=a;
   X.font='700 30px '+FONT;const s=HANDLE;
-  const tw=X.measureText(s).width,lw=42,g=15,p=30,w=lw+g+tw+p*2,h=76,x=540-w/2,y=190;   /* 190 لا 74: أعلى الشاشة يغطيه انستقرام */
+  const tw=X.measureText(s).width,lw=42,g=15,p=30,w=lw+g+tw+p*2,h=76,x=540-w/2,y=74;
   sh(26,10,0.16);X.fillStyle=cBG(0.94);rr(x,y,w,h,h/2);X.fill();nsh();
   X.strokeStyle=cINK(0.08);X.lineWidth=2;rr(x,y,w,h,h/2);X.stroke();
   X.drawImage(LOGO,x+w-p-lw,y+(h-lw)/2,lw,lw);
   X.fillStyle=INK;X.direction='ltr';X.textAlign='right';X.textBaseline='middle';X.fillText(s,x+w-p-lw-g,y+h/2+2);
   X.restore();}
 function bar(t){let a=t>VEND-0.3?1-pr(t,VEND-0.3,VEND):1;if(a<=0)return;
-  if(cutoutActive(t)||headoutActive(t))return;     /* بوضعي القصّ الشريط يشوّش — نخفيه */
-  const _rb=vtarget(t), _lowb=_rb.y>700&&!_rb.off;  /* بوضع «الفيديو تحت» يرتفع الشريط فوقه · R_OFF: مكانه المعتاد */
-  X.save();X.globalAlpha=a;const y=_lowb?Math.max(200,_rb.y-30):1492,h=7,mx=60;
-  X.fillStyle=cINK(0.13);rr(mx,y,W-mx*2,h,h/2);X.fill();
-  X.fillStyle=ACC;rr(mx,y,(W-mx*2)*cl(t/VEND,0,1),h,h/2);X.fill();X.restore();}
+  X.save();X.globalAlpha=a;const y=1878,h=7;
+  X.fillStyle=cINK(0.13);rr(0,y,W,h,h/2);X.fill();
+  X.fillStyle=ACC;rr(0,y,W*cl(t/VEND,0,1),h,h/2);X.fill();X.restore();}
 /* ---------- captions ---------- */
-const FS=55,LH=79,MAXW=730,GAP=16,PADX=44,PADY=30;  /* 730: يخلي الكرت ينتهي قبل عمود أزرار انستقرام */
+const FS=55,LH=79,MAXW=830,GAP=16,PADX=44,PADY=30;
 function layout(ws){X.font='800 '+FS+'px '+FONT;
   const it=ws.map(w=>({...w,w:X.measureText(w.t).width}));const L=[];let c=[],cw=0;
   for(const i of it){const add=c.length?i.w+GAP:i.w;
     if(cw+add>MAXW&&c.length){L.push({items:c,w:cw});c=[i];cw=i.w;}else{c.push(i);cw+=add;}}
   if(c.length)L.push({items:c,w:cw});return L;}
 function caption(t){
-  /* لا تكرّر: لو الكلام يمرّ ورا الشخص بهاللحظة، كرت الكابشن يختفي */
-  if(BEHIND&&PRS_OK&&isFull(vrect(t))&&BEHIND.lines.some(l=>t>=l.s&&t<=l.e)) return;
   const c=CAPS.find(c=>t>=c.s&&t<c.e); if(!c)return;
   const lt=t-c.s,rt=c.e-t;let a=1,dy=0,sc=1;
   if(lt<0.2){const k=lt/0.2;a=ease(k);dy=(1-ease(k))*28;sc=0.93+0.07*back(k);}
   if(rt<0.13){const k=rt/0.13;a=k;dy=-(1-k)*10;}
   const L=layout(c.w),bh=L.length*LH+PADY*2,bw=Math.max(...L.map(l=>l.w))+PADX*2;
-  const _R=vtarget(t), LOW=_R.y>700&&!_R.off;   /* R_OFF: الكابشن يبقى تحت عند 1460 · مستطيل الهدف لا المتحرّك: الكابشن يثبت بمكانه من أول فريم بلا قفزة */          /* R_DOWN أو R_LOWER → الكابشن فوق كرت الفيديو */          /* الفيديو تحت → الكابشن فوقه */
-  const CUT=(cutoutActive(t)||headoutActive(t))&&PTOP>200;   /* الكابشن فوق راسه بالوضعين */
-  const SEAM=isFull(_R)?0:Math.round(bh*0.42);   /* ركوب الكابشن على حافة الفيديو */
-  const bx=540-bw/2,by=(CUT?PTOP-46:(LOW?_R.y-60+SEAM:1460))-bh;   /* 1460 عادةً · وعلى حافة الفيديو بوضع «الفيديو تحت» */
+  const bx=540-bw/2,by=1580-bh;
   X.save();X.globalAlpha=a;X.translate(540,by+bh/2+dy);X.scale(sc,sc);X.translate(-540,-(by+bh/2));
   sh(48,20,0.30);X.fillStyle=cBG(0.96);rr(bx,by,bw,bh,38);X.fill();nsh();
   X.strokeStyle=cINK(0.09);X.lineWidth=2.5;rr(bx,by,bw,bh,38);X.stroke();
@@ -191,200 +159,8 @@ function caption(t){
       else X.fillStyle=act?ACC:INK;
       X.fillText(i.t,x,cy+2+lift);x-=i.w+GAP;}});
   X.restore();}
-function wordsOf(i){return (CAPS[i]&&CAPS[i].w)||[];}
-/* أي مشهد يشير لجملة مو موجودة بهذا الفيديو ما يوقف الرسم — يتخطّى وحده */
-function safe(fn,t,name){
-  /* كل مشهد داخل save/restore: لو سقط، حالة الرسم ترجع كما كانت — بدونها تتراكم الأخطاء ويسوَدّ الفيديو */
-  X.save();
-  try{ fn(t); }
-  catch(e){
-    if(!window.__scErr) window.__scErr={};
-    if(!window.__scErr[name]){window.__scErr[name]=1;console.log('⚠️ مشهد متخطّى:',name,'—',e.message);}
-  }
-  finally{ X.restore(); }
-}
+function wordsOf(i){return CAPS[i].w;}
 window.__helpers={rr,sh,nsh,card,T,pr,ease,eio,back,lerp,cl};
-
-/* ═══ الكلام يمرّ ورا الشخص — كشيدة عربية ═══
-   البيانات من behind.json (يبنيه 11_behind_text.js). الحروف تبقى على الجانبين
-   والكشيدة وحدها تمرّ ورا الراس. يشتغل بلحظات ملء الشاشة فقط. */
-const PRS=document.getElementById('PRS');
-let BEHIND=null, PRS_OK=false, PFACE=null;
-const _MC=document.createElement('canvas'); _MC.width=W; _MC.height=H;
-const _MX=_MC.getContext('2d',{willReadFrequently:true});
-const _FC=document.createElement('canvas'); _FC.width=W; _FC.height=H;
-const _FX=_FC.getContext('2d',{willReadFrequently:true});
-const NO_FWD=new Set([...'اأإآدذرزوؤةءى']), AR=/[ء-ي]/;
-function _pts(w){const p=[];for(let i=0;i<w.length-1;i++){if(NO_FWD.has(w[i]))continue;
-  if(!AR.test(w[i+1])||w[i+1]==='ء')continue;p.push(i+1);}return p;}
-function _span(yc,h){                       /* حدود جسم المتحدث عند هذا السطر */
-  const y0=Math.max(0,Math.round(yc-h/2)),hh=Math.min(H-y0,Math.round(h));
-  let d;try{d=_MX.getImageData(0,y0,W,hh).data;}catch(e){return null;}
-  let L=1e9,R=-1;
-  for(let y=0;y<hh;y+=3){const row=y*W*4;
-    for(let x=0;x<W;x+=3){if(d[row+x*4+3]>128){if(x<L)L=x;if(x>R)R=x;}}}
-  return R<0?null:{L,R};
-}
-function _bgLum(yc,h){                       /* إضاءة الخلفية خلف السطر (بلا الشخص) */
-  const y0=Math.max(0,Math.round(yc-h/2)),hh=Math.min(H-y0,Math.round(h));
-  let d,m;try{d=_FX.getImageData(0,y0,W,hh).data;m=_MX.getImageData(0,y0,W,hh).data;}catch(e){return 0.5;}
-  let s=0,n=0;
-  for(let y=0;y<hh;y+=4){const row=y*W*4;
-    for(let x=0;x<W;x+=4){const i=row+x*4;if(m[i+3]>100)continue;
-      s+=(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2])/255;n++;}}
-  return n?s/n:0.5;
-}
-function _layout(word,font,sp,gap){
-  X.font=font;
-  const p=_pts(word); const k=X.measureText('اـــا').width-X.measureText('اــا').width;
-  if(!p.length||k<=0){const w=X.measureText(word).width;return{full:word,x:540+w/2,left:540-w/2};}
-  const at=p[p.length-1], pre=word.slice(0,at), suf=word.slice(at);
-  const Wp=X.measureText(pre+'ـ').width-k, Ws=X.measureText('ـ'+suf).width-k;
-  const need=sp?(sp.R-sp.L)+gap*2:380;
-  const n=Math.max(3,Math.min(70,Math.ceil(need/k)));
-  const x=sp?Math.min(W-70,sp.R+gap+Wp):540+(Wp+n*k+Ws)/2;
-  return {full:pre+'ـ'.repeat(n)+suf, x, left:x-Wp-n*k-Ws};
-}
-function behindText(t){
-  if(!BEHIND||!PRS_OK) return false;
-  const R=vrect(t); if(!isFull(R)) return false;           /* ملء الشاشة فقط */
-  const L=BEHIND.lines.find(l=>t>=l.s&&t<=l.e); if(!L) return false;
-  _MX.clearRect(0,0,W,H); _MX.drawImage(PRS,0,0,W,H);
-  _FX.clearRect(0,0,W,H); _FX.drawImage(VF,0,0,W,H);
-  const FS0=Math.min(200, Math.round(760/Math.max(1,L.words.length))+120), LH=Math.round(FS0*1.18);
-  const blockH=(L.words.length-1)*LH;
-  const f=PFACE, headC=f?f.y+f.h*0.45:700, sh=f?f.y+f.h*1.70:1250;
-  let top=headC-blockH/2;
-  top=Math.min(top, sh-blockH-LH*0.15);
-  top=Math.max(230, Math.min(top, 1430-blockH));
-  X.save(); X.textAlign='right'; X.textBaseline='middle';
-  L.words.forEach((w,i)=>{
-    const k=cl((t-w.s)/0.30,0,1); if(k<=0) return;
-    const y=top+i*LH, a=ease(k);
-    let fs=FS0, lay=null;
-    for(let tr=0;tr<5;tr++){
-      X.font='900 '+fs+'px '+FONT;
-      lay=_layout(w.t,'900 '+fs+'px '+FONT,_span(y,fs*0.9),26);
-      if(lay.left>=70) break; fs=Math.round(fs*0.9);
-    }
-    const dark=_bgLum(y,fs*0.8)>0.5;
-    X.save(); X.globalAlpha=a; X.font='900 '+fs+'px '+FONT;
-    X.translate(lay.x,y); X.scale(0.94+0.06*a,0.94+0.06*a); X.translate(-lay.x,-y);
-    X.lineWidth=Math.max(6,fs*0.05); X.lineJoin='round';
-    X.strokeStyle=dark?cBG(0.92):cINK(0.75); X.strokeText(lay.full,lay.x,y);
-    X.fillStyle=dark?INK:BG;          /* غامق على الفاتح وفاتح على الغامق — بلا لون تمييز حتى ما يختلط بالخلفية */
-    sh2(18,6,0.22); X.fillText(lay.full,lay.x,y); nsh();
-    X.restore();
-  });
-  X.restore();
-  X.drawImage(PRS,0,0,W,H);                                /* الشخص فوق الكلام */
-  return true;
-}
-function sh2(b,y,a){X.shadowColor=cINK(a);X.shadowBlur=b;X.shadowOffsetY=y;}
-window.setPerson=(src,face)=>{ PFACE=face||null;
-  if(!src){ PRS_OK=false; return Promise.resolve(0); }
-  PRS.src=src;
-  return (PRS.decode?PRS.decode():Promise.resolve()).then(()=>{PRS_OK=true;return 1;}).catch(()=>{PRS_OK=false;return 0;}); };
-
-
-
-/* ═══ «راسك برّا المستطيل» ═══
-   الفيديو داخل كرت، وراس المتحدث يطلع فوق حافة الكرت (مقصوصاً من الخلفية).
-   طبقتان بنفس التحويل: الفيديو مقصوص بحدود الكرت · والراس مقصوص بما فوق الكرت.
-   البيانات: behind.json ← headouts:[[من,إلى]] */
-function headoutActive(t){
-  if(!BEHIND||!BEHIND.headouts||!PRS_OK) return false;
-  return BEHIND.headouts.some(c=>t>=c[0]&&t<=c[1]);
-}
-function _personBox(){
-  _MX.clearRect(0,0,W,H); _MX.drawImage(PRS,0,0,W,H);
-  let x0=W,x1=-1,y0=H,y1=-1;
-  try{ const d=_MX.getImageData(0,0,W,H).data;
-    for(let y=0;y<H;y+=4){ const row=y*W*4;
-      for(let x=0;x<W;x+=4){ if(d[row+x*4+3]>140){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } } }
-  }catch(e){ return null; }
-  return x1<0?null:{x0,x1,y0,y1};
-}
-function headOut(t){
-  if(!headoutActive(t)) return false;
-  const B=_personBox(); if(!B) return false;
-  const R=vrect(t);
-  const ph=Math.max(1,B.y1-B.y0), cx=(B.x0+B.x1)/2;
-  const cover=Math.max(R.w/W,R.h/H);                  /* لا تصغّر تحت ما يملأ الكرت */
-  const sc=Math.max(cover,Math.min(2.2,(R.h*1.20)/ph));
-  let dx=R.x+R.w/2-cx*sc; const dy=(R.y+R.h+30)-B.y1*sc;  /* قدماه تحت حافة الكرت بقليل */
-  dx=Math.min(R.x, Math.max(R.x+R.w-W*sc, dx));      /* اضمن تغطية عرض الكرت */
-  X.save();                                          /* 1) الكرت: الخلفية والجسم داخله */
-  sh(70,26,0.26); X.fillStyle=cBG(1); rr(R.x,R.y,R.w,R.h,R.r); X.fill(); nsh();
-  rr(R.x,R.y,R.w,R.h,R.r); X.clip();
-  X.translate(dx,dy); X.scale(sc,sc); X.drawImage(VF,0,0,W,H);
-  X.restore();
-  X.save();                                          /* 2) إطار الكرت — قبل الراس حتى ما يمرّ خط فوق الوجه */
-  X.strokeStyle=cINK(0.10); X.lineWidth=3; rr(R.x,R.y,R.w,R.h,R.r); X.stroke(); X.restore();
-  X.save();                                          /* 3) الراس فوق حافة الكرت */
-  X.beginPath(); X.rect(Math.max(0,R.x-140),0,Math.min(W,R.w+280),Math.max(0,R.y+2)); X.clip();
-  X.translate(dx,dy); X.scale(sc,sc); X.drawImage(PRS,0,0,W,H);
-  X.restore();
-  PTOP=dy+B.y0*sc;
-  return true;
-}
-
-/* ═══ «واقف قدام اللوحة» — المتحدث مقصوص بلا كرت ═══
-   يُرسم بعد اللوحات: التصميم خلفه وهو قدامه. الحجم والموضع يُحسبان من حدود جسمه
-   بكل فريم، فيبقى ثابتاً حتى لو تحرّك. البيانات: behind.json ← cutouts:[[من,إلى]] */
-let PTOP=0;   /* أعلى راس المتحدث بعد القصّ — الكابشن يطلع فوقه */
-function cutoutActive(t){
-  if(!BEHIND||!BEHIND.cutouts||!PRS_OK) return false;
-  return BEHIND.cutouts.some(c=>t>=c[0]&&t<=c[1]);
-}
-function personStage(t){
-  if(!cutoutActive(t)) return false;
-  _MX.clearRect(0,0,W,H); _MX.drawImage(PRS,0,0,W,H);
-  let x0=W,x1=-1,y0=H,y1=-1;
-  try{
-    const d=_MX.getImageData(0,0,W,H).data;
-    for(let y=0;y<H;y+=4){ const row=y*W*4;
-      for(let x=0;x<W;x+=4){ if(d[row+x*4+3]>140){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } } }
-  }catch(e){ return false; }
-  if(x1<0) return false;
-  const ph=Math.max(1,y1-y0), pw=Math.max(1,x1-x0);
-  const TARGET_H=900, sc=Math.min(2.0, TARGET_H/ph);      /* طوله ~1010 بكسل — يخلي مجالاً للكابشن فوق راسه */
-  const cx=(x0+x1)/2;
-  const dx=540-cx*sc, dy=(H+30)-y1*sc;                     /* أسفله يلامس أسفل الشاشة */
-  PTOP=dy+y0*sc;
-  X.save();
-  sh(60,10,0.22);                                          /* ظل خفيف يفصله عن اللوحة */
-  X.translate(dx,dy); X.scale(sc,sc);
-  X.drawImage(PRS,0,0,W,H);
-  X.restore(); nsh();
-  return true;
-}
-
-/* ---------- B-roll: لقطات فيديو ثانية داخل كرت (اختياري) ----------
-   استخرج الفريمات: ffmpeg -ss <من> -t <مدة> -i broll.mp4 -vf fps=30 <work>/broll/<اسم>_%04d.jpg
-   ثم عرّف المدى هنا: BR_NEED={tree:[60,151]} ← يُحمَّل مرة وحدة عند init. brCard(اسم, t-s, سرعة, 1, s, e) يرسمه بكرت فوق.
-   BRCROP يقصّ الترجمة المحروقة أسفل لقطات أنثروبك (من 720×1280: خذ 640×800 من y=60). */
-const BR={}, BR_NEED={};
-const BRCROP={sx:40,sy:60,sw:640,sh:800};
-function preloadBroll(){const ps=[];
-  for(const k in BR_NEED){const [a,b]=BR_NEED[k];BR[k]={imgs:[]};
-    for(let i=a;i<=b;i++){const im=new Image();im.src='broll/'+k+'_'+String(i).padStart(4,'0')+'.jpg';BR[k].imgs.push(im);
-      ps.push(new Promise(r=>{im.onload=r;im.onerror=r;}));}}
-  return Promise.all(ps);}
-function brFrame(k,dt,sp){const b=BR[k];if(!b)return null;const i=cl(Math.floor(dt*30*(sp||1)),0,b.imgs.length-1);const im=b.imgs[i];return im&&im.naturalWidth?im:null;}
-const BRC={x:260,y:300,w:560,h:700,r:40};           /* كرت البي-رول — يشتغل مع R_LOWER (الكابشن ينزل لـ1310) */
-function brCard(k,dt,sp,a,s0,s1){const im=brFrame(k,dt,sp);if(!im)return;
-  const k1=ease(pr(dt,0,0.35)), out=1-pr(dt,s1-s0-0.22,s1-s0); const al=a*k1*out, sc=lerp(0.92,1,back(k1));
-  X.save();X.globalAlpha*=al;X.translate(540,BRC.y+BRC.h/2);X.scale(sc,sc);X.translate(-540,-(BRC.y+BRC.h/2));
-  sh(60,24,0.28);X.fillStyle='#000';rr(BRC.x,BRC.y,BRC.w,BRC.h,BRC.r);X.fill();nsh();
-  X.save();rr(BRC.x,BRC.y,BRC.w,BRC.h,BRC.r);X.clip();
-  X.drawImage(im,BRCROP.sx,BRCROP.sy,BRCROP.sw,BRCROP.sh,BRC.x,BRC.y,BRC.w,BRC.h);X.restore();
-  X.strokeStyle=cINK(0.14);X.lineWidth=3;rr(BRC.x,BRC.y,BRC.w,BRC.h,BRC.r);X.stroke();X.restore();}
-/* ---------- لوحة فوق الوجه بوضع R_DOWN: ارسم اللوحة بإحداثيات 130..950 × 278..458 وهي تتكبّر 1.2 وحدها ---------- */
-function panelIn(t,s,e,fn){ if(t<s+TR-0.1||t>e)return; const k=ease(pr(t,s+TR-0.1,s+TR+0.25)), out=1-pr(t,e-0.2,e);
-  X.save();X.globalAlpha*=k*out;X.translate(540,368+(1-k)*22);X.scale(1.2,1.2);X.translate(-540,-368);fn(t);X.restore();}
-/* ملاحظة: اللوحة تبدأ بعد TR (0.42ث) — تنتظر الفيديو يخلص نزوله حتى ما ترتسم فوق وجهه */
-
 /* ================= SCENE GRAPHICS ================= */
 function stamp(t){ if(t<2.45||t>3.30)return;
   const k=pr(t,2.45,2.75), a=t>3.10?1-pr(t,3.10,3.30):1;
@@ -692,29 +468,58 @@ function outro(t){ const s=VEND; if(t<s)return;
   a=ap(1.6);
   if(a>0){X.save();X.globalAlpha=a;X.font='700 40px '+FONT;X.direction='ltr';
     const ht=HANDLE,hw=X.measureText(ht).width,tot=54+18+hw,sx=540-tot/2;
-    X.drawImage(LOGO,sx,1540-27,54,54);
-    T(ht,sx+54+18,1542,'700 40px '+FONT,INK,'left','ltr');X.restore();}
+    X.drawImage(LOGO,sx,1612-27,54,54);
+    T(ht,sx+54+18,1614,'700 40px '+FONT,INK,'left','ltr');X.restore();}
   X.restore();}
 /* ---------- master ---------- */
 function draw(t){
-  /* تصفير حالة الرسم بكل فريم — ضمانة إن أي فريم يبدأ نظيفاً */
-  X.setTransform(1,0,0,1,0,0); X.globalAlpha=1; X.filter='none';
-  X.shadowColor='transparent'; X.shadowBlur=0; X.shadowOffsetY=0; X.globalCompositeOperation='source-over';
-  X.clearRect(0,0,W,H);X.fillStyle=BG;X.fillRect(0,0,W,H);safe(grid,t,'grid');
-  const _cut=(t<VEND)&&cutoutActive(t), _ho=(t<VEND)&&headoutActive(t);
-  if(t<VEND&&_ho){safe(headOut,t,'headout');}
-  const _off=vrect(t).y>=1919;   /* R_OFF: الكرت انزلق تحت الشاشة بالكامل */
-  if(t<VEND&&!_cut&&!_ho&&!_off){safe(drawVideo,t,'video');safe(behindText,t,'behind');if(typeof glitch==='function')safe(glitch,t,'glitch');}
+  X.clearRect(0,0,W,H);X.fillStyle=BG;X.fillRect(0,0,W,H);
+  if(t<VEND){drawVideo(t);glitch(t);}
   badge(t);bar(t);
-  [['stamp',stamp],['chips',chips],['fileToCloud',fileToCloud],['transcript',transcript],
-   ['cardStack',cardStack],['suspense',suspense],['syncViz',syncViz],['price',price],
-   ['rtlBug',rtlBug],['rtlFix',rtlFix],['solved',solved],['oneFile',oneFile],
-   ['commentBox',commentBox]].forEach(x=>safe(x[1],t,x[0]));
-  if(_cut) safe(personStage,t,'cutout');   /* هو قدام اللوحة */
-  safe(caption,t,'caption'); safe(outro,t,'outro');
+  stamp(t);chips(t);fileToCloud(t);transcript(t);cardStack(t);suspense(t);
+  syncViz(t);price(t);rtlBug(t);rtlFix(t);solved(t);oneFile(t);commentBox(t);
+  caption(t);outro(t);
 }
-window.draw=draw;window.init=init;window.vrect=vrect;
-window.setFrame=src=>{ /* decode() بعد إسناد المصدر = ضمان إن هذي الصورة بالذات جاهزة */
-  VF.src=src; return (VF.decode?VF.decode():Promise.resolve()).catch(()=>{}); };
+window.draw=draw;window.init=init;
+window.setFrame=src=>new Promise(r=>{VF.onload=()=>r(1);VF.onerror=()=>r(0);VF.src=src;});
 window.shot=q=>document.getElementById('cv').toDataURL('image/jpeg',q);
+</script>
+<script>
+const FPS=30, OUT_D=5.2, NVF=1379;
+const SCLIST=[[0,'ختم 0% مونتاج يدوي'],[3.32,'بطاقات: كابشن · زوم · كت · مؤثرات'],[8.0,'الملف يطير لسحابة درايف'],
+[11.45,'لوحة التفريغ — كلمة كلمة بتوقيتها'],[15.36,'كروت تتكدّس + عدّاد 15'],[18.56,'لحظة تشويق'],
+[20.42,'موجة صوتية + مؤشر مزامنة'],[25.76,'عدّاد السعر ينزل $0.00'],[28.35,'قليتش «كسر»'],
+[30.75,'المشكلة: العربي ينقلب والفيديو يسوَدّ'],[34.9,'الإصلاح: شريط تقدّم + قائمة'],[38.38,'ختم انحلّت'],
+[39.76,'كرت ملف واحد + بطاقات تندمج'],[42.82,'مربع التعليق يكتب «فيديو»'],[46.078,'كرت النهاية']];
+let caps=null,playing=false,cur=0;
+const tl=document.getElementById('tl'),tm=document.getElementById('tm'),list=document.getElementById('list');
+SCLIST.forEach((x,i)=>{const b=document.createElement('button');b.className='sc';b.dataset.i=i;
+  b.innerHTML=x[1]+'<b>'+x[0].toFixed(2)+'s</b>';
+  b.onclick=()=>{playing=false;document.getElementById('pl').textContent='تشغيل';go(Math.round((x[0]+0.45)*FPS));};
+  list.appendChild(b);});
+function mark(t){[...list.children].forEach((b,i)=>{
+  const a=SCLIST[i][0],e=i+1<SCLIST.length?SCLIST[i+1][0]:999;b.classList.toggle('on',t>=a&&t<e);});}
+async function go(f){
+  cur=Math.max(0,Math.min(+tl.max,f)); tl.value=cur;
+  const t=cur/FPS;
+  const idx=Math.min(NVF,Math.max(1,Math.round(t*FPS)+1));
+  await window.setFrame('vfr/'+String(idx).padStart(5,'0')+'.jpg');
+  window.draw(t);
+  tm.textContent=t.toFixed(2)+' / '+(caps.total+OUT_D).toFixed(2)+' s';
+  mark(t);
+}
+tl.oninput=()=>go(+tl.value);
+document.getElementById('bk').onclick=()=>go(cur-FPS);
+document.getElementById('fw').onclick=()=>go(cur+FPS);
+document.getElementById('pl').onclick=function(){playing=!playing;this.textContent=playing?'إيقاف':'تشغيل';if(playing)loop();};
+async function loop(){const t0=performance.now(),f0=cur;
+  while(playing){const f=f0+Math.round((performance.now()-t0)/1000*FPS);
+    if(f>+tl.max){playing=false;document.getElementById('pl').textContent='تشغيل';break;}
+    await go(f); await new Promise(r=>setTimeout(r,0));}}
+(async()=>{caps=await (await fetch('caps.json')).json();
+  let th={}; try{th=await (await fetch('theme.json')).json();}catch(e){}
+  window.init({cards:caps.cards,total:caps.total,outro:OUT_D,theme:th});
+  tl.max=Math.round((caps.total+OUT_D)*FPS)-1;
+  await document.fonts.ready; await new Promise(r=>{const l=document.getElementById('LOGO');l.complete?r():l.onload=r;});
+  go(Math.round(4.6*FPS));})();
 </script></body></html>
