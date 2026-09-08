@@ -2,7 +2,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
 <canvas id="cv" width="1080" height="1920"></canvas>
-<img id="LOGO" src="logo.png"><img id="VF"><img id="PRS">
+<img id="LOGO" src="logo.png"><img id="VF"><img id="PRS"><img id="CVR">
 <script>
 const C=document.getElementById('cv'),X=C.getContext('2d');
 const LOGO=document.getElementById('LOGO'), VF=document.getElementById('VF');
@@ -99,6 +99,8 @@ function drawVideo(t){
   if(R.r>0.5){sh(70,26,0.26);X.fillStyle='#000';rr(R.x,R.y,R.w,R.h,R.r);X.fill();nsh();}
   rr(R.x,R.y,R.w,R.h,R.r);X.clip();
   X.drawImage(VF,sx,sy,cw,ch,R.x,R.y,R.w,R.h);
+  /* خلفية باهتة (اختيارية — 14_backdrop.py): غطاء بلون الثيم بنفس قصّ الفيديو، الشخص مستثنى بالقناع. بكل الأوضاع فالانتقال سلس */
+  if(CVR_OK){const kx=CVR.naturalWidth/sw,ky=CVR.naturalHeight/shh;X.drawImage(CVR,sx*kx,sy*ky,cw*kx,ch*ky,R.x,R.y,R.w,R.h);}
   X.restore();
   if(R.r>0.5){X.save();X.strokeStyle=cINK(0.10);X.lineWidth=3;rr(R.x,R.y,R.w,R.h,R.r);X.stroke();X.restore();}
 }
@@ -161,20 +163,28 @@ function bar(t){let a=t>VEND-0.3?1-pr(t,VEND-0.3,VEND):1;if(a<=0)return;
   X.fillStyle=cINK(0.13);rr(mx,y,W-mx*2,h,h/2);X.fill();
   X.fillStyle=ACC;rr(mx,y,(W-mx*2)*cl(t/VEND,0,1),h,h/2);X.fill();X.restore();}
 /* ---------- captions ---------- */
-const FS=55,LH=79,MAXW=730,GAP=16,PADX=44,PADY=30;  /* 730: يخلي الكرت ينتهي قبل عمود أزرار انستقرام */
+const FS=55,LH=79,MAXW=730,GAP=16,PADX=44,PADY=30;
+const MAXLINES=2;   /* أقصى أسطر بكرت الكابشن — فوقها تنقسم الجملة صفحات */  /* 730: يخلي الكرت ينتهي قبل عمود أزرار انستقرام */
 function layout(ws){X.font='800 '+FS+'px '+FONT;
   const it=ws.map(w=>({...w,w:X.measureText(w.t).width}));const L=[];let c=[],cw=0;
   for(const i of it){const add=c.length?i.w+GAP:i.w;
     if(cw+add>MAXW&&c.length){L.push({items:c,w:cw});c=[i];cw=i.w;}else{c.push(i);cw+=add;}}
   if(c.length)L.push({items:c,w:cw});return L;}
 function caption(t){
+  if(SCENES.some(sc=>sc.nocap&&t>=sc.s&&t<sc.e)) return;   /* {s,e,m,nocap:true}: مشهد بلا كابشن — لما اللوحة فوق فيها النص نفسه (قرار المستخدم 8 سبتمبر) */
   /* لا تكرّر: لو الكلام يمرّ ورا الشخص بهاللحظة، كرت الكابشن يختفي */
   if(BEHIND&&PRS_OK&&isFull(vrect(t))&&BEHIND.lines.some(l=>t>=l.s&&t<=l.e)) return;
   const c=CAPS.find(c=>t>=c.s&&t<c.e); if(!c)return;
   const lt=t-c.s,rt=c.e-t;let a=1,dy=0,sc=1;
   if(lt<0.2){const k=lt/0.2;a=ease(k);dy=(1-ease(k))*28;sc=0.93+0.07*back(k);}
   if(rt<0.13){const k=rt/0.13;a=k;dy=-(1-k)*10;}
-  const L=layout(c.w),bh=L.length*LH+PADY*2,bw=Math.max(...L.map(l=>l.w))+PADX*2;
+  /* ⛔ سطران بالكثير (طلب المستخدم 5 سبتمبر): الجملة الطويلة تنقسم لصفحات من سطرين، وتُعرض الصفحة اللي فيها الكلمة المنطوقة */
+  let L=layout(c.w);
+  if(L.length>MAXLINES){const pages=[];for(let i=0;i<L.length;i+=MAXLINES)pages.push(L.slice(i,i+MAXLINES));
+    let pg=pages.find(p=>{const f=p[0].items[0],l=p[p.length-1].items[p[p.length-1].items.length-1];return t>=f.s&&t<l.e;});
+    if(!pg){pg=pages.find(p=>t<p[0].items[0].s)||pages[pages.length-1];}
+    L=pg;}
+  const bh=L.length*LH+PADY*2,bw=Math.max(...L.map(l=>l.w))+PADX*2;
   const _R=vtarget(t), LOW=_R.y>700&&!_R.off;   /* R_OFF: الكابشن يبقى تحت عند 1460 · مستطيل الهدف لا المتحرّك: الكابشن يثبت بمكانه من أول فريم بلا قفزة */          /* R_DOWN أو R_LOWER → الكابشن فوق كرت الفيديو */          /* الفيديو تحت → الكابشن فوقه */
   const CUT=(cutoutActive(t)||headoutActive(t))&&PTOP>200;   /* الكابشن فوق راسه بالوضعين */
   const SEAM=isFull(_R)?0:Math.round(bh*0.42);   /* ركوب الكابشن على حافة الفيديو */
@@ -251,14 +261,16 @@ function behindText(t){
   const L=BEHIND.lines.find(l=>t>=l.s&&t<=l.e); if(!L) return false;
   _MX.clearRect(0,0,W,H); _MX.drawImage(PRS,0,0,W,H);
   _FX.clearRect(0,0,W,H); _FX.drawImage(VF,0,0,W,H);
-  const FS0=Math.min(200, Math.round(760/Math.max(1,L.words.length))+120), LH=Math.round(FS0*1.18);
-  const blockH=(L.words.length-1)*LH;
+  /* ⛔ ورا الراس ثلاث كلمات بالكثير (قرار المستخدم 5 سبتمبر) — الرابعة وما بعدها تطلع على صدره قدّامه */
+  const BW=L.words.slice(0,3), FW=L.words.slice(3);
+  const FS0=Math.min(200, Math.round(760/Math.max(1,BW.length))+120), LH=Math.round(FS0*1.18);
+  const blockH=(BW.length-1)*LH;
   const f=PFACE, headC=f?f.y+f.h*0.45:700, sh=f?f.y+f.h*1.70:1250;
   let top=headC-blockH/2;
   top=Math.min(top, sh-blockH-LH*0.15);
   top=Math.max(230, Math.min(top, 1430-blockH));
   X.save(); X.textAlign='right'; X.textBaseline='middle';
-  L.words.forEach((w,i)=>{
+  BW.forEach((w,i)=>{
     const k=cl((t-w.s)/0.30,0,1); if(k<=0) return;
     const y=top+i*LH, a=ease(k);
     let fs=FS0, lay=null;
@@ -278,9 +290,17 @@ function behindText(t){
   });
   X.restore();
   X.drawImage(PRS,0,0,W,H);                                /* الشخص فوق الكلام */
+  /* الكلمة الرابعة (وما بعدها): على صدره، قدّامه، بكرت بلون الخلفية */
+  FW.forEach((w,i)=>{const k=cl((t-w.s)/0.30,0,1); if(k<=0) return; const a=ease(k);
+    const cy=(f?f.y+f.h*1.75:1330)+i*150; const fs=Math.round(FS0*0.62);
+    X.save(); X.globalAlpha=a; X.font='900 '+fs+'px '+FONT; const tw=X.measureText(w.t).width, bw=tw+90, bh=fs*1.25;
+    X.translate(540,cy); X.scale(0.9+0.1*a,0.9+0.1*a); sh2(30,12,0.28); X.fillStyle=cBG(0.97); rr(-bw/2,-bh/2,bw,bh,bh/2); X.fill(); nsh();
+    X.fillStyle=INK; X.textAlign='center'; X.textBaseline='middle'; X.fillText(w.t,0,fs*0.06); X.restore(); });
   return true;
 }
 function sh2(b,y,a){X.shadowColor=cINK(a);X.shadowBlur=b;X.shadowOffsetY=y;}
+const CVR=document.getElementById('CVR');let CVR_OK=false;
+window.setCover=src=>{ if(!src){CVR_OK=false;return Promise.resolve(0);} CVR.src=src; return (CVR.decode?CVR.decode():Promise.resolve()).then(()=>{CVR_OK=true;return 1;}).catch(()=>{CVR_OK=false;return 0;}); };
 window.setPerson=(src,face)=>{ PFACE=face||null;
   if(!src){ PRS_OK=false; return Promise.resolve(0); }
   PRS.src=src;
@@ -307,13 +327,19 @@ function _personBox(){
 }
 function headOut(t){
   if(!headoutActive(t)) return false;
-  const B=_personBox(); if(!B) return false;
+  /* حدود ثابتة لكل مشهد (behind.json ← headbox، يحسبها 11_behind_text.js) — بدونها الكرت يتبع الجسم بكل فريم وتهتز الخلفية */
+  let B=null; if(BEHIND.headbox){ const hr=BEHIND.headouts.find(c=>t>=c[0]&&t<=c[1]); if(hr&&BEHIND.headbox[String(hr[0])]) B=BEHIND.headbox[String(hr[0])]; }
+  if(!B) B=_personBox(); if(!B) return false;
   const R=vrect(t);
+  /* أثناء تقلّص الكرت: نحسب الوضع على الكرت النهائي ونتدرّج إليه من ملء الشاشة بنفس إيقاع الكرت — فالراس فوق الحافة من أول فريم */
+  resolveScenes(); let si=SCENES.findIndex(sn=>t>=sn.s&&t<sn.e); if(si<0)si=SCENES.length-1;
+  const Rt=SCENES[si].m, kt=(si>0&&t<SCENES[si].s+TR)?eio(pr(t,SCENES[si].s,SCENES[si].s+TR)):1;
   const ph=Math.max(1,B.y1-B.y0), cx=(B.x0+B.x1)/2;
-  const cover=Math.max(R.w/W,R.h/H);                  /* لا تصغّر تحت ما يملأ الكرت */
-  const sc=Math.max(cover,Math.min(2.2,(R.h*1.20)/ph));
-  let dx=R.x+R.w/2-cx*sc; const dy=(R.y+R.h+30)-B.y1*sc;  /* قدماه تحت حافة الكرت بقليل */
-  dx=Math.min(R.x, Math.max(R.x+R.w-W*sc, dx));      /* اضمن تغطية عرض الكرت */
+  const cover=Math.max(Rt.w/W,Rt.h/H);                  /* لا تصغّر تحت ما يملأ الكرت */
+  const sc1=Math.max(cover,Math.min(2.2,(Rt.h*1.20)/ph));
+  let dx1=Rt.x+Rt.w/2-cx*sc1; const dy1=(Rt.y+Rt.h+30)-B.y1*sc1;  /* قدماه تحت حافة الكرت بقليل */
+  dx1=Math.min(Rt.x, Math.max(Rt.x+Rt.w-W*sc1, dx1));      /* اضمن تغطية عرض الكرت */
+  const sc=lerp(1,sc1,kt); let dx=lerp(0,dx1,kt); const dy=lerp(0,dy1,kt);
   X.save();                                          /* 1) الكرت: الخلفية والجسم داخله */
   sh(70,26,0.26); X.fillStyle=cBG(1); rr(R.x,R.y,R.w,R.h,R.r); X.fill(); nsh();
   rr(R.x,R.y,R.w,R.h,R.r); X.clip();

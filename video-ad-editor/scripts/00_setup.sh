@@ -7,6 +7,18 @@ have(){ command -v "$1" >/dev/null 2>&1; }
 line(){ printf '%s\n' "$1"; }
 
 have ffmpeg && OK+=("ffmpeg") || MISS+=("ffmpeg")
+# 🚧 8 سبتمبر: صديق ماجد شغّل السكل من تطبيق كلود (سحابة/ساندبوكس) فانحجب تنزيل موديل وِسبر
+#    (openaipublic.azureedge.net) وما فيه كروم ولا Vision. هذا السكل يشتغل على جهازك (ماك) عبر Claude Code — نفحص ونوقف بوضوح.
+if [ -n "$CLAUDE_SANDBOX" ] || [ ! -d /Applications ] && [ "$(uname)" != "Darwin" ]; then
+  echo "⛔ هذا السكل يشتغل على جهازك (ماك) عبر Claude Code، مو داخل تطبيق كلود بالسحابة."
+  echo "   السحابة تحجب تنزيل موديل التفريغ (openaipublic.azureedge.net) وما فيها متصفح للرسم ولا مكتبة القصّ."
+  echo "   الحل: افتح Claude Code على جهازك (الوضع المحلي Local) وشغّل نفس الأمر."
+  exit 9
+fi
+if ! curl -sI -m 8 https://openaipublic.azureedge.net >/dev/null 2>&1 && ! python3 -c "import whisper,os;import sys;sys.exit(0 if os.path.exists(os.path.expanduser('~/.cache/whisper/medium.pt')) else 1)" 2>/dev/null; then
+  echo "⚠️ ما أقدر أوصل لمخدّم موديل التفريغ (openaipublic.azureedge.net) وما فيه موديل منزّل عندك."
+  echo "   لو أنت داخل تطبيق كلود بالسحابة: شغّل السكل من Claude Code على جهازك. ولو على جهازك: افحص الشبكة/الجدار الناري."
+fi
 python3 -c "import whisper" 2>/dev/null && OK+=("whisper") || MISS+=("whisper")
 python3 -c "import numpy"  2>/dev/null && OK+=("numpy")   || MISS+=("numpy")
 CHROME="${CHROME_PATH:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"

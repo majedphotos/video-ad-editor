@@ -39,6 +39,24 @@ fc.append("[vc]fps=30," + _g +
           "setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709,format=yuv420p[vo]")
 print("التدرّج اللوني:", "مفعّل" if GRADE else "مطفي (ألوان أصلية)")
 fc.append("[ac]afade=t=in:st=0:d=0.06,dynaudnorm=f=200:g=5:p=0.9[ao]")
+# 🎨 ماجد (8 سبتمبر): «صفر تعديل لوني». فيديو الآيفون يجي HDR (HLG/Dolby Vision) وتحويله الساذج لـSDR يغيّر الألوان
+#    (باهت وبارد) — نحوّله بمكتبة أبل نفسها (AVFoundation) قبل أي شي، فيطلع بنفس مظهره على الجوال.
+def _hdr_to_sdr(src):
+    try:
+        ct = subprocess.run(["ffprobe","-v","error","-select_streams","v:0","-show_entries","stream=color_transfer","-of","csv=p=0",src],capture_output=True,text=True).stdout.strip()
+    except Exception: return src
+    if ct not in ("arib-std-b67","smpte2084"): return src
+    here=os.path.dirname(os.path.abspath(__file__)); binp=os.path.join(here,"hdr2sdr")
+    if not os.path.exists(binp):
+        r=subprocess.run(["swiftc","-O","-o",binp,os.path.join(here,"hdr2sdr.swift")],capture_output=True)
+        if r.returncode!=0: print("⚠️ الفيديو HDR وما قدرت أبني محوّل أبل (يحتاج أدوات Xcode) — الألوان قد تختلف"); return src
+    out=os.path.join(W,"src_sdr.mov")
+    if not os.path.exists(out):
+        print("🎨 الفيديو HDR — أحوّله SDR بمحوّل أبل حتى تبقى الألوان مثل الجوال…")
+        r=subprocess.run([binp,src,out]); 
+        if r.returncode!=0 or not os.path.exists(out): print("⚠️ فشل التحويل — أكمل بالأصل"); return src
+    return out
+SRC=_hdr_to_sdr(SRC)
 sys.exit(subprocess.call(["ffmpeg","-v","error","-stats","-i",SRC,"-filter_complex",";".join(fc),
  "-map","[vo]","-map","[ao]","-c:v","libx264","-preset","medium","-crf","16",
  "-c:a","aac","-b:a","192k","-movflags","+faststart","-y",os.path.join(W,"cutz.mp4")]))

@@ -8,6 +8,7 @@ const W=path.resolve(process.argv[2])+path.sep;
 const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));       // فيه outro
 const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.json','utf8')):{};
 const BEHIND=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):null;  // الكلام ورا الشخص
+const HASCOVER=fs.existsSync(W+'cover');   // خلفية باهتة: cover/NNNNN.png لكل فريم (يبنيها 14_backdrop.py) — اختيارية
 const OUT_D=CFG.outro, FPS=30;
 function resolvePuppeteer(){
   for(const p of [process.env.PUPPETEER_PATH,'puppeteer-core','puppeteer',
@@ -53,6 +54,7 @@ const CHROME=process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/
       const ok=inR&&fs.existsSync(pf);
       await p.evaluate((s,f)=>window.setPerson(s,f), ok?('file://'+pf):null, (BEHIND.faces&&BEHIND.faces[i])||null);
     }
+    if(HASCOVER){const cf=W+'cover/'+id+'.png';await p.evaluate(s=>window.setCover?window.setCover(s):0, fs.existsSync(cf)?('file://'+cf):null);}
     const d=await p.evaluate((t,q)=>{window.draw(t);return window.shot(q);},t,q);
     fs.writeFileSync(file,Buffer.from(d.split(',')[1],'base64'));
   };

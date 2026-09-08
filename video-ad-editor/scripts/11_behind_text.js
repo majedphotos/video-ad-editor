@@ -64,6 +64,17 @@ if(MODE==='cutout'||MODE==='headout'){
   const meta=JSON.parse(fs.readFileSync(W+'bt/mask/meta.json','utf8'));
   prev.faces=prev.faces||{};
   for(const mm of meta) if(mm.face) prev.faces[parseInt(mm.f,10)]=mm.face;
+  /* 8 سبتمبر: حدود ثابتة للمشهد كله (وسيط حدود الجسم عبر فريماته) — بدونها الكرت الصغير كان يتبع الجسم بكل فريم
+     فتهتز الخلفية (بلاغ المستخدم). المحرّك يقرأ headbox[بداية المدى] ويثبّت التأطير، والحركة الوحيدة حركة المتحدث نفسه */
+  if(MODE==='headout'){
+    try{
+      const py='import json,os,statistics\nfrom PIL import Image\nW='+JSON.stringify(W)+';f0='+f0+';f1='+f1+'\nxs0=[];xs1=[];ys0=[];ys1=[]\n'+
+        'for n in range(f0,f1+1,3):\n p=W+"bt/mask/%05d.png"%n\n if not os.path.exists(p): continue\n bb=Image.open(p).convert("L").point(lambda v:255 if v>140 else 0).getbbox()\n if not bb: continue\n xs0.append(bb[0]);ys0.append(bb[1]);xs1.append(bb[2]);ys1.append(bb[3])\n'+
+        'print(json.dumps({"x0":statistics.median(xs0),"x1":statistics.median(xs1),"y0":statistics.median(ys0),"y1":statistics.median(ys1),"n":len(xs0)}) if xs0 else "null")';
+      const hb=JSON.parse(cp.execSync('python3 -c '+JSON.stringify(py),{stdio:'pipe'}).toString().trim());
+      if(hb){ prev.headbox=prev.headbox||{}; prev.headbox[String(a)]=hb; }
+    }catch(e){ console.log('⚠️ ما قدرت أحسب الحدود الثابتة (يحتاج PIL) — الكرت بيتبع الجسم بكل فريم'); }
+  }
   fs.writeFileSync(W+'behind.json',JSON.stringify(prev,null,1));
   console.log('✅ '+(MODE==='headout'?'«راسك برّا المستطيل»':'«واقف قدام اللوحة»')+' جاهز من',a,'إلى',b,'ثانية.');
   console.log('   ارسم: node 04_render_frames.js '+W+' range '+a+' '+b);
