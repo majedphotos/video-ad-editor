@@ -1,18 +1,32 @@
 # -*- coding: utf-8 -*-
 """شيل أي جملة من الفيديو بحذفها من النص.
 
-    python3 10_script_edit.py <work> show              # يطبع الجُمل مرقّمة (وينبّه للجُمل المعادة)
-    python3 10_script_edit.py <work> dupes             # الجُمل المعادة وحدها
-    python3 10_script_edit.py <work> drop 3 7 12       # يشيل هالجُمل من الفيديو
-    python3 10_script_edit.py <work> keep 1 2 5 6      # يبقي هذي بس ويشيل الباقي
-    python3 10_script_edit.py <work> apply             # يقرأ script.txt المعدّل ويشيل الناقص منه
-    python3 10_script_edit.py <work> undo              # يرجّع آخر تعديل
+    python 10_script_edit.py <work> show              # يطبع الجُمل مرقّمة (وينبّه للجُمل المعادة)
+    python 10_script_edit.py <work> dupes             # الجُمل المعادة وحدها
+    python 10_script_edit.py <work> drop 3 7 12       # يشيل هالجُمل من الفيديو
+    python 10_script_edit.py <work> keep 1 2 5 6      # يبقي هذي بس ويشيل الباقي
+    python 10_script_edit.py <work> apply             # يقرأ script.txt المعدّل ويشيل الناقص منه
+    python 10_script_edit.py <work> undo              # يرجّع آخر تعديل
     (أضف --dry لأي أمر: يوريك النتيجة بلا ما يغيّر شي)
 
 الفكرة: الجملة اللي تنحذف من النص ينحذف مقطعها من الفيديو والصوت، وكل اللي بعدها ينزاح لمكانه.
 يعدّل: cut.json (مقاطع الفيديو) · caps.json (الكابشن) · sfx.json (أوقات المؤثرات).
 بعده: أعد بناء الفيديو ← 03_cut_zoom.py ثم استخراج الفريمات ثم الرسم.
 """
+# ── توافق ويندوز/UTF-8 (مضاف) ─────────────────────────────────────
+import sys as _sys, builtins as _bi
+try:
+    _sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    _sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+_real_open = _bi.open
+def _utf8_open(f, mode="r", *a, **k):
+    if "b" not in mode:
+        k.setdefault("encoding", "utf-8")
+    return _real_open(f, mode, *a, **k)
+_bi.open = _utf8_open
+# ──────────────────────────────────────────────────────────────────
 import json, os, sys, shutil
 
 W = os.path.abspath(sys.argv[1])
@@ -64,7 +78,7 @@ def line(i, c):
 
 # ── show ──────────────────────────────────────────────────────────────────
 if CMD == "show":
-    body = ("# احذف أي سطر ما تبيه بالفيديو، واحفظ الملف، ثم:  python3 10_script_edit.py <work> apply\n"
+    body = ("# احذف أي سطر ما تبيه بالفيديو، واحفظ الملف، ثم:  python 10_script_edit.py <work> apply\n"
             "# (لا تغيّر الأرقام — هي اللي تربط السطر بمقطعه)\n\n"
             + "\n".join(line(i, c) for i, c in enumerate(cards)) + "\n")
     if not DRY: open(P("script.txt"), "w", encoding="utf-8").write(body)
@@ -197,8 +211,8 @@ if os.path.exists(P("sfx.json")):
 
 print(f"""
 ✅ تم. الحين أعد بناء الفيديو:
-   python3 scripts/03_cut_zoom.py {W}
+   python scripts/03_cut_zoom.py {W}
    mkdir -p {W}/vfr && ffmpeg -v error -i {W}/cutz.mp4 -vf fps=30 -q:v 3 -y {W}/vfr/%05d.jpg
    node scripts/04_render_frames.js {W} all --force     (أو 04b_remotion.sh {W} render)
 ⚠️ لو كنت مصمّماً مشاهد بأوقات ثابتة — أوقاتها انزاحت، راجعها.
-↩️ للتراجع: python3 scripts/10_script_edit.py {W} undo""")
+↩️ للتراجع: python scripts/10_script_edit.py {W} undo""")

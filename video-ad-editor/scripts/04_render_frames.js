@@ -17,7 +17,26 @@ function resolvePuppeteer(){
   }
   throw new Error('ما لقيت puppeteer-core — ثبّته: npm i puppeteer-core');
 }
-const CHROME=process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+/* ── كروم: يلقاه على ويندوز وماك ولينكس (مضاف) ── */
+const {pathToFileURL}=require('url');
+const fileURL=p=>pathToFileURL(p).href;
+function findChrome(){
+  if(process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const LA=process.env.LOCALAPPDATA||'';
+  const PF=process.env.ProgramFiles||'C:/Program Files';
+  const P86=process.env['ProgramFiles(x86)']||'C:/Program Files (x86)';
+  const cands=[
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    PF+'/Google/Chrome/Application/chrome.exe',
+    P86+'/Google/Chrome/Application/chrome.exe',
+    LA+'/Google/Chrome/Application/chrome.exe',
+    PF+'/Microsoft/Edge/Application/msedge.exe',
+    P86+'/Microsoft/Edge/Application/msedge.exe',
+    '/usr/bin/google-chrome','/usr/bin/chromium','/usr/bin/chromium-browser'];
+  for(const c of cands){ try{ if(c && fs.existsSync(c)) return c; }catch(e){} }
+  throw new Error('ما لقيت كروم — حدّد CHROME_PATH');
+}
+const CHROME=findChrome();
 (async()=>{
   const puppeteer=resolvePuppeteer();
   const mode=process.argv[3]||'all';
@@ -30,7 +49,7 @@ const CHROME=process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/
   p.on('pageerror',e=>console.log('PAGEERR',e.message));
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
-  await p.goto('file://'+W+'compose.html',{waitUntil:'networkidle0'});
+  await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
   const FF=THEME.font||'Cairo';
   await p.evaluate(()=>new Promise(r=>{const l=document.getElementById('LOGO');l.complete?r():l.onload=r;}));
   await p.evaluate((c,o,t,b)=>window.init({cards:c.cards,total:c.total,outro:o,theme:t,behind:b}),caps,OUT_D,THEME,BEHIND);
@@ -47,12 +66,12 @@ const CHROME=process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/
   const grab=async(t,file,q)=>{
     const i=Math.min(NVF,Math.max(1,Math.round(t*FPS)+1));
     const id=String(i).padStart(5,'0');
-    await p.evaluate(s=>window.setFrame(s),'file://'+W+'vfr/'+id+'.jpg');
+    await p.evaluate(s=>window.setFrame(s),fileURL(W+'vfr/'+id+'.jpg'));
     if(BEHIND){                                   // صورة الشخص المقصوص لهالفريم (إن وُجدت)
       const inR=BEHIND.ranges.some(r=>i>=r[0]&&i<=r[1]);
       const pf=W+'bt/person/'+id+'.png';
       const ok=inR&&fs.existsSync(pf);
-      await p.evaluate((s,f)=>window.setPerson(s,f), ok?('file://'+pf):null, (BEHIND.faces&&BEHIND.faces[i])||null);
+      await p.evaluate((s,f)=>window.setPerson(s,f), ok?fileURL(pf):null, (BEHIND.faces&&BEHIND.faces[i])||null);
     }
     if(HASCOVER){const cf=W+'cover/'+id+'.png';await p.evaluate(s=>window.setCover?window.setCover(s):0, fs.existsSync(cf)?('file://'+cf):null);}
     const d=await p.evaluate((t,q)=>{window.draw(t);return window.shot(q);},t,q);
