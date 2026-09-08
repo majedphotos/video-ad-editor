@@ -31,7 +31,8 @@ sheet = Image.new("RGB", (w * len(ims), h), (17, 17, 17))
 dr = ImageDraw.Draw(sheet)
 fnt = None
 for p in ("/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-          "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"):
+          "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+          "C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/segoeuib.ttf"):
     if os.path.exists(p):
         fnt = ImageFont.truetype(p, 22); break
 if fnt is None:

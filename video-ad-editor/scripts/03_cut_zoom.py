@@ -14,7 +14,7 @@ def _utf8_open(f, mode="r", *a, **k):
     return _real_open(f, mode, *a, **k)
 _bi.open = _utf8_open
 # ──────────────────────────────────────────────────────────────────
-import json, subprocess, sys, os
+import json, subprocess, sys, os, shutil
 W=os.path.abspath(sys.argv[1]); SRC=os.path.join(W,"src.mov")
 k=json.load(open(os.path.join(W,"cut.json")))["keep"]
 _tp=os.path.join(W,"theme.json")
@@ -62,12 +62,19 @@ def _hdr_to_sdr(src):
     if ct not in ("arib-std-b67","smpte2084"): return src
     here=os.path.dirname(os.path.abspath(__file__)); binp=os.path.join(here,"hdr2sdr")
     if not os.path.exists(binp):
-        r=subprocess.run(["swiftc","-O","-o",binp,os.path.join(here,"hdr2sdr.swift")],capture_output=True)
+        # محوّل أبل ماك فقط. بلا هالفحص يرمي بايثون FileNotFoundError على ويندوز/لينكس ويوقف الخط كله.
+        if not shutil.which("swiftc"):
+            print("⚠️ الفيديو HDR والمحوّل ماك فقط (swiftc مو موجود) — أكمل بالأصل، الألوان قد تختلف"); return src
+        try:
+            r=subprocess.run(["swiftc","-O","-o",binp,os.path.join(here,"hdr2sdr.swift")],capture_output=True)
+        except OSError:
+            print("⚠️ الفيديو HDR وما قدرت أشغّل swiftc — أكمل بالأصل، الألوان قد تختلف"); return src
         if r.returncode!=0: print("⚠️ الفيديو HDR وما قدرت أبني محوّل أبل (يحتاج أدوات Xcode) — الألوان قد تختلف"); return src
     out=os.path.join(W,"src_sdr.mov")
     if not os.path.exists(out):
         print("🎨 الفيديو HDR — أحوّله SDR بمحوّل أبل حتى تبقى الألوان مثل الجوال…")
-        r=subprocess.run([binp,src,out]); 
+        try: r=subprocess.run([binp,src,out])
+        except OSError: print("⚠️ ما قدرت أشغّل المحوّل — أكمل بالأصل"); return src
         if r.returncode!=0 or not os.path.exists(out): print("⚠️ فشل التحويل — أكمل بالأصل"); return src
     return out
 SRC=_hdr_to_sdr(SRC)

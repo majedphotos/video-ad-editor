@@ -11,6 +11,20 @@
 الاختيار على المشهد نفسه: وضوح الصورة · حركة بمقدار (لا جمود ولا رجّة) · إضاءة · لون.
 بلا تفريغ ولا كابشن — هذا وضع مستقل عن إعلان الكلام.
 """
+# ── توافق ويندوز/UTF-8 (مضاف) ─────────────────────────────────────
+import sys as _sys, builtins as _bi
+try:
+    _sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    _sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+_real_open = _bi.open
+def _utf8_open(f, mode="r", *a, **k):
+    if "b" not in mode:
+        k.setdefault("encoding", "utf-8")
+    return _real_open(f, mode, *a, **k)
+_bi.open = _utf8_open
+# ──────────────────────────────────────────────────────────────────
 import json, os, re, subprocess, sys, shutil, math
 
 VID_EXT = (".mov", ".mp4", ".m4v", ".avi", ".mkv", ".webm", ".mts", ".m2ts")

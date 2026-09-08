@@ -27,6 +27,8 @@ have ffmpeg  && OK+=("ffmpeg")  || MISS+=("ffmpeg")
 have ffprobe && OK+=("ffprobe") || MISS+=("ffprobe")
 "$PY" -c "import whisper" 2>/dev/null && OK+=("whisper") || MISS+=("whisper")
 "$PY" -c "import numpy"   2>/dev/null && OK+=("numpy")   || MISS+=("numpy")
+# pillow: يستعمله 14_backdrop.py (لازم) و07_contact_sheet.sh و12_montage.py (يشتغلون بدونه بأقل جودة)
+"$PY" -c "import PIL"     2>/dev/null && OK+=("pillow")  || MISS+=("pillow")
 
 # كروم: نفس ترتيب البحث اللي بالسكربتات
 find_chrome(){
@@ -75,6 +77,7 @@ for m in "${MISS[@]}"; do
     whisper) line "⏬ openai-whisper… (الموديل ينزل أول تشغيل، 1.4 قيقا)"
       pipi openai-whisper || NOTE+=("whisper فشل") ;;
     numpy)   pipi numpy || NOTE+=("numpy فشل") ;;
+    pillow)  pipi pillow || NOTE+=("pillow فشل") ;;
     puppeteer-core) line "⏬ puppeteer-core…"
       ( cd "$SKILL" && npm i --silent puppeteer-core ) || NOTE+=("puppeteer-core فشل") ;;
     chrome) NOTE+=("كروم مو منصّب — نزّله من google.com/chrome أو حدّد CHROME_PATH") ;;

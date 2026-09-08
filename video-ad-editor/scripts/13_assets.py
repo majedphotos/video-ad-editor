@@ -3,6 +3,20 @@
    python3 13_assets.py <outdir> <name> "<استعلام إنقليزي>" ["استعلام بديل"...] [--cutout] [--min 800]
    يكتب: <outdir>/<name>.jpg (الأصل) · <outdir>/<name>.png (مقصوص لو --cutout) · <outdir>/<name>.json (المصدر والرخصة)
    الرخص المقبولة فقط: Public domain · CC0 · CC BY · CC BY-SA (وتُسجَّل عشان تُنسب بالكابشن لو لزم)."""
+# ── توافق ويندوز/UTF-8 (مضاف) ─────────────────────────────────────
+import sys as _sys, builtins as _bi
+try:
+    _sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    _sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+_real_open = _bi.open
+def _utf8_open(f, mode="r", *a, **k):
+    if "b" not in mode:
+        k.setdefault("encoding", "utf-8")
+    return _real_open(f, mode, *a, **k)
+_bi.open = _utf8_open
+# ──────────────────────────────────────────────────────────────────
 import sys, os, json, urllib.request, urllib.parse
 UA={"User-Agent":"video-ad-editor-skill/2.6 (asset fetch)"}
 OK=("Public domain","CC0","CC BY 2.0","CC BY 2.5","CC BY 3.0","CC BY 4.0","CC BY-SA")
