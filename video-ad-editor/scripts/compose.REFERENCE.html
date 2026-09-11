@@ -265,7 +265,8 @@ function behindText(t){
   const BW=L.words.slice(0,3), FW=L.words.slice(3);
   const FS0=Math.min(200, Math.round(760/Math.max(1,BW.length))+120), LH=Math.round(FS0*1.18);
   const blockH=(BW.length-1)*LH;
-  const f=PFACE, headC=f?f.y+f.h*0.45:700, sh=f?f.y+f.h*1.70:1250;
+  /* 🧊 صندوق وجه ثابت لكل جملة (وسيط فريماتها) بدل صندوق كل فريم — كان النص يرجف ورا الراس (بلاغ المستخدم 11 سبتمبر) */
+  const f=_faceForLine(L)||PFACE, headC=f?f.y+f.h*0.45:700, sh=f?f.y+f.h*1.70:1250;
   let top=headC-blockH/2;
   top=Math.min(top, sh-blockH-LH*0.15);
   top=Math.max(230, Math.min(top, 1430-blockH));
@@ -297,6 +298,16 @@ function behindText(t){
     X.translate(540,cy); X.scale(0.9+0.1*a,0.9+0.1*a); sh2(30,12,0.28); X.fillStyle=cBG(0.97); rr(-bw/2,-bh/2,bw,bh,bh/2); X.fill(); nsh();
     X.fillStyle=INK; X.textAlign='center'; X.textBaseline='middle'; X.fillText(w.t,0,fs*0.06); X.restore(); });
   return true;
+}
+function _faceForLine(L){
+  if(!BEHIND||!BEHIND.faces) return null;
+  if(!L._face){
+    const fps=(typeof FPS==='number'&&FPS)||30, xs=[],ys=[],ws=[],hs=[];
+    for(let fr=Math.floor(L.s*fps)+1; fr<=Math.ceil(L.e*fps)+1; fr++){ const f=BEHIND.faces[fr]; if(f){ xs.push(f.x); ys.push(f.y); ws.push(f.w); hs.push(f.h); } }
+    const med=a=>{ if(!a.length) return null; const b=a.slice().sort((p,q)=>p-q); return b[Math.floor(b.length/2)]; };
+    L._face=xs.length?{x:med(xs),y:med(ys),w:med(ws),h:med(hs)}:false;
+  }
+  return L._face||null;
 }
 function sh2(b,y,a){X.shadowColor=cINK(a);X.shadowBlur=b;X.shadowOffsetY=y;}
 const CVR=document.getElementById('CVR');let CVR_OK=false;
