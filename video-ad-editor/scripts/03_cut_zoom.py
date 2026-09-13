@@ -57,7 +57,7 @@ fc.append("[ac]afade=t=in:st=0:d=0.06,dynaudnorm=f=200:g=5:p=0.9[ao]")
 #    (باهت وبارد) — نحوّله بمكتبة أبل نفسها (AVFoundation) قبل أي شي، فيطلع بنفس مظهره على الجوال.
 def _hdr_to_sdr(src):
     try:
-        ct = subprocess.run(["ffprobe","-v","error","-select_streams","v:0","-show_entries","stream=color_transfer","-of","csv=p=0",src],capture_output=True,text=True).stdout.strip()
+        ct = subprocess.run(["ffprobe","-v","error","-select_streams","v:0","-show_entries","stream=color_transfer","-of","csv=p=0",src],capture_output=True,text=True).stdout.strip().strip(",")   # ffprobe يرجّع «arib-std-b67,» بفاصلة — كانت تُسقط الكشف بصمت (13 سبتمبر)
     except Exception: return src
     if ct not in ("arib-std-b67","smpte2084"): return src
     here=os.path.dirname(os.path.abspath(__file__)); binp=os.path.join(here,"hdr2sdr")
