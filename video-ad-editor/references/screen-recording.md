@@ -18,7 +18,7 @@ ffmpeg -v error -y -ss <من> -t <مدة> -i screen.MP4 -vf "fps=30,scale=1080:-
 
 ## الشيفرة (من compose.html لفيديو إيديتس — انسخها كما هي)
 ```js
-const PH_H=1320, PH_W=Math.round(PH_H/2.172);                      /* نسبة تسجيل الشاشة نفسه 1080×2346 — بلا أي ضغط، تصغير نسبي فقط (قاعدة 13 سبتمبر) */
+const PH_H=1320, PH_W=Math.round(PH_H/2.172);                      /* نسبة تسجيل الشاشة نفسه 1080×2346 — بلا أي ضغط، تصغير نسبي فقط (ماجد 13 سبتمبر) */
 const PH={x:Math.round(540-PH_W/2),y:150,w:PH_W,h:PH_H,r:Math.round(PH_W*0.16)};
 function fullShot(k,dt,crop,tap){
   const im=brFrame(k,dt,1); if(!im) return;
