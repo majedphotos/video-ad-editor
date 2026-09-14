@@ -35,7 +35,7 @@ if [ "$1" = "--update" ]; then
   else echo "⚠️ ما قدرت أنزّل التحديث — جرّب لاحقاً"; fi
   rm -rf "$TMP"; exit 0
 fi
-LATEST="$(curl -sL -m 5 -o /dev/null -w '%{url_effective}' https://github.com/majedphotos/video-ad-editor/releases/latest 2>/dev/null | sed -n 's#.*/tag/v##p')"
+LATEST="$(curl -sL -m 5 https://api.github.com/repos/majedphotos/video-ad-editor/releases/latest 2>/dev/null | sed -n 's/.*"tag_name": *"v\([0-9.]*\)".*/\1/p' | head -1)"
 if [ -n "$LATEST" ] && [ "$LATEST" != "$LOCALV" ] && [ "$(printf '%s\n%s' "$LOCALV" "$LATEST" | sort -V | tail -1)" = "$LATEST" ]; then
   echo "🆕 فيه إصدار أحدث من السكل: v$LATEST (عندك v$LOCALV) — اسأل المستخدم، ولو وافق شغّل: bash scripts/00_setup.sh --update"
 fi
