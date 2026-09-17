@@ -15,7 +15,9 @@ TMP="$W/.sheet"; rm -rf "$TMP"; mkdir -p "$TMP"; i=0; ARGS=()   # مصفوفة �
 for t in "$@"; do
   i=$((i+1)); f="$TMP/$(printf %02d $i).jpg"
   V="${SRC:-$W/ad-final.mp4}"
-  if [ -f "$V" ]; then ffmpeg -v error -ss "$t" -i "$V" -frames:v 1 -vf "scale=300:-1" -y "$f"
+  PV="$W/prev/t$(printf %.2f $t).jpg"
+  if [ -f "$PV" ] && [ "$PV" -nt "$V" ]; then ffmpeg -v error -i "$PV" -vf "scale=300:-1" -y "$f"   # لقطة المعاينة الأحدث لها الأولوية على الفيديو القديم
+  elif [ -f "$V" ]; then ffmpeg -v error -ss "$t" -i "$V" -frames:v 1 -vf "scale=300:-1" -y "$f"
   else ffmpeg -v error -i "$W/prev/t$(printf %.2f $t).jpg" -vf "scale=300:-1" -y "$f"; fi
   ARGS+=(-i "$f")
 done

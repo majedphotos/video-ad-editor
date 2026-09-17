@@ -8,7 +8,9 @@ let inURL = URL(fileURLWithPath: args[1]), outURL = URL(fileURLWithPath: args[2]
 try? FileManager.default.removeItem(at: outURL)
 let asset = AVURLAsset(url: inURL)
 let track = asset.tracks(withMediaType: .video).first!
-let size = track.naturalSize.applying(track.preferredTransform)
+// 🔁 (16 سبتمبر) المقاطع المصوّرة بالطول تجي بوسم دوران: القارئ يطلّع الفريمات بمقاسها الأصلي (بلا دوران)،
+// فنكتبها بنفس المقاس ونمرّر وسم الدوران للمخرج — كان يكتب مقاس ما بعد الدوران فتطلع الصورة مقلوبة ومضغوطة.
+let size = track.naturalSize
 let w = Int(abs(size.width)), h = Int(abs(size.height))
 let reader = try! AVAssetReader(asset: asset)
 // نطلب من القارئ إخراج BT.709 (SDR) — AVFoundation يطبّق التحويل اللوني الرسمي
@@ -32,6 +34,7 @@ let vin = AVAssetWriterInput(mediaType: .video, outputSettings: [
                               AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
                               AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2]])
 vin.expectsMediaDataInRealTime = false
+vin.transform = track.preferredTransform
 writer.add(vin)
 var ain: AVAssetWriterInput? = nil
 if aout != nil {

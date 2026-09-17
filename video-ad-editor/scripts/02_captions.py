@@ -22,6 +22,7 @@ keep=json.load(open(os.path.join(W,"cut.json")))["keep"]
 tr=json.load(open(os.path.join(W,"a.json")))
 fx=json.load(open(os.path.join(W,"fixes.json")))
 FIX, HOT = fx["fix"], set(fx.get("hot",[]))
+FXMAP = fx.get("fx", {})   # 🎬 حركات الكلمة العربية (v3.1): {"خلاص":"drop","متصلة":"type",…} — drop · shake · crack · type · pulse · stretch · slam
 
 def seg_of(t):
     best,bd=0,1e9
@@ -45,7 +46,9 @@ for i,seg in enumerate(tr["segments"]):
     for w,txt in zip(ws,f):
         s,e=newt(w["start"],si),newt(w["end"],si)
         if e<=s: e=s+0.12
-        o.append({"t":txt,"s":round(s,3),"e":round(e,3),"hot":txt in HOT})
+        _w={"t":txt,"s":round(s,3),"e":round(e,3),"hot":txt in HOT or txt in FXMAP}
+        if txt in FXMAP: _w["fx"]=FXMAP[txt]
+        o.append(_w)
     a,b=keep[si]
     cs=max(o[0]["s"]-0.10, off[si])
     ce=min(max(x["e"] for x in o)+0.28, off[si]+(b-a))
