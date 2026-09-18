@@ -34,8 +34,9 @@ function init(d){
     if(st.outro){ OUTRO_T={...OUTRO_T,...st.outro}; if(Array.isArray(st.outro.chips)) RECAP=st.outro.chips.map(c=>[c]); }
     if(Array.isArray(st.stickers)) STICK=st.stickers;
     BEHIND_OFF=Array.isArray(st.behindOff)?st.behindOff:[];
-    if(st.brNeed&&typeof BR_NEED==='object'){ for(const k in st.brNeed) BR_NEED[k]=st.brNeed[k]; } }
-  return preloadBroll();   /* يرجّع Promise — المحرّك ينتظر تحميل لقطات البي-رول (إن وُجدت) */
+    if(st.brNeed&&typeof BR_NEED==='object'){ for(const k in st.brNeed) BR_NEED[k]=st.brNeed[k]; }
+    if(Array.isArray(st.gen)) GEN=st.gen.map(g=>({...g})); if(st.genFrames) GEN_FR=st.genFrames; }
+  return Promise.all([preloadBroll(),preloadGen()]);   /* يرجّع Promise — المحرّك ينتظر تحميل لقطات البي-رول (إن وُجدت) */
 }
 /* ---------- utils ---------- */
 /* ألوان مشتقّة من الثيم — لا تكتب rgba ثابتة */
@@ -199,7 +200,7 @@ function caption(t){
     if(!pg){pg=pages.find(p=>t<p[0].items[0].s)||pages[pages.length-1];}
     L=pg;}
   if(CAPSTYLE!=='card'){ /* ── ستايلات بلا كرت: shadow (كبير بظل) · big (كلمة وحدة ضخمة) · underline (خط تحت الكلمة) · bar (شريط بلون التمييز) · type (ماكينة كاتبة) ── */
-    const GAP2=22,MAXW2=940, isNum=w=>/^[0-9٠-٩]+$/.test(w.t);
+    const GAP2=22,MAXW2=820 /* كان 940: يدخل عمود أزرار انستقرام (x>900) بـ110px — فحص 18 سبتمبر */, isNum=w=>/^[0-9٠-٩]+$/.test(w.t);
     const wordFX=(i,k0)=>{ /* مؤثر الكلمة عند نطقها: drop · shake · type · pulse — يرجّع {ps,dx,dy,clip} */
       const r={ps:1,dx:0,dy:0,clip:1}; const sp=t>=i.s; if(!sp) return r;
       if(i.hot){const k=Math.min(1,(t-i.s)/0.35); r.ps=1+0.10*Math.sin(k*Math.PI)+0.06*k;}
@@ -551,6 +552,71 @@ function brollClips(t){ for(const b of BROLL){ if(t<b.s||t>=b.e) continue; const
     if(b.mode==='card'){ sh(40,16,0.3); X.fillStyle=cBG(0.9); rr(130,250,820,560,40); X.fill(); nsh(); rr(130,250,820,560,40); X.clip(); coverImg(im,130,250,820,560); }
     else coverImg(im,0,0,W,H);
     X.restore(); } }
+/* ================= 🖼️ مشاهد مولّدة (v3.2) =================
+   صورة أو مقطع مولّد بالذكاء الاصطناعي (17_gen_scenes.py يجيبها لمجلد gen/) يدخل كمشهد، والمحرّك يرسم فوقه بالكود.
+   الفكرة (ماجد 18 سبتمبر): الصورة تعطي «الجو» اللي الرسم ما يقدر عليه، والرسم فوقها يعطي الحركة والمعلومة.
+   تُعرَّف بـstudio.json ← gen:[{s,e,k,mode,kb,draw:[...]}]
+     s/e   : ثوانٍ، أو "w:كلمة" = لحظة نطق الكلمة (يلتصق بالكلمة لا بتوقيت تقريبي) · "w:كلمة+" = نهاية نطقها
+     k     : اسم الأصل: gen/<k>.jpg صورة، أو gen/<k>_0001.jpg… فريمات مقطع (genFrames[k] = عددها)
+     mode  : 'bg' = خلفية ملء الشاشة وراه (مع R_LOWER يصير كرت صغير فوقها) · 'card' = كرت فوق (مع R_LOWER) · 'full' = تغطي كل شي (R_OFF)
+     kb    : حركة كن-بيرنز بطيئة (زوم 1→1.08 + انزياح) — الافتراضي true للصور، false للمقاطع
+     draw  : عمليات رسم فوقه، كل وحدة تدخل عند at (ثوانٍ أو "w:كلمة") وتبقى لنهاية المشهد. الإحداثيات نِسَب 0..1 من الكرت:
+       {op:'text',at,txt,x,y,size?}     كبسولة بلون التمييز فيها النص
+       {op:'num',at,txt,x?,y?}           رقم ضخم (نفس الكبسولة، أكبر)
+       {op:'circle',at,x,y,r}            حلقة بلون التمييز تنرسم حول نقطة (تدور 0.45ث)
+       {op:'vs',at,l,r}                  خط مقارنة بالنص + وسمان: l يمين (عربي) و r يسار
+       {op:'check',at,x,y}               دائرة صح بلون التمييز (الفائز)
+       {op:'underline',at,x,y,w}         خط يد تحت شي بالصورة
+   ⛔ قواعده: 2-4 مشاهد بالفيديو · الصورة تعبّر عن الفكرة لا عن المنتج (المنتج من موقعه الرسمي) · بلا نساء وبلا شعارات مرسومة. */
+let GEN=[], GEN_FR={}; const GENI={};
+const GCARD={x:130,y:230,w:820,h:1000,r:40};   /* كرت الصورة المولّدة مع R_LOWER: ينتهي عند 1230، والكابشن عند 1310 تحته */
+function _wordAt(v,from){ if(typeof v==='number') return v; if(typeof v!=='string'||!v.startsWith('w:')) return +v||0;
+  let q=v.slice(2), end=false; if(q.endsWith('+')){end=true;q=q.slice(0,-1);} const norm=x=>(x||'').replace(/[؟?!،,.:«»"']/g,'').trim();
+  for(const c of CAPS){ for(const w of c.w){ if(w.s>=(from||0)-0.6&&norm(w.t)===norm(q)) return end?w.e:w.s; } }
+  for(const c of CAPS){ for(const w of c.w){ if(norm(w.t)===norm(q)) return end?w.e:w.s; } } return 0; }
+let _GENRES=false;
+function resolveGen(){ if(_GENRES||!CAPS.length) return; _GENRES=true;
+  GEN.forEach(g=>{ g.s=_wordAt(g.s,0); g.e=_wordAt(g.e,g.s); if(g.kb===undefined) g.kb=!GEN_FR[g.k];
+    (g.draw||[]).forEach(d=>{ d.at=_wordAt(d.at,g.s); }); }); }
+function preloadGen(){ const ps=[];
+  GEN.forEach(g=>{ if(GENI[g.k]) return; const n=GEN_FR[g.k]|0;
+    if(n>0){ GENI[g.k]={imgs:[]}; for(let i=1;i<=n;i++){ const im=new Image(); im.src='gen/'+g.k+'_'+String(i).padStart(4,'0')+'.jpg'; GENI[g.k].imgs.push(im); ps.push(new Promise(r=>{im.onload=r;im.onerror=r;})); } }
+    else { const im=new Image(); im.src='gen/'+g.k+'.jpg'; GENI[g.k]={imgs:[im]}; ps.push(new Promise(r=>{im.onload=r;im.onerror=r;})); } });
+  return Promise.all(ps); }
+function genImg(g,t){ const a=GENI[g.k]; if(!a) return null; const n=a.imgs.length; if(n===1) return a.imgs[0].naturalWidth?a.imgs[0]:null;
+  const i=cl(Math.floor((t-g.s)*30),0,n-1); const im=a.imgs[i]; return im&&im.naturalWidth?im:null; }
+function genActive(t,modes){ resolveGen(); return GEN.filter(g=>t>=g.s&&t<g.e&&modes.includes(g.mode||'card')); }
+/* رسم الصورة داخل مستطيل بقصّ «تغطية» مع كن-بيرنز */
+function genDrawImg(g,im,t,x,y,w,h){ const k=g.kb?pr(t,g.s,g.e):0, sc=1+0.08*k, s0=Math.max(w/im.naturalWidth,h/im.naturalHeight)*sc;
+  const dw=im.naturalWidth*s0, dh=im.naturalHeight*s0; X.drawImage(im, x+(w-dw)/2+(-14*k), y+(h-dh)/2+(-10*k), dw, dh); }
+function genBg(t){ for(const g of genActive(t,['bg'])){ const im=genImg(g,t); if(!im) continue;
+    const k=ease(pr(t,g.s,g.s+0.35)), ko=1-pr(t,g.e-0.3,g.e); X.save(); X.globalAlpha=k*ko; genDrawImg(g,im,t,0,0,W,H);
+    /* تعتيم خفيف من تحت حتى الكرت الصغير والكابشن يطلعان */ const gr=X.createLinearGradient(0,H*0.45,0,H); gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(0.55,'rgba(0,0,0,0.45)'); gr.addColorStop(1,'rgba(0,0,0,0.72)'); X.fillStyle=gr; X.fillRect(0,0,W,H);
+    genOps(g,t,{x:0,y:0,w:W,h:H*0.62}); X.restore(); } }
+function genCard(t){ for(const g of genActive(t,['card','full'])){ const im=genImg(g,t); if(!im) continue;
+    const k=ease(pr(t,g.s,g.s+0.3)), ko=1-pr(t,g.e-0.25,g.e); X.save(); X.globalAlpha=k*ko;
+    if(g.mode==='full'){ genDrawImg(g,im,t,0,0,W,H); genOps(g,t,{x:0,y:150,w:W,h:1330}); }
+    else { const R=g.rect||GCARD; const sc=lerp(0.94,1,back(k)); X.translate(R.x+R.w/2,R.y+R.h/2); X.scale(sc,sc); X.translate(-(R.x+R.w/2),-(R.y+R.h/2));
+      sh(60,24,0.30); X.fillStyle='#000'; rr(R.x,R.y,R.w,R.h,R.r); X.fill(); nsh(); X.save(); rr(R.x,R.y,R.w,R.h,R.r); X.clip(); genDrawImg(g,im,t,R.x,R.y,R.w,R.h); X.restore();
+      X.strokeStyle=cINK(0.16); X.lineWidth=3; rr(R.x,R.y,R.w,R.h,R.r); X.stroke(); genOps(g,t,R); }
+    X.restore(); } }
+/* عمليات الرسم فوق الصورة — كلها تدخل بسبرنق عند at */
+function _pill(txt,cx,cy,fs,k){ X.save(); X.font='900 '+fs+'px '+FONT; const tw=X.measureText(txt).width, bw=tw+fs*1.1, bh=fs*1.7;
+  X.translate(cx,cy); X.scale(k,k); sh(30,12,0.35); X.fillStyle=ACC; rr(-bw/2,-bh/2,bw,bh,bh/2); X.fill(); nsh();
+  X.fillStyle=onACC(); X.textAlign='center'; X.textBaseline='middle'; X.fillText(txt,0,fs*0.06); X.restore(); }
+function genOps(g,t,R){ for(const d of (g.draw||[])){ if(t<d.at) continue; const k=back(cl((t-d.at)/0.32,0,1)), kl=cl((t-d.at)/0.45,0,1);
+    const px=v=>R.x+(v===undefined?0.5:v)*R.w, py=v=>R.y+(v===undefined?0.5:v)*R.h;
+    if(d.op==='text') _pill(d.txt||'',px(d.x),py(d.y),d.size||60,k);
+    else if(d.op==='num') _pill(d.txt||'',px(d.x),py(d.y===undefined?0.18:d.y),d.size||120,k);
+    else if(d.op==='circle'){ const r=(d.r||0.18)*R.w; X.save(); X.strokeStyle=ACC; X.lineWidth=12; X.lineCap='round'; sh(20,6,0.35);
+      X.beginPath(); X.arc(px(d.x),py(d.y),r,-Math.PI/2,-Math.PI/2+Math.PI*2*ease(kl)); X.stroke(); X.restore(); }
+    else if(d.op==='check'){ const r=R.w*0.075; X.save(); X.translate(px(d.x),py(d.y)); X.scale(k,k); sh(30,10,0.35); X.fillStyle=ACC; X.beginPath(); X.arc(0,0,r,0,7); X.fill(); nsh();
+      X.strokeStyle=onACC(); X.lineWidth=r*0.22; X.lineCap='round'; X.lineJoin='round'; X.beginPath(); X.moveTo(-r*0.42,0.02*r); X.lineTo(-r*0.1,r*0.36); X.lineTo(r*0.46,-r*0.34); X.stroke(); X.restore(); }
+    else if(d.op==='vs'){ X.save(); X.strokeStyle='#FFFFFF'; X.lineWidth=6; X.lineCap='round'; sh(16,4,0.5); X.setLineDash([26,18]);
+      X.beginPath(); X.moveTo(px(0.5),py(0.10)); X.lineTo(px(0.5),py(0.10)+(R.h*0.80)*ease(kl)); X.stroke(); X.restore();
+      if(d.l) _pill(d.l,px(0.74),py(0.12),52,k); if(d.r) _pill(d.r,px(0.26),py(0.12),52,k); }
+    else if(d.op==='underline'){ const w=(d.w||0.3)*R.w; X.save(); X.strokeStyle=ACC; X.lineWidth=10; X.lineCap='round'; sh(14,4,0.35);
+      X.beginPath(); X.moveTo(px(d.x)+w/2,py(d.y)); X.lineTo(px(d.x)+w/2-w*ease(kl),py(d.y)+6); X.stroke(); X.restore(); } } }
 /* 🗞️ كولاج: الشاشة ورقة، الشخص قصاصة (personStage يرسمه)، وكلمات الجملة قصاصات ورقية تظهر بنطقها */
 function collageActive(t){ return SCENES.some(sn=>sn.collage&&t>=sn.s&&t<sn.e); }
 function collageScene(t){
@@ -894,6 +960,7 @@ function draw(t){
   X.setTransform(1,0,0,1,0,0); X.globalAlpha=1; X.filter='none';
   X.shadowColor='transparent'; X.shadowBlur=0; X.shadowOffsetY=0; X.globalCompositeOperation='source-over';
   X.clearRect(0,0,W,H);X.fillStyle=BG;X.fillRect(0,0,W,H);safe(grid,t,'grid');
+  if(t<VEND) safe(genBg,t,'genBg');   /* 🖼️ v3.2: صورة/مقطع مولّد كخلفية وراه (وضع bg) */
   const _cut=(t<VEND)&&cutoutActive(t), _ho=(t<VEND)&&headoutActive(t);
   if(t<VEND&&_ho){safe(headOut,t,'headout');}
   const _off=vrect(t).y>=1919;   /* R_OFF: الكرت انزلق تحت الشاشة بالكامل */
@@ -902,6 +969,7 @@ function draw(t){
   if(_vs)X.restore(); if(t<VEND) safe(cracks,t,'cracks');
   if(t<VEND&&collageActive(t)) safe(collageScene,t,'collage');
   if(t<VEND) safe(brollClips,t,'brollClips');
+  if(t<VEND) safe(genCard,t,'genCard');   /* 🖼️ v3.2: صورة/مقطع مولّد بكرت فوق + رسم فوقه (وضع card/full) */
   badge(t);bar(t); if(t<VEND) safe(stickers,t,'stickers');
   [['stamp',stamp],['chips',chips],['fileToCloud',fileToCloud],['transcript',transcript],
    ['cardStack',cardStack],['suspense',suspense],['syncViz',syncViz],['price',price],
