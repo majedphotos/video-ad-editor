@@ -6,8 +6,9 @@
 #   ./04b_remotion.sh <work> render [out.mp4] → يطلّع MP4 مباشرة (بلا فريمات)
 # المشاهد تُكتب بـ<work>/remotion/src/Scenes.tsx — ما يُمسح بأي إعادة تشغيل.
 set -e
-W="$(cd "$1" && pwd)"; CMD="${2:-setup}"; ARG="$3"
-TPL="$(cd "$(dirname "$0")/remotion-template" && pwd)"
+. "$(dirname "$0")/_compat.sh"
+W="$(abspath "$1")"; CMD="${2:-setup}"; ARG="$3"
+TPL="$(abspath "$(dirname "$0")/remotion-template")"
 R="$W/remotion"
 
 sync_all(){
@@ -21,7 +22,7 @@ sync_all(){
   [ -f "$R/src/Scenes.tsx" ] || cp "$TPL/src/Scenes.tsx" "$R/src/Scenes.tsx"
 
   cp "$W/caps.json" "$R/src/caps.json"
-  python3 - "$W" "$R" <<'PY'
+  "$PY" - "$W" "$R" <<'PY'
 import json, os, sys
 W, R = sys.argv[1], sys.argv[2]
 def rd(name, dflt):
@@ -44,7 +45,7 @@ print("project.json → المدة", proj["total"], "+ ختام", proj["outro"],
 PY
   [ -f "$W/cutz.mp4" ] && cp "$W/cutz.mp4" "$R/public/video.mp4"
   [ -f "$W/sfx.wav" ]  && cp "$W/sfx.wav"  "$R/public/sfx.wav"
-  LOGO="$(python3 -c "import json,os,sys;p=os.path.join('$W','theme.json');print(json.load(open(p)).get('logo','logo.png') if os.path.exists(p) else 'logo.png')")"
+  LOGO="$("$PY" -c "import json,os,sys;p=os.path.join('$W','theme.json');print(json.load(open(p)).get('logo','logo.png') if os.path.exists(p) else 'logo.png')")"
   [ -f "$W/$LOGO" ] && cp "$W/$LOGO" "$R/public/logo.png"
   [ -f "$R/public/logo.png" ] || echo "⚠️  ما فيه شعار بـ$W — حط logo.png"
   echo "✅ البيانات والأصول محدّثة بـ$R"
