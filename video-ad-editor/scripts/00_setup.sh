@@ -1,12 +1,14 @@
 #!/bin/bash
-# فحص وتجهيز الأدوات.  ./00_setup.sh          → يفحص ويقول وش ناقص
-#                      ./00_setup.sh --install → ينزّل الناقص (بعد إذن المستخدم)
+# فحص وتجهيز الأدوات.  ./00_setup.sh                 → يفحص ويقول وش ناقص
+#                      ./00_setup.sh --install        → ينزّل الناقص (بعد إذن المستخدم)
+#                      ./00_setup.sh --director-check → أمر ربط عيون المخرج (لو مو مربوط) — للمشاهد المولّدة بلا مفتاح
 # ✏️ معدّل ليشتغل على ويندوز وماك ولينكس. الأصل الماكي محفوظ بـ00_setup.sh.mac-orig
 . "$(dirname "$0")/_compat.sh"
 # 🎬 عيون المخرج (v3.3): مزوّد المشاهد المولّدة بلا مفتاح — خادم MCP يربطه المستخدم بدخول من المتصفح.
 # العنوان والاسم نفسهما اللي بصفحة الربط بالموقع، حتى ما يصير عند المستخدم خادمان بنفس الأدوات.
 DIRECTOR_MCP_NAME="director"
 DIRECTOR_MCP_URL="https://hawsh-khalifa.com/mcp"
+DIRECTOR_MCP_OLD="dlqwvovmllggneslyuuz.supabase.co/functions/v1/director-mcp"   # ربط قديم بالعنوان الخام
 DIRECTOR_CLIENT_ID="PENDING-CLIENT-ID"   # يُملأ عند إصدار عميل OAuth الخاص بالمهارة
 INSTALL=0; [ "$1" = "--install" ] && INSTALL=1
 MISS=(); OK=(); NOTE=()
@@ -19,6 +21,30 @@ case "$(uname -s)" in
   *) OS=linux ;;
 esac
 SKILL="$(abspath "$(dirname "$0")/..")"
+
+# 🎬 فحص ربط عيون المخرج — بعلم مستقل، مو بالخطوة 0: `claude mcp list` يفحص صحة كل
+#    خادم مسجّل ويوصل 23 ثانية، وما ينفع يتأخر كل جلسة. كلود يشغّله بس لما يحتاج
+#    التوليد بلا مفتاح فال. ⛔ ما نشغّل أمر الربط من هني أبداً — كلود يسأل المستخدم أولاً.
+list_mcp(){ if have timeout; then timeout 20 claude mcp list 2>/dev/null; else claude mcp list 2>/dev/null; fi; }
+has_director(){
+  have claude || return 1
+  local out st
+  out="$(list_mcp)"; st=$?
+  [ "$st" = 124 ] && return 1          # انتهى الوقت = نعتبره مو مربوط
+  # العنوان هو العلامة: ربط claude.ai يطبع «claude.ai عيون المخرج …: <العنوان>» بلا اسم director
+  printf '%s\n' "$out" | grep -qF "$DIRECTOR_MCP_URL" && return 0
+  printf '%s\n' "$out" | grep -qF "$DIRECTOR_MCP_OLD" && return 0
+  printf '%s\n' "$out" | grep -q "^$DIRECTOR_MCP_NAME: "
+}
+if [ "$1" = "--director-check" ]; then
+  if has_director; then line "✅ عيون المخرج مربوط — ولّد بأدوات director_*"; exit 0; fi
+  # المعرّف لسا ما انصدر؟ نطبع أمر الموقع بلا أعلام — يشتغل بتسجيل العميل الديناميكي
+  # (بس الربط ما ينُسب للمهارة). الشكل الكامل بـ--client-id يجي أول ما يُملأ الثابت فوق.
+  ADD="claude mcp add --transport http $DIRECTOR_MCP_NAME $DIRECTOR_MCP_URL"
+  [ "$DIRECTOR_CLIENT_ID" = "PENDING-CLIENT-ID" ] || ADD="$ADD --client-id $DIRECTOR_CLIENT_ID --callback-port 3118"
+  line "🎬 مشاهد مولّدة بلا مفتاح: اربطني بعيون المخرج — اسأل المستخدم، ولو وافق شغّل: $ADD"
+  exit 0
+fi
 # 🚧 حارس السحابة (8 سبتمبر): من تطبيق كلود بالسحابة (ساندبوكس لينكس) تنزيل موديل وِسبر محجوب وما فيه متصفح للرسم —
 #    السكل يشتغل على جهازك (ماك أو ويندوز) عبر Claude Code. نوقف هنا برسالة واضحة بدل خطأ غامض بعدين.
 if [ "$OS" = linux ] && { [ -n "$CLAUDE_SANDBOX" ] || [ ! -d /Applications ]; } && ! curl -sI -m 8 https://openaipublic.azureedge.net >/dev/null 2>&1; then
@@ -75,21 +101,6 @@ line "الجاهز: ${OK[*]:-لا شيء}"
 if have npm; then line "المحرّك الثاني (ريموشن): متاح عند الطلب — 04b_remotion.sh setup ينزّله (~500 ميقا)"
 else line "المحرّك الثاني (ريموشن): يحتاج npm — غير متاح، والخفيف يكفي"; fi
 [ "$OS" = mac ] || NOTE+=("مؤثّر «الكلام ورا الشخص» (11_behind_text.js) يشتغل على ماك فقط — بقية السكل يشتغل عادي")
-
-# 🎬 مشاهد مولّدة بلا مفتاح (v3.3): ما فيه FAL_KEY ولا خادم عيون المخرج مربوط؟ نطبع سطر الربط وبس.
-# ⛔ ما نشغّل أمر الربط من هني أبداً — كلود يسأل المستخدم أولاً.
-has_fal(){ [ -n "$FAL_KEY" ] && return 0
-  local d; for d in "$PWD" "$SKILL" "$HOME"; do grep -qs '^FAL_KEY=' "$d/.env" && return 0; done; return 1; }
-# سطر الخادم بـclaude mcp list يبدأ باسمه ثم نقطتان: «director: https://… (HTTP) - …»
-# نطابق الاسم من أول السطر لا كنصّ داخله، وإلا طابق أي اسم يحتويه (director-eyes مثلاً).
-has_director(){ have claude && claude mcp list 2>/dev/null | grep -q "^$DIRECTOR_MCP_NAME: "; }
-if ! has_fal && ! has_director; then
-  # المعرّف لسا ما انصدر؟ نطبع أمر الموقع بلا أعلام — يشتغل بتسجيل العميل الديناميكي
-  # (بس الربط ما ينُسب للمهارة). الشكل الكامل بـ--client-id يجي أول ما يُملأ الثابت فوق.
-  ADD="claude mcp add --transport http $DIRECTOR_MCP_NAME $DIRECTOR_MCP_URL"
-  [ "$DIRECTOR_CLIENT_ID" = "PENDING-CLIENT-ID" ] || ADD="$ADD --client-id $DIRECTOR_CLIENT_ID --callback-port 3118"
-  line "🎬 مشاهد مولّدة بلا مفتاح: اربطني بعيون المخرج — اسأل المستخدم، ولو وافق شغّل: $ADD"
-fi
 
 if [ ${#MISS[@]} -eq 0 ]; then
   line "✅ كل شي جاهز — نقدر نبدأ."

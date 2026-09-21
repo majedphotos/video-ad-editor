@@ -26,11 +26,13 @@
     ثم ينزّل كل ناتج بأمر place — السكربت نفسه ما يتكلم مع أي خادم هني.
 ⛔ يولّد فقط اللي ما هو موجود بمجلد gen/ (ما يعيد ولا يدفع مرتين). لو فشل طلب مرة، يوقف ويقول السبب — ما يكرّر.
 """
-import sys, os, json, time, glob, subprocess, urllib.request, urllib.error
+import sys, os, json, math, time, glob, subprocess, urllib.request, urllib.error
 
 IMG_MODEL = "fal-ai/nano-banana"
 VID_MODEL = "fal-ai/wan-25-preview/text-to-video"
 IMG_COST, VID_COST_PER_S = 0.04, 0.05
+# نقاط عيون المخرج (بلا مفتاح فال): الصورة ثابتة، والمقطع تقدير — الخادم يحسب ceil(دولار / 0.8) وأقلها نقطة.
+PT_IMG, PT_USD_PER_S, PT_USD = 0.2, 0.10, 0.8
 NEG = "no women, no people, no readable text, no logos, no watermark"   # قواعد المستخدم: بلا نساء وبلا شعارات مرسومة
 
 def _key(work):
@@ -70,6 +72,19 @@ def have(work, a):
 def cost(assets):
     return sum((VID_COST_PER_S * float(a.get("dur", 5))) if a.get("kind") == "video" else IMG_COST for a in assets)
 
+def points_of(a):
+    """نقاط أصل واحد: الصورة 0.2 بالضبط، والمقطع تقدير بنفس قاعدة الخادم (ceil(دولار / 0.8)، وأقلها نقطة)"""
+    if a.get("kind") == "video":
+        return max(1, math.ceil(PT_USD_PER_S * float(a.get("dur", 5)) / PT_USD))
+    return PT_IMG
+
+def points(assets):
+    return sum(points_of(a) for a in assets)
+
+def num(v):
+    """رقم بلا أصفار زايدة: 1 · 0.2 · 1.4 — وكلها غربية"""
+    return ("%.2f" % v).rstrip("0").rstrip(".")
+
 def frames_of(work, k):
     g = os.path.join(work, "gen"); n = 0
     while os.path.exists(os.path.join(g, "%s_%04d.jpg" % (k, n + 1))): n += 1
@@ -85,7 +100,7 @@ def to_frames(work, k, mp4):
     drop_frames(work, k)
     try:
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vf", "fps=30", "-q:v", "3", os.path.join(work, "gen", k + "_%04d.jpg")], check=True)
-    except Exception:
+    except BaseException:                      # حتى Ctrl+C ما يخلّي فريمات ناقصة يحسبها have() جاهزة
         drop_frames(work, k)
         if os.path.exists(mp4): os.remove(mp4)
         raise
@@ -96,14 +111,14 @@ def to_image(work, k, src):
     jpg = os.path.join(work, "gen", k + ".jpg")
     try:
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-q:v", "3", jpg], check=True)
-    except Exception:
+    except BaseException:                      # نفس القاعدة: الصورة الناقصة تنمسح ولو وقفه المستخدم
         if os.path.exists(jpg): os.remove(jpg)
         raise
     return jpg
 
 def frames_line(st):
     """genFrames بأسلوب السكربت: «clip: 30 فريم» لا شكل قاموس بايثون"""
-    return " · ".join("%s: %d فريم" % (k, n) for k, n in st.get("genFrames", {}).items()) or "ما فيه مقاطع"
+    return " · ".join("%s: %d فريم" % (k, n) for k, n in st.get("genFrames", {}).items()) or "صور فقط"
 
 def write_studio(work, cfg):
     """يكتب scenes/genFrames بـstudio.json (يدمج بلا ما يمسح باقي الإعدادات)"""
@@ -120,10 +135,15 @@ def main():
     cfg = load(work); assets = cfg.get("assets", [])
     missing = [a for a in assets if not have(work, a)]
     if cmd == "cost":
+        if not _key(work):
+            print("بلا مفتاح فال — بنقاط عيون المخرج: %d أصل (ناقص %d) ≈ %s نقطة (تقدير — director_quote هو الحَكَم)"
+                  % (len(assets), len(missing), num(points(missing))))
+            for a in missing:
+                v = a.get("kind") == "video"
+                print("  •", a["k"], ("مقطع %s ث" % a.get("dur", 5)) if v else "صورة", "≈ %s نقطة" % num(points_of(a)))
+            return
         print("الأصول: %d (ناقص %d) — التكلفة التقديرية للناقص ≈ %.2f دولار" % (len(assets), len(missing), cost(missing)))
         for a in missing: print("  •", a["k"], a.get("kind", "image"), ("%ss" % a.get("dur", 5)) if a.get("kind") == "video" else "", "≈ %.2f$" % (VID_COST_PER_S * float(a.get("dur", 5)) if a.get("kind") == "video" else IMG_COST))
-        if not _key(work):
-            print("بلا مفتاح فال: التكلفة بالنقاط تُحسب من director_quote (صورة 0.2 نقطة · مقطع 5 ث = 1 نقطة)")
         return
     if cmd == "status":
         for a in assets: print(("✅" if have(work, a) else "⏳"), a["k"], a.get("kind", "image"), (("%d فريم" % frames_of(work, a["k"])) if a.get("kind") == "video" and have(work, a) else ""))
@@ -144,18 +164,18 @@ def main():
         g = os.path.join(work, "gen"); os.makedirs(g, exist_ok=True)
         kind = a.get("kind", "image"); t0 = time.time()
         tmp = os.path.join(g, "_tmp_" + k + (".mp4" if kind == "video" else ".bin"))
+        stage = "dl"
         try:
-            _dl(url, tmp)
-        except Exception as e:
-            sys.exit("❌ ما قدرت أنزّل «%s» من الرابط: %s" % (k, str(e)[:200]))
-        try:
+            _dl(url, tmp)                        # داخل نفس الـtry حتى ما يخلّي ملفاً مؤقتاً لو فشل
+            stage = "ff"
             if kind == "video":
                 mp4 = os.path.join(g, k + ".mp4"); os.replace(tmp, mp4)
                 print("  ✅ %s مقطع → %d فريم (%.0f ث)" % (k, to_frames(work, k, mp4), time.time() - t0))
             else:
                 to_image(work, k, tmp)
                 print("  ✅ %s صورة (%.0f ث)" % (k, time.time() - t0))
-        except Exception as e:
+        except BaseException as e:
+            if stage == "dl": sys.exit("❌ ما قدرت أنزّل «%s» من الرابط: %s" % (k, str(e)[:200]))
             sys.exit("❌ الملف نزل بس ما قدرت أجهّزه لـ«%s»: %s\n   (لازم ffmpeg يقرا الملف — تأكد إن الرابط صورة أو مقطع)" % (k, str(e)[:200]))
         finally:
             if os.path.exists(tmp): os.remove(tmp)   # المؤقت ينمسح بالحالتين (المقطع انتقل باسمه أصلاً)
