@@ -344,6 +344,7 @@ python3 -m http.server 8791 --directory <work>   # ثم /studio.html
 لما يقول جملة ما يرسمها الكود زين («تخيل نفسك قاعد بالمكتب فاتح الآيباد وقهوتك يمك» · «منو أحسن: ورقة ولا الجوال؟»)، الحل مو مقطع تدوّر عليه ولا لوحة مرسومة: **صورة أو مقطع قصير يتولّد بالذكاء الاصطناعي من الجملة نفسها، يدخل كمشهد، والمحرّك يرسم فوقه** (رقم، مقارنة، دائرة على الفائز، صح). الصورة تعطي الجو، والرسم يعطي الحركة والمعلومة.
 اقرأ `references/gen-scenes.md` قبل أول استخدام — فيه الصيغة كاملة والقواعد.
 
+**المسار بمفتاح فال:**
 ```bash
 # 1) اكتب <work>/gen.json: الأصول (وصف كل صورة/مقطع) + المشاهد (متى تدخل وشنو ينرسم فوقها — بالكلمة لا بالثانية)
 python3 scripts/17_gen_scenes.py <work> cost     # كم بتكلّف قبل ما تولّد (صورة ≈ 0.04$ · مقطع 5 ث ≈ 0.25$)
@@ -353,10 +354,10 @@ python3 scripts/17_gen_scenes.py <work> fetch    # يولّد الناقص فق�
 
 **🎬 مشاهد مولّدة بلا مفتاح** *(v3.3)* **— بحساب عيون المخرج.** فيه `FAL_KEY` (بالبيئة أو `.env`) ⇒ امشِ بـfal فوق كما هو؛ ما فيه ⇒ ولّد بحساب المستخدم نفسه في [عيون المخرج](https://hawsh-khalifa.com/tools/director?from=video-ad-editor) — يسجّل دخولاً من المتصفح مرة وحدة ويدفع بالنقاط: صورة 0.2 نقطة · مقطع 5 ثوانٍ 720p نقطة واحدة · النقطة ≈ 0.4 د.ب. **ولا تسأله أي مزوّد يبي** — افحص المفتاح وامشِ.
 
-1. `director_entitlements` (مجاني) — يرجّع باقته ورصيده. طلع إن الخادم مو مربوط؟ جملة وحدة: «أربطك بعيون المخرج عشان أولّد لك المشاهد بحسابك — يفتحلك المتصفح مرة وحدة، أبدأ؟» وبعد موافقته شغّل أمر الربط اللي يطبعه `00_setup.sh` (`claude mcp add --transport http director https://hawsh-khalifa.com/mcp …`)، ثم أعد `director_entitlements`.
-2. لكل أصل بـ`gen.json`: `director_translate` (`text` = وصفك العربي · `mode:"translate"` · `kind:"subject"` للصورة و`"action"` للمقطع) → برومبت إنجليزي سينمائي، وزد عليه نفس كلمات المنع اللي بالسكربت: `no women, no people, no readable text, no logos, no watermark`.
+1. `director_entitlements` (مجاني) — يرجّع باقته ورصيده. طلع إن الخادم مو مربوط؟ جملة وحدة: «أربطك بعيون المخرج عشان أولّد لك المشاهد بحسابك — تسجّل دخولك من المتصفح مرة وحدة، أبدأ؟» وبعد موافقته شغّل أمر الربط اللي يطبعه `00_setup.sh` (`claude mcp add --transport http director https://hawsh-khalifa.com/mcp …`). **الأمر يسجّل الخادم وبس — ما يدخّله ولا يفتح متصفح**، فقل له بعده جملة وحدة: «اكتب `/mcp` ← اختر `director` ← Authenticate — يفتح المتصفح مرة وحدة وتسمح؛ ولو ما ظهر `director` بالقائمة أعد تشغيل Claude Code وشغّل «منتج هذا المقطع» من جديد.» وبعدها أعد `director_entitlements`.
+2. لكل أصل بـ`gen.json`: `director_translate` (`text` = وصفك العربي · `mode:"translate"` · `kind:"subject"` للصورة و`"action"` للمقطع) → برومبت إنجليزي سينمائي. وكلمات المنع `no women, no people, no readable text, no logos, no watermark`: **للصورة مرّرها بحقلها `negative_prompt`** لا تلزقها بالبرومبت، **وللمقطع زدها على البرومبت** لأن `director_generate_video` ما فيه حقل منع.
 3. `director_quote` لكل أصل (`kind:"image"` · أو `kind:"video"` مع `model:"wan"`, `duration:5`, `resolution:"720p"`) — **ثم اطبع الأوصاف والمجموع بالنقاط بالشات وانتظر موافقته** (نفس قاعدة طباعة الأوصاف قبل fal).
-4. `director_generate_image` (`model:"nano"` · `aspect_ratio:"3:4"` أو `"9:16"`) و`director_generate_video` (`model:"wan"` · `duration:5` · `resolution:"720p"` · `aspect_ratio:"9:16"` · `audio:false`) — و`confirm_points` = الرقم اللي رجّعه `director_quote` بالضبط. اختلف الرقم؟ ما ينخصم شي ويرجّع لك الصحيح.
+4. `director_generate_image` (`model:"nano"` · `aspect_ratio:"3:4"` أو `"9:16"` · `negative_prompt` كلمات المنع) و`director_generate_video` (`model:"wan"` · `duration:5` · `resolution:"720p"` · `aspect_ratio:"9:16"` · `audio:false`) — و`confirm_points` = الرقم اللي رجّعه `director_quote` بالضبط. اختلف الرقم؟ ما ينخصم شي ويرجّع لك الصحيح.
 5. `director_job_status` (`kind` + `id` = `job.id`) كل 3 ثوانٍ للصورة و6 للمقطع، لين تصير `completed` ويطلع رابط الناتج.
 6. نزّل كل ناتج بمكانه، وبعدها `04_render_frames.js` عادي:
 ```bash

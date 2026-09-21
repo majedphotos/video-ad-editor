@@ -54,13 +54,13 @@
 | الدخول | مفتاح من حسابه بـfal | تسجيل دخول من المتصفح مرة وحدة (خادم MCP اسمه `director` — نفس اسم وعنوان صفحة الربط بالموقع) |
 | الدفع | بطاقته عند fal: صورة ≈ 0.04$ · مقطع 5 ث ≈ 0.25$ | نقاط حسابه: صورة 0.2 نقطة · مقطع 5 ثوانٍ 720p نقطة واحدة · النقطة ≈ 0.4 د.ب · باقة الدخول 25 نقطة بـ10 د.ب |
 | التوليد | `17_gen_scenes.py <work> fetch` — السكربت يولّد وينزّل ويحوّل | كلود ينادي أدوات عيون المخرج، ثم `17_gen_scenes.py <work> place <k> <رابط الناتج>` لكل أصل |
-| الربط | — | `00_setup.sh` يطبع أمر الربط (`claude mcp add --transport http director https://hawsh-khalifa.com/mcp …`) — اسأله قبل ما تشغّله |
+| الربط | — | `00_setup.sh` يطبع أمر الربط (`claude mcp add --transport http director https://hawsh-khalifa.com/mcp …`) — اسأله قبل ما تشغّله. **الأمر يسجّل الخادم وبس**، وبعده يكتب المستخدم `/mcp` ← `director` ← Authenticate (يفتح المتصفح مرة وحدة)، ولو ما ظهر بالقائمة يعيد تشغيل Claude Code |
 
 **الأدوات (المجاني منها: `director_entitlements` · `director_engines` · `director_quote` · `director_translate` · `director_job_status` · `director_import_reference`):**
 1. `director_entitlements` أول شي — يوريك الرصيد ويقول لك إذا الخادم مربوط أصلاً.
-2. `director_translate` لكل وصف عربي → برومبت إنجليزي سينمائي (`kind:"subject"` للصورة · `"action"` للمقطع)، وزد عليه كلمات المنع نفسها: `no women, no people, no readable text, no logos, no watermark`.
+2. `director_translate` لكل وصف عربي → برومبت إنجليزي سينمائي (`kind:"subject"` للصورة · `"action"` للمقطع). كلمات المنع `no women, no people, no readable text, no logos, no watermark`: **للصورة بحقلها `negative_prompt`** (لا تلزقها بالبرومبت)، **وللمقطع زدها على البرومبت** لأن `director_generate_video` ما فيه حقل منع.
 3. `director_quote` لكل أصل، **ثم اطبع الأوصاف والمجموع بالنقاط وانتظر موافقته** (نفس القاعدة 2 فوق).
-4. `director_generate_image` (`model:"nano"`) و`director_generate_video` (`model:"wan"`, `duration:5`, `resolution:"720p"`, `aspect_ratio:"9:16"`, `audio:false`) — `confirm_points` = رقم `director_quote` بالضبط، وإلا ما ينخصم شي.
+4. `director_generate_image` (`model:"nano"`, `aspect_ratio:"3:4"` أو `"9:16"` — الافتراضي `16:9`, `negative_prompt` كلمات المنع) و`director_generate_video` (`model:"wan"`, `duration:5`, `resolution:"720p"`, `aspect_ratio:"9:16"`, `audio:false`) — `confirm_points` = رقم `director_quote` بالضبط، وإلا ما ينخصم شي.
 5. `director_job_status` لين `completed`، وبعدها `place`.
 
 **⛔ الرفض = جملة وحدة وبس.** رجّع `no_access` (ما عنده وصول ولا رصيد) أو `agent_cap` (تجاوز سقف صرف الوكلاء اليومي)؟ لا تعيد المحاولة ولا ينخصم شي، وقل له:

@@ -84,7 +84,11 @@ has_fal(){ [ -n "$FAL_KEY" ] && return 0
 # نطابق الاسم من أول السطر لا كنصّ داخله، وإلا طابق أي اسم يحتويه (director-eyes مثلاً).
 has_director(){ have claude && claude mcp list 2>/dev/null | grep -q "^$DIRECTOR_MCP_NAME: "; }
 if ! has_fal && ! has_director; then
-  line "🎬 مشاهد مولّدة بلا مفتاح: اربطني بعيون المخرج — اسأل المستخدم، ولو وافق شغّل: claude mcp add --transport http $DIRECTOR_MCP_NAME $DIRECTOR_MCP_URL --client-id $DIRECTOR_CLIENT_ID --callback-port 3118"
+  # المعرّف لسا ما انصدر؟ نطبع أمر الموقع بلا أعلام — يشتغل بتسجيل العميل الديناميكي
+  # (بس الربط ما ينُسب للمهارة). الشكل الكامل بـ--client-id يجي أول ما يُملأ الثابت فوق.
+  ADD="claude mcp add --transport http $DIRECTOR_MCP_NAME $DIRECTOR_MCP_URL"
+  [ "$DIRECTOR_CLIENT_ID" = "PENDING-CLIENT-ID" ] || ADD="$ADD --client-id $DIRECTOR_CLIENT_ID --callback-port 3118"
+  line "🎬 مشاهد مولّدة بلا مفتاح: اربطني بعيون المخرج — اسأل المستخدم، ولو وافق شغّل: $ADD"
 fi
 
 if [ ${#MISS[@]} -eq 0 ]; then

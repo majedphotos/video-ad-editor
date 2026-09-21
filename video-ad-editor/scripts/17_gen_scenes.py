@@ -75,18 +75,35 @@ def frames_of(work, k):
     while os.path.exists(os.path.join(g, "%s_%04d.jpg" % (k, n + 1))): n += 1
     return n
 
-def to_frames(work, k, mp4):
-    """مقطع → فريمات 30/ث بـgen/<k>_%04d.jpg. أمر واحد يستخدمه fetch وplace عشان ما يفترقان."""
+def drop_frames(work, k):
     g = os.path.join(work, "gen")
     for old in glob.glob(os.path.join(g, "%s_[0-9][0-9][0-9][0-9].jpg" % glob.escape(k))): os.remove(old)
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vf", "fps=30", "-q:v", "3", os.path.join(g, k + "_%04d.jpg")], check=True)
+
+def to_frames(work, k, mp4):
+    """مقطع → فريمات 30/ث بـgen/<k>_%04d.jpg. أمر واحد يستخدمه fetch وplace عشان ما يفترقان.
+    فشل الاستخراج يمسح الناقص (الفريمات والمقطع) حتى ما يحسب have() أصلاً نص مكتوب إنه جاهز."""
+    drop_frames(work, k)
+    try:
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vf", "fps=30", "-q:v", "3", os.path.join(work, "gen", k + "_%04d.jpg")], check=True)
+    except Exception:
+        drop_frames(work, k)
+        if os.path.exists(mp4): os.remove(mp4)
+        raise
     return frames_of(work, k)
 
 def to_image(work, k, src):
-    """أي صورة (PNG/WebP/JPG) → gen/<k>.jpg بنفس جودة الفريمات"""
+    """أي صورة (PNG/WebP/JPG) → gen/<k>.jpg بنفس جودة الفريمات (والفشل ما يخلّي صورة نص مكتوبة)"""
     jpg = os.path.join(work, "gen", k + ".jpg")
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-q:v", "3", jpg], check=True)
+    try:
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-q:v", "3", jpg], check=True)
+    except Exception:
+        if os.path.exists(jpg): os.remove(jpg)
+        raise
     return jpg
+
+def frames_line(st):
+    """genFrames بأسلوب السكربت: «clip: 30 فريم» لا شكل قاموس بايثون"""
+    return " · ".join("%s: %d فريم" % (k, n) for k, n in st.get("genFrames", {}).items()) or "ما فيه مقاطع"
 
 def write_studio(work, cfg):
     """يكتب scenes/genFrames بـstudio.json (يدمج بلا ما يمسح باقي الإعدادات)"""
@@ -113,9 +130,11 @@ def main():
         write_studio(work, cfg); print("studio.json ← gen:", len(cfg.get("scenes", [])), "مشهد"); return
     if cmd == "place":
         # ناتج جاهز (ولّده كلود بعيون المخرج، أو أي رابط) يدخل مكان الأصل k — بلا مفتاح وبلا نداء أي خدمة من هني.
-        if len(sys.argv) < 5: sys.exit("❌ الاستخدام: 17_gen_scenes.py <work> place <k> <رابط الناتج> [--force]")
-        k, url = sys.argv[3], sys.argv[4]
-        force = "--force" in sys.argv[5:]
+        args = sys.argv[3:]; force = "--force" in args
+        rest = [x for x in args if x != "--force"]          # --force بأي مكان بعد الأمر
+        if len(rest) != 2 or not rest[1].lower().startswith(("https://", "http://", "file://")):
+            sys.exit("❌ الاستخدام: 17_gen_scenes.py <work> place <k> <رابط الناتج: https:// أو file://> [--force]")
+        k, url = rest
         a = next((x for x in assets if x.get("k") == k), None)
         if a is None:
             sys.exit("❌ ما فيه أصل اسمه «%s» بـgen.json — الموجود: %s" % (k, "، ".join(x.get("k", "?") for x in assets) or "لا شيء"))
@@ -134,13 +153,14 @@ def main():
                 mp4 = os.path.join(g, k + ".mp4"); os.replace(tmp, mp4)
                 print("  ✅ %s مقطع → %d فريم (%.0f ث)" % (k, to_frames(work, k, mp4), time.time() - t0))
             else:
-                to_image(work, k, tmp); os.remove(tmp)
+                to_image(work, k, tmp)
                 print("  ✅ %s صورة (%.0f ث)" % (k, time.time() - t0))
         except Exception as e:
-            if os.path.exists(tmp): os.remove(tmp)
             sys.exit("❌ الملف نزل بس ما قدرت أجهّزه لـ«%s»: %s\n   (لازم ffmpeg يقرا الملف — تأكد إن الرابط صورة أو مقطع)" % (k, str(e)[:200]))
+        finally:
+            if os.path.exists(tmp): os.remove(tmp)   # المؤقت ينمسح بالحالتين (المقطع انتقل باسمه أصلاً)
         st = write_studio(work, cfg)
-        print("📝 studio.json ← gen: %d مشهد · genFrames: %s" % (len(st["gen"]), st["genFrames"]))
+        print("📝 studio.json ← gen: %d مشهد · %s" % (len(st["gen"]), frames_line(st)))
         return
     if cmd != "fetch": sys.exit(__doc__)
     key = _key(work)
@@ -173,7 +193,7 @@ def main():
         except Exception as e:
             sys.exit("❌ توقفت عند «%s»: %s" % (k, str(e)[:200]))
     st = write_studio(work, cfg)
-    print("📝 studio.json ← gen: %d مشهد · genFrames: %s" % (len(st["gen"]), st["genFrames"]))
+    print("📝 studio.json ← gen: %d مشهد · %s" % (len(st["gen"]), frames_line(st)))
 
 if __name__ == "__main__":
     main()
