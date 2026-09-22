@@ -37,7 +37,7 @@ has_director(){
   printf '%s\n' "$out" | grep -q "^$DIRECTOR_MCP_NAME: "
 }
 if [ "$1" = "--director-check" ]; then
-  if has_director; then line "✅ عيون المخرج مربوط — ولّد بأدوات director_*"; exit 0; fi
+  if has_director; then line "✅ عيون المخرج مربوط — ولّد بأدوات director_* · مربوط بس ما عندك الأدوات؟ /mcp ← director ← Authenticate، أو أعد تشغيل Claude Code"; exit 0; fi
   # المعرّف لسا ما انصدر؟ نطبع أمر الموقع بلا أعلام — يشتغل بتسجيل العميل الديناميكي
   # (بس الربط ما ينُسب للمهارة). الشكل الكامل بـ--client-id يجي أول ما يُملأ الثابت فوق.
   ADD="claude mcp add --transport http $DIRECTOR_MCP_NAME $DIRECTOR_MCP_URL"

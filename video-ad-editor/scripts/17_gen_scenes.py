@@ -174,7 +174,7 @@ def main():
             else:
                 to_image(work, k, tmp)
                 print("  ✅ %s صورة (%.0f ث)" % (k, time.time() - t0))
-        except BaseException as e:
+        except Exception as e:
             if stage == "dl": sys.exit("❌ ما قدرت أنزّل «%s» من الرابط: %s" % (k, str(e)[:200]))
             sys.exit("❌ الملف نزل بس ما قدرت أجهّزه لـ«%s»: %s\n   (لازم ffmpeg يقرا الملف — تأكد إن الرابط صورة أو مقطع)" % (k, str(e)[:200]))
         finally:
