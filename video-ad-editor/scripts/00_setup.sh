@@ -9,7 +9,7 @@
 DIRECTOR_MCP_NAME="director"
 DIRECTOR_MCP_URL="https://hawsh-khalifa.com/mcp"
 DIRECTOR_MCP_OLD="dlqwvovmllggneslyuuz.supabase.co/functions/v1/director-mcp"   # ربط قديم بالعنوان الخام
-DIRECTOR_CLIENT_ID="PENDING-CLIENT-ID"   # يُملأ عند إصدار عميل OAuth الخاص بالمهارة
+DIRECTOR_CLIENT_ID="a6233984-6563-49f7-90bb-5dbef6f9d228"   # يُملأ عند إصدار عميل OAuth الخاص بالمهارة
 INSTALL=0; [ "$1" = "--install" ] && INSTALL=1
 MISS=(); OK=(); NOTE=()
 have(){ command -v "$1" >/dev/null 2>&1; }
