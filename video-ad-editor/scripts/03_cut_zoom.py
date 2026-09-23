@@ -71,6 +71,12 @@ def _hdr_to_sdr(src):
         if r.returncode!=0 or not os.path.exists(out): print("⚠️ فشل التحويل — أكمل بالأصل"); return src
     return out
 SRC=_hdr_to_sdr(SRC)
-sys.exit(subprocess.call(["ffmpeg","-v","error","-stats","-i",SRC,"-filter_complex",";".join(fc),
+_OUT=os.path.join(W,"cutz.mp4")
+print(f"✂️  أقص وأركّب {len(k)} مقطعاً… (بلا عدّاد — سطر واحد بالنهاية)", flush=True)
+_rc=subprocess.call(["ffmpeg","-v","error","-nostats","-i",SRC,"-filter_complex",";".join(fc),
  "-map","[vo]","-map","[ao]","-c:v","libx264","-preset","medium","-crf","16",
- "-c:a","aac","-b:a","192k","-movflags","+faststart","-y",os.path.join(W,"cutz.mp4")]))
+ "-c:a","aac","-b:a","192k","-movflags","+faststart","-y",_OUT])
+if _rc==0:
+    _d=subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",_OUT],capture_output=True,text=True).stdout.strip()
+    print(f"✅ cutz.mp4 — {float(_d or 0):.2f} ث · {len(k)} مقطع")
+sys.exit(_rc)

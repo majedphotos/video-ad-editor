@@ -22,7 +22,7 @@ if [ -z "$MUS" ]; then for n in bg-audio bg sound music; do for e in mp3 m4a wav
 MIX="$W/.master-mix.wav"; NRM="$W/.master-norm.wav"
 if [ -n "$MUS" ]; then
   echo "🔊 خلفية صوتية: $(basename "$MUS")  (مستوى $G · تنخفض وقت الكلام)"
-  ffmpeg -v error -stats -i "$IN" -stream_loop -1 -i "$MUS" -filter_complex \
+  ffmpeg -v error -nostats -i "$IN" -stream_loop -1 -i "$MUS" -filter_complex \
    "[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,asplit=2[v0][sc];\
     [1:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=$G,atrim=0:$DUR,asetpts=N/SR/TB,\
     afade=t=in:st=0:d=1.0,afade=t=out:st=$FO:d=1.4[m];\
@@ -40,7 +40,7 @@ else
   M=$(ffmpeg -hide_banner -nostats -v info -i "$MIX" -af "loudnorm=I=$I:TP=-1.5:LRA=11:print_format=json" -f null - 2>&1 | \
       "$PY" -c "import sys,json,re;s=sys.stdin.read();m=re.findall(r'\{[^{}]*input_i[^{}]*\}',s,re.S);print(json.dumps(json.loads(m[-1])) if m else '')")
   if [ -z "$M" ]; then echo "⚠️  ما قدرت أقيس — معايرة بمرور واحد";
-    ffmpeg -v error -stats -i "$MIX" -af "loudnorm=I=$I:TP=-1.5:LRA=11" -ar 48000 -y "$NRM"
+    ffmpeg -v error -nostats -i "$MIX" -af "loudnorm=I=$I:TP=-1.5:LRA=11" -ar 48000 -y "$NRM"
   else
     read -r II TP LRA TH < <("$PY" -c "
 import json,sys;d=json.loads('''$M''');print(d['input_i'],d['input_tp'],d['input_lra'],d['input_thresh'])")
@@ -50,16 +50,15 @@ import json,sys;d=json.loads('''$M''');print(d['input_i'],d['input_tp'],d['input
       cp "$MIX" "$NRM"
     else
       echo "   قبل: $II LUFS → بعد: $I LUFS"
-      ffmpeg -v error -stats -i "$MIX" -af \
+      ffmpeg -v error -nostats -i "$MIX" -af \
        "loudnorm=I=$I:TP=-1.5:LRA=11:measured_I=$II:measured_TP=$TP:measured_LRA=$LRA:measured_thresh=$TH:linear=true" \
        -ar 48000 -y "$NRM"
     fi
   fi
 fi
 
-ffmpeg -v error -stats -i "$IN" -i "$NRM" -map 0:v:0 -map 1:a:0 -c:v copy \
+ffmpeg -v error -nostats -i "$IN" -i "$NRM" -map 0:v:0 -map 1:a:0 -c:v copy \
   -c:a aac -b:a 192k -ar 48000 -movflags +faststart -y "$OUT"
 rm -f "$MIX" "$NRM"
-echo "✅ $OUT"
-ffmpeg -hide_banner -nostats -v info -i "$OUT" -af "loudnorm=I=$I:TP=-1.5:print_format=summary" -f null - 2>&1 | grep -E "Input Integrated|Input True Peak" || true
-ffprobe -v error -show_entries format=duration,size -of default=nw=1 "$OUT"
+LU=$(ffmpeg -hide_banner -nostats -v info -i "$OUT" -af "loudnorm=I=$I:TP=-1.5:print_format=summary" -f null - 2>&1 | awk '/Input Integrated/{i=$3}/Input True Peak/{p=$4}END{print i" LUFS · ذروة "p}' || true)
+echo "✅ $OUT  — $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT" | awk '{printf "%.2f ث", $1}') · $LU"

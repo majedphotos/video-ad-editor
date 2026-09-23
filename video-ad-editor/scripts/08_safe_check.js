@@ -1,11 +1,12 @@
 /* ═══ فحص المنطقة الآمنة + الهوك ═══
    node 08_safe_check.js <workdir>            → يفحص ويطبع النتيجة
-   node 08_safe_check.js <workdir> --shot     → يطلّع كمان safe.jpg (اللقطة الأسوأ وفوقها المناطق بالأحمر)
+   node 08_safe_check.js <workdir> --shot     → لو الفحص فشل: يطلّع كمان safe.jpg بعرض 540 (اللقطة الأسوأ وفوقها المناطق بالأحمر)
 
    ليش: انستقرام يغطي أسفل الريل بالكابشن والصوت وأزرار الحساب، ويمينه بأزرار اللايك والمشاركة.
    أي نص يدخل هالمناطق ينختفي على المشاهد وأنت ما تشوفه بالمعاينة.
 
-   شلون: نرسم الشريحة نفسها بس نبدّل صورة الفيديو بلون مسطّح — فكل ما تبقّى = رسمك أنت.
+   شلون: نرسم الشريحة نفسها بس نبدّل صورة الفيديو (ولقطات البي-رول والصور المولّدة) بلون مسطّح — فكل ما تبقّى = رسمك أنت.
+   نفس حمولة init اللي يستخدمها 04_render_frames.js (theme + studio.json + behind.json + outro) — فاللي تفحصه = اللي ينرسم.
    نعدّ بكسلات رسمك داخل كل منطقة خطرة.
    الحدود تتعدّل بملف <work>/safe.json إذا احتجت.                                             */
 const path=require('path'), fs=require('fs');
@@ -14,6 +15,8 @@ const SHOT=process.argv.includes('--shot');
 const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));
 const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.json','utf8')):{};
 const caps=JSON.parse(fs.readFileSync(W+'caps.json','utf8'));
+const BEHIND=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):null;
+const STUDIO=fs.existsSync(W+'studio.json')?JSON.parse(fs.readFileSync(W+'studio.json','utf8')):null;
 const FPS=30, OUT_D=CFG.outro, DUR=caps.total+OUT_D;
 
 /* المناطق الخطرة — نسبة الحبر المسموحة داخل كل وحدة */
@@ -81,14 +84,18 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   const b=await puppeteer.launch({executablePath:CHROME,headless:'new',
     args:['--no-sandbox','--allow-file-access-from-files','--font-render-hinting=none','--force-color-profile=srgb']});
   const p=await b.newPage();
-  p.on('pageerror',e=>console.log('PAGEERR',e.message));
+  const _seen=new Set(), perr=m=>{ if(_seen.has(m)) return; _seen.add(m); process.stderr.write('[compose] '+m+'\n'); };
+  p.on('pageerror',e=>perr('PAGEERR '+e.message));
+  p.on('console',m=>{ if(m.type()==='error') perr(m.text()); });
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
   await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
   const FF=THEME.font||'Cairo';
   await p.evaluate(()=>new Promise(r=>{const l=document.getElementById('LOGO');
     if(!l||l.complete)return r(); l.onload=r; l.onerror=r; setTimeout(r,3000);}));
-  await p.evaluate((c,o,t)=>window.init({cards:c.cards,total:c.total,outro:o,theme:t}),caps,OUT_D,THEME);
+  /* نفس حمولة 04 — بدون studio يرسم المحرّك تخطيطاً غير اللي بالفيديو وتفوت الملصقات والبي-رول.
+     صورة الشخص المقصوص (setPerson) ما نحطها: بكسلاته ثابتة بين اللونين فتنحسب «رسماً» غلط. */
+  await p.evaluate((c,o,t,b,st)=>window.init({cards:c.cards,total:c.total,outro:o,theme:t,behind:b,studio:st}),caps,OUT_D,THEME,BEHIND,STUDIO);
   /* ⚠️ بعد init لا قبلها — الخط اللي مو Cairo يُحقن داخل init (نفس علّة 04) */
   await p.evaluate(async f=>{
     const W=['400','600','700','800','900'];
@@ -108,15 +115,23 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     const hx=h=>{h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
     const B=hx(bg||"#F3EFEA"), W=1080, H=1920, EDGE=24;   /* هامش حافة الكادر — تداخل حواف الصورة يعطي إنذاراً كاذباً */
     const out=zones.map(z=>({k:z.k,hard:z.hard,max:z.max,worst:0,at:0}));
-    let skipped=0;
+    let novid=0;
+    /* لقطات البي-رول والصور المولّدة صور بعد — نبدّلها بنفس اللونين، وإلا تنحسب رسماً وتغطي الشاشة كلها */
+    const mk=src=>{const im=new Image(); im.src=src; return im.decode().then(()=>im);};
+    const IA=await mk(FA), IB=await mk(FB);
+    const pools=[]; try{ if(typeof BR!=='undefined') for(const k in BR) pools.push(BR[k]); }catch(e){}
+    try{ if(typeof GENI!=='undefined') for(const k in GENI) pools.push(GENI[k]); }catch(e){}
+    const orig=pools.map(o=>o.imgs);
+    const swap=im=>pools.forEach((o,j)=>{ o.imgs=orig[j].map(()=>im); });
     const near=(v,a,d)=>Math.abs(v-a)<d;
     for(const t of times){
-      await window.setFrame(FA); window.draw(t); const A=X.getImageData(0,0,W,H).data;
-      await window.setFrame(FB); window.draw(t); const C=X.getImageData(0,0,W,H).data;
-      // لقطة ما تغيّرت بين اللونين = القياس غير صالح (الفيديو ما انرسم) — نتخطّاها
+      await window.setFrame(FA); swap(IA); window.draw(t); const A=X.getImageData(0,0,W,H).data;
+      await window.setFrame(FB); swap(IB); window.draw(t); const C=X.getImageData(0,0,W,H).data;
+      /* لقطة ما تغيّرت بين اللونين = الفيديو ما انرسم (شرح كامل R_OFF أو كرت النهاية) — ما نتخطّاها:
+         تنقاس بلا قناع الفيديو، فكل بكسل غير الخلفية = رسمك. */
       let moved=0;
-      for(let i=0;i<A.length;i+=4){ if(Math.abs(A[i]-C[i])>25){moved++;} }
-      if(moved/(W*H) < 0.05){ skipped++; continue; }
+      for(let i=0;i<A.length;i+=16){ if(Math.abs(A[i]-C[i])>25){moved++;} }
+      const vid=moved/(W*H/4) >= 0.05; if(!vid) novid++;
       // حدود كرت الفيديو (إطاره وظله) مو نصاً — نتجاهل شريطاً حولها
       let R=null; try{ R=window.vrect?window.vrect(t):null; }catch(e){}
       const onEdge=(x,y)=>{
@@ -134,7 +149,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
             const i=row+x*4;
             if(onEdge(x,y)) continue;
             // تغيّر بين اللونين = الفيديو نفسه، مو رسمك
-            if(Math.abs(A[i]-C[i])>25||Math.abs(A[i+1]-C[i+1])>25||Math.abs(A[i+2]-C[i+2])>25) continue;
+            if(vid&&(Math.abs(A[i]-C[i])>25||Math.abs(A[i+1]-C[i+1])>25||Math.abs(A[i+2]-C[i+2])>25)) continue;
             const r=A[i],g=A[i+1],b=A[i+2];
             // خلفية أو ظلّ خفيف فوقها (ظلال الكروت مو نصاً — لا تُحسب)
             if(Math.abs(r-B[0])<=50&&Math.abs(g-B[1])<=50&&Math.abs(b-B[2])<=50) continue;
@@ -146,16 +161,17 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
         if(f>out[zi].worst){out[zi].worst=f;out[zi].at=t;}
       });
     }
-    return {out, skipped};
+    pools.forEach((o,j)=>{ o.imgs=orig[j]; });   // رجّع الصور الأصلية (للقطة --shot)
+    return {out, novid};
   },times,SAFE.zones,THEME.bg||'#F3EFEA',FLAT_A,FLAT_B);
-  const skipped=res.skipped||0; const zones=res.out||res;
+  const novid=res.novid||0; const zones=res.out||res;
 
   /* ── 3) التقرير ── */
   const pct=x=>(x*100).toFixed(2)+'٪';
   console.log('— الهوك —');
   console.log(hookOK?`✅ أول كابشن عند ${hook.toFixed(2)} ثانية`
     :`❌ أول كابشن عند ${hook.toFixed(2)} ثانية — متأخر. لازم قبل ${SAFE.hook_max} (نصف المشاهدين ينزلون بأول ثانية)`);
-  console.log('— المنطقة الآمنة (عيّنة '+(times.length-skipped)+' لقطة'+(skipped?' · '+skipped+' متخطّاة':'')+') —');
+  console.log('— المنطقة الآمنة (عيّنة '+times.length+' لقطة'+(novid?' · منها '+novid+' بلا فيديو (شرح كامل/كرت النهاية) انقاست بلا قناع':'')+') —');
   let bad=[];
   for(const z of zones){
     const ok=z.worst<=z.max;
@@ -164,7 +180,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   }
   const worst=zones.slice().sort((a,b)=>(b.worst/b.max)-(a.worst/a.max))[0];
 
-  if(SHOT&&worst){        /* لقطة حقيقية وفوقها المناطق بالأحمر */
+  if(SHOT&&worst&&bad.length){        /* لقطة حقيقية وفوقها المناطق بالأحمر — بس لو فيه فشل، وبعرض 540 */
     if(fs.existsSync(W+'vfr')){
       const NVF=fs.readdirSync(W+'vfr').filter(f=>f.endsWith('.jpg')).length;
       const i=Math.min(NVF,Math.max(1,Math.round(worst.at*FPS)+1));
@@ -179,11 +195,13 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
         X.strokeStyle='rgba(255,0,60,0.9)'; X.lineWidth=4; X.strokeRect(z.x,z.y,z.w,z.h);
       }
       X.restore();
-      return document.getElementById('cv').toDataURL('image/jpeg',0.9);
+      const sm=document.createElement('canvas'); sm.width=540; sm.height=960;
+      sm.getContext('2d').drawImage(document.getElementById('cv'),0,0,540,960);
+      return sm.toDataURL('image/jpeg',0.85);
     },worst.at,SAFE.zones);
     fs.writeFileSync(W+'safe.jpg',Buffer.from(d.split(',')[1],'base64'));
-    console.log('🖼  '+W+'safe.jpg — اللقطة عند '+worst.at.toFixed(2)+'ث والمناطق الحمراء يغطيها انستقرام');
-  }
+    console.log('🖼  '+W+'safe.jpg (540 عرض) — اللقطة عند '+worst.at.toFixed(2)+'ث والمناطق الحمراء يغطيها انستقرام');
+  }else if(SHOT) console.log('ℹ️  ما فيه فشل — ما طلّعت safe.jpg');
   await b.close();
 
   if(bad.length||!hookOK){ console.log('\n❌ لا تسلّم قبل الإصلاح: ارفع العنصر فوق الحزام أو صغّره.'); process.exit(3); }

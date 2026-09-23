@@ -3,7 +3,7 @@
 
   python3 12_montage.py <work> scan <مجلد_المقاطع> [--shot 1.5] [--fps 4]
   python3 12_montage.py <work> show
-  python3 12_montage.py <work> sheet [out.jpg] [--cols 6]
+  python3 12_montage.py <work> sheet [out.jpg] [--cols 4]
   python3 12_montage.py <work> drop 3 7      |  keep 1 2 5   |  undo
   python3 12_montage.py <work> plan [--dur 30] [--shot 1.5] [--bpm 0] [--order energy|best|folder]
   python3 12_montage.py <work> build [out.mp4] [--ar 9:16] [--xfade 0] [--amb 0] [--zoom 1]
@@ -331,15 +331,15 @@ def _font(px):
 def cmd_sheet(W, args):
     d = load(W)
     out = args[0] if args and not args[0].startswith("--") else os.path.join(W, "montage-sheet.jpg")
-    cols = int(flag(args, "--cols", 6))
+    cols = int(flag(args, "--cols", 4))
     live = [c for c in d["clips"] if not c.get("skip")]
     if not live:
         die("كل المقاطع مشطوبة.")
     # خلية الورقة تاخذ شكل المقاطع نفسها — بلا فراغ أسود
     ars = sorted((c["w"] / c["h"]) for c in live if c.get("h"))
     ar = ars[len(ars) // 2] if ars else 0.5625
-    CH = 300
-    CW = max(150, min(540, int(round(CH * ar / 2) * 2)))
+    CH = 180
+    CW = max(90, min(540, int(round(CH * ar / 2) * 2)))
     tmp = os.path.join(W, ".msheet")
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(tmp)
@@ -527,7 +527,7 @@ def cmd_build(W, args):
         if amb > 0:
             print("ℹ️  الأجواء متخطّاة (مقطع بلا صوت أو تلاشٍ مفعّل) — مسار صامت.")
 
-    cmd = (["ffmpeg", "-v", "error", "-stats"] + ins
+    cmd = (["ffmpeg", "-v", "error", "-nostats"] + ins
            + ["-filter_complex", ";".join(fc), "-map", "[vo]"] + amap
            + ["-c:v", "libx264", "-preset", "slow", "-crf", "20", "-maxrate", "8M",
               "-bufsize", "16M", "-profile:v", "high", "-level", "4.0",
@@ -540,9 +540,9 @@ def cmd_build(W, args):
     r = subprocess.run(cmd)
     if r.returncode:
         die("فشل التركيب.")
-    print(f"✅ {out}")
-    print(run(["ffprobe", "-v", "error", "-show_entries", "format=duration,size",
-               "-show_entries", "stream=width,height", "-of", "default=nw=1", out]).stdout.strip())
+    pr = run(["ffprobe", "-v", "error", "-show_entries", "format=duration,size",
+              "-of", "default=nw=1:nk=1", out]).stdout.split()
+    print(f"✅ {out}  — " + (f"{float(pr[0]):.2f} ث · {int(pr[1])/1048576:.1f} ميقا" if len(pr) >= 2 else ""))
     print(f"↩︎ بعدها: bash scripts/06b_master.sh {W} {out} "
           f"{os.path.join(W, 'montage-master.mp4')}")
 

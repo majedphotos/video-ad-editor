@@ -21,7 +21,7 @@ python3 scripts/12_montage.py <work> scan <مجلد_المقاطع> --shot 1.5
 
 ### 2) وريه اللقطات — ورقة وحدة مرقّمة
 ```bash
-python3 scripts/12_montage.py <work> sheet --cols 6
+python3 scripts/12_montage.py <work> sheet          # 4 أعمدة · ارتفاع اللقطة 180
 ```
 كل لقطة عليها رقم مقطعها. **اقرأ الورقة وحدة — لا تقرأ الصور فرادى.**
 واعرضها عليه: «هذي أحلى لحظة بكل مقطع — شنو تبي أشيل؟»
