@@ -1,0 +1,19 @@
+<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة الفيديو</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#111214;color:#F2F0EC;font-family:Cairo,system-ui,sans-serif}.wrap{max-width:520px;margin:0 auto;padding:16px}
+video{width:100%;border-radius:16px;background:#000}h1{font-size:18px;margin:8px 0}.note{color:#8E8B85;font-size:12px}
+input,textarea{width:100%;box-sizing:border-box;background:#1A1B1F;color:#F2F0EC;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;margin-top:8px}
+button{background:#D4AF37;color:#111;border:0;border-radius:10px;padding:10px 16px;font-family:inherit;font-weight:800;margin-top:8px}
+.cm{background:#1A1B1F;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}.cm b{color:#D4AF37;font-family:ui-monospace,monospace;cursor:pointer}</style></head><body><div class="wrap">
+<h1>معاينة الفيديو</h1><video id="v" controls playsinline></video>
+<div class="note">شغّل الفيديو، وقّفه عند اللحظة اللي تبي تعلّق عليها، واكتب تعليقك — الوقت ينحفظ معه.</div>
+<input id="who" placeholder="اسمك"><textarea id="txt" placeholder="تعليقك…"></textarea><button id="send">أرسل التعليق عند <span id="at">00:00</span></button>
+<div id="list"></div></div>
+<script>
+const $=s=>document.querySelector(s); const fmt=t=>{const m=Math.floor(t/60),s=Math.floor(t%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');};
+async function load(){const st=await (await fetch('/api/state')).json(); $('#v').src='/'+(st.final||'cutz.mp4')+'?v='+Date.now(); list(st.comments||[]);}
+function list(cs){$('#list').innerHTML=cs.slice().reverse().map(c=>'<div class="cm"><b data-t="'+(c.t||0)+'">'+fmt(c.t||0)+'</b> · '+c.who+': '+c.text+'<div class="note">'+c.at+'</div></div>').join('');$('#list').querySelectorAll('b').forEach(b=>b.onclick=()=>{$('#v').currentTime=+b.dataset.t;$('#v').play();});}
+$('#v').addEventListener('timeupdate',()=>$('#at').textContent=fmt($('#v').currentTime));
+$('#send').onclick=async()=>{const text=$('#txt').value.trim(); if(!text)return; await fetch('/api/comment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:+$('#v').currentTime.toFixed(2),who:$('#who').value.trim()||'عميل',text})}); $('#txt').value=''; list(await (await fetch('/api/comments')).json());};
+load();
+</script></body></html>

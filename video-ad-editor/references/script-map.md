@@ -27,6 +27,7 @@
 | `17_gen_scenes.py` | مشاهد مولّدة (`references/gen-scenes.md`) | الخفيف |
 | `compose.REFERENCE.html` | المحرّك: الفيديو · الكابشن · ورا الراس · بي-رول · مولّد · ملصقات · كرت النهاية | الخفيف |
 | `compose.EXAMPLES.js` | مشاهد المثال القديم للقراءة — **ما يتحمّل افتراضياً** | — |
+| `studio/studio.py` | الاستوديو — تايملاين باللمس فوق نفس الملفات والراسم (`references/studio.md`) | الخفيف |
 
 ## ملفات مجلد الشغل
 `src.mov` · `a.json` (وِسبر) · `fixes.json` · `cut.json` · `caps.json` · `theme.json` · `studio.json` · `sfx.json` · `behind.json` · `safe.json` (اختياري) · `vfr/` (فريمات المصدر) · `out/` (فريمات الرسم) · `prev/` (معاينة) · `ad-final.mp4` · `ad-master.mp4/.srt/.txt`.
