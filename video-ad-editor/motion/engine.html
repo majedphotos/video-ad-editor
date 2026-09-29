@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<title>Motion Engine</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- شرح بالموشن — محرّك الأفلام الموشن (2D + 3D). يُفتح عبر: node render.js <proj> serve -->
+<script type="importmap">
+{ "imports": {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<style>
+  html,body{margin:0;background:#111;overflow:hidden}
+  body.render canvas#out{position:fixed;left:0;top:0}
+  body.player{display:flex;flex-direction:column;align-items:center;height:100vh;color:#ddd;font:13px system-ui}
+  body.player canvas#out{height:calc(100vh - 56px);width:auto;background:#000;box-shadow:0 0 0 1px #333}
+  #bar{display:none;gap:10px;align-items:center;padding:10px;width:min(640px,96vw)}
+  body.player #bar{display:flex}
+  #bar input[type=range]{flex:1}
+  #err{position:fixed;left:8px;top:8px;right:8px;color:#fff;background:#b00;padding:8px;font:12px monospace;white-space:pre-wrap;display:none;z-index:9}
+</style>
+</head>
+<body>
+<canvas id="out"></canvas>
+<div id="bar"><button id="play">▶</button><input id="scrub" type="range" min="0" max="1" step="0.001" value="0"><span id="tc">0.00</span></div>
+<div id="err"></div>
+<script src="../scripts/motion-kit.js" onerror="console.warn('motion-kit.js not found')"></script>
+<script type="module" src="./engine.js"></script>
+</body>
+</html>

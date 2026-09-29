@@ -90,16 +90,19 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
   await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
+  /* 🪝 الهوك: نفس تركيب 04_render_frames.js — لو compose.html ما فيه hook-card.js والثيم فيه hook، نركّبه عشان نفحص اللي ينرسم فعلاً */
+  if(THEME.hook&&!(await p.evaluate(()=>!!window.HookCard))){ const hc=[path.join(__dirname,'hook-card.js'),W+'hook-card.js'].find(f=>fs.existsSync(f)); if(hc) await p.addScriptTag({path:hc}); }
   const FF=THEME.font||'Cairo';
   await p.evaluate(()=>new Promise(r=>{const l=document.getElementById('LOGO');
     if(!l||l.complete)return r(); l.onload=r; l.onerror=r; setTimeout(r,3000);}));
   /* نفس حمولة 04 — بدون studio يرسم المحرّك تخطيطاً غير اللي بالفيديو وتفوت الملصقات والبي-رول.
-     صورة الشخص المقصوص (setPerson) ما نحطها: بكسلاته ثابتة بين اللونين فتنحسب «رسماً» غلط. */
+     صورة الشخص المقصوص الحقيقية ما نحطها (بكسلاته ثابتة بين اللونين فتنحسب «رسماً» غلط) — نحط بدالها صورة شفافة
+     بمدى behind.json، عشان «ورا الراس/طبقات» ينرسمون وينفحصون (قبل 28 سبتمبر كانوا مخفيين عن الفحص). */
   await p.evaluate((c,o,t,b,st)=>window.init({cards:c.cards,total:c.total,outro:o,theme:t,behind:b,studio:st}),caps,OUT_D,THEME,BEHIND,STUDIO);
   /* ⚠️ بعد init لا قبلها — الخط اللي مو Cairo يُحقن داخل init (نفس علّة 04) */
   await p.evaluate(async f=>{
     const W=['400','600','700','800','900'];
-    await Promise.all(W.map(w=>document.fonts.load(w+' 60px '+f)));
+    await Promise.all(W.map(w=>document.fonts.load(w+' 60px '+f,'عربي ـ 123')));   /* نص عربي إلزامي — بدونه ينزل الجزء اللاتيني بس */
     await document.fonts.ready;
   },FF);
 
@@ -110,7 +113,10 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   for(let t=caps.total;t<DUR;t+=0.3) T.add(+t.toFixed(2));
   const times=[...T].filter(t=>t>=0&&t<DUR).sort((a,b)=>a-b);
 
-  const res=await p.evaluate(async(times,zones,bg,FA,FB)=>{
+  const res=await p.evaluate(async(times,zones,bg,FA,FB,BH)=>{
+    const CLEAR='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    const person=async t=>{ if(!BH||!window.setPerson) return; const i=Math.round(t*30)+1;
+      const inR=(BH.ranges||[]).some(r=>i>=r[0]&&i<=r[1]); await window.setPerson(inR?CLEAR:null,(BH.faces&&BH.faces[i])||null); };
     const cv=document.getElementById('cv'), X=cv.getContext('2d',{willReadFrequently:true});
     const hx=h=>{h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
     const B=hx(bg||"#F3EFEA"), W=1080, H=1920, EDGE=24;   /* هامش حافة الكادر — تداخل حواف الصورة يعطي إنذاراً كاذباً */
@@ -125,6 +131,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     const swap=im=>pools.forEach((o,j)=>{ o.imgs=orig[j].map(()=>im); });
     const near=(v,a,d)=>Math.abs(v-a)<d;
     for(const t of times){
+      await person(t);
       await window.setFrame(FA); swap(IA); window.draw(t); const A=X.getImageData(0,0,W,H).data;
       await window.setFrame(FB); swap(IB); window.draw(t); const C=X.getImageData(0,0,W,H).data;
       /* لقطة ما تغيّرت بين اللونين = الفيديو ما انرسم (شرح كامل R_OFF أو كرت النهاية) — ما نتخطّاها:
@@ -163,7 +170,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     }
     pools.forEach((o,j)=>{ o.imgs=orig[j]; });   // رجّع الصور الأصلية (للقطة --shot)
     return {out, novid};
-  },times,SAFE.zones,THEME.bg||'#F3EFEA',FLAT_A,FLAT_B);
+  },times,SAFE.zones,THEME.bg||'#F3EFEA',FLAT_A,FLAT_B,BEHIND?{ranges:BEHIND.ranges,faces:BEHIND.faces}:null);
   const novid=res.novid||0; const zones=res.out||res;
 
   /* ── 3) التقرير ── */
@@ -186,7 +193,9 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
       const i=Math.min(NVF,Math.max(1,Math.round(worst.at*FPS)+1));
       await p.evaluate(s=>window.setFrame(s),fileURL(W+'vfr/'+String(i).padStart(5,'0')+'.jpg'));
     }else{ await p.evaluate(s=>window.setFrame(s),FLAT_A); }   // بلا فريمات: اللون المسطّح يكفي للمعاينة
-    const d=await p.evaluate((t,zones)=>{
+    const d=await p.evaluate(async(t,zones,BH)=>{
+      if(BH&&window.setPerson){ const i=Math.round(t*30)+1, inR=(BH.ranges||[]).some(r=>i>=r[0]&&i<=r[1]);
+        await window.setPerson(inR?'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=':null,(BH.faces&&BH.faces[i])||null); }
       window.draw(t);
       const X=document.getElementById('cv').getContext('2d');
       X.save();
@@ -198,12 +207,13 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
       const sm=document.createElement('canvas'); sm.width=540; sm.height=960;
       sm.getContext('2d').drawImage(document.getElementById('cv'),0,0,540,960);
       return sm.toDataURL('image/jpeg',0.85);
-    },worst.at,SAFE.zones);
+    },worst.at,SAFE.zones,BEHIND?{ranges:BEHIND.ranges,faces:BEHIND.faces}:null);
     fs.writeFileSync(W+'safe.jpg',Buffer.from(d.split(',')[1],'base64'));
     console.log('🖼  '+W+'safe.jpg (540 عرض) — اللقطة عند '+worst.at.toFixed(2)+'ث والمناطق الحمراء يغطيها انستقرام');
   }else if(SHOT) console.log('ℹ️  ما فيه فشل — ما طلّعت safe.jpg');
-  await b.close();
+  await Promise.race([b.close(),new Promise(r=>setTimeout(r,5000))]);   /* v3.5: كروم أحياناً ما يقفل فيعلق الفحص بعد ما ينجح */
 
   if(bad.length||!hookOK){ console.log('\n❌ لا تسلّم قبل الإصلاح: ارفع العنصر فوق الحزام أو صغّره.'); process.exit(3); }
   console.log('\n✅ كل شي داخل المنطقة الآمنة.');
+  setTimeout(()=>process.exit(0),300);
 })();

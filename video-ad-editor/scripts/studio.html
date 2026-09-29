@@ -33,6 +33,7 @@ function init(d){
   const t=d.theme||{};
   BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; CLAY=t.clay||CLAY; MUT=t.mut||MUT;
   FONT=t.font||FONT; HANDLE=t.handle||HANDLE;
+  ONACC=(typeof t.onAcc==='string'&&/^#[0-9A-Fa-f]{6}$/.test(t.onAcc))?t.onAcc:null;
   if(t.logo){const L=document.getElementById('LOGO'); if(L.getAttribute('src')!==t.logo) L.src=t.logo;}
   if(FONT!=='Cairo'){const l=document.createElement('link');l.rel='stylesheet';
     l.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(FONT)+':wght@400;600;700;800;900&display=swap';
@@ -46,7 +47,8 @@ function rgba(hex,a){const c=hx(hex);return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a
 function lum(hex){const c=hx(hex).map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});
   return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
 const cBG=a=>rgba(BG,a), cINK=a=>rgba(INK,a);
-const onACC=()=>lum(ACC)>0.45?INK:'#FFFFFF';
+let ONACC=null;   /* theme.onAcc — لون النص فوق التمييز (صفحة التعارف تكتبه) */
+const onACC=()=>ONACC||(lum(ACC)>0.45?INK:'#FFFFFF');
 const DARK=()=>lum(BG)<0.4;
 
 const cl=(v,a,b)=>Math.max(a,Math.min(b,v));

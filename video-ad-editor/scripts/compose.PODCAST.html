@@ -18,14 +18,15 @@ const spring=k=>1-Math.exp(-6*k)*Math.cos(9*k);
 function hx(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function rgba(hex,a){const c=hx(hex);return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';}
 function lum(hex){const c=hx(hex).map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
-const cBG=a=>rgba(BG,a), cINK=a=>rgba(INK,a), onACC=()=>lum(ACC)>0.45?INK:'#FFFFFF', DARK=()=>lum(BG)<0.4;
+let ONACC=null;   /* theme.onAcc — لون النص فوق التمييز (صفحة التعارف تكتبه) */
+const cBG=a=>rgba(BG,a), cINK=a=>rgba(INK,a), onACC=()=>ONACC||(lum(ACC)>0.45?INK:'#FFFFFF'), DARK=()=>lum(BG)<0.4;
 function rr(x,y,w,h,r){r=Math.min(r,w/2,h/2);X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath();}
 function sh(c,b,y){X.shadowColor=c;X.shadowBlur=b;X.shadowOffsetY=y;X.shadowOffsetX=0;}
 function nsh(){X.shadowColor='transparent';X.shadowBlur=0;X.shadowOffsetY=0;}
 
 window.init=d=>{
   CAPS=d.caps.cards; TOTAL=d.caps.total; SCENES=d.scenes; OUTRO=d.outro||1.8; HEADBOX=d.headbox||{}; FACES=d.faces||{};
-  const t=d.theme||{}; BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; MUT=t.mut||MUT; FONT=t.font||FONT; CAPSTYLE=t.capStyle||CAPSTYLE; SITE=t.site||t.handle||'';
+  const t=d.theme||{}; BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; MUT=t.mut||MUT; FONT=t.font||FONT; CAPSTYLE=t.capStyle||CAPSTYLE; SITE=t.site||t.handle||''; ONACC=(typeof t.onAcc==='string'&&/^#[0-9A-Fa-f]{6}$/.test(t.onAcc))?t.onAcc:null;
   if(t.fontFiles){ for(const f of t.fontFiles){ const ff=new FontFace(FONT,'url('+f.src+')',{weight:String(f.weight||400)}); document.fonts.add(ff); } }
   else if(FONT!=='Cairo'){ const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(FONT)+':wght@400;600;700;800;900&display=swap';document.head.appendChild(l); }
   if(t.logo) LOGO.src=t.logo;

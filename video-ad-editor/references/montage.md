@@ -46,6 +46,10 @@ python3 scripts/12_montage.py <work> plan --dur 30 --shot 1.5
 
 أطوال اللقطات تتغيّر بنمط متكرر (١.٠ · ٠.٨٢ · ١.٢٤ · ٠.٩٤ من `--shot`) عشان ما يصير رتيباً.
 
+🥁 **على نبضات الأغنية الفعلية (أدق من `--bpm`):** `python3 scripts/beat.py <work>/bg-audio.mp3 --out <work>/beats.json`
+ثم `plan … --beats <work>/beats.json [--on beats|accents|onsets]` — كل قطعة على فريم النبضة بالضبط، وبعد `build`
+المؤثرات والانتقالات على الضربات بـ`node scripts/23_beatfx_render.js`. التفاصيل → `references/beat-fx.md`.
+
 ### 5) التركيب
 ```bash
 python3 scripts/12_montage.py <work> build <work>/montage.mp4

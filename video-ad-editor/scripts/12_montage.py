@@ -6,6 +6,7 @@
   python3 12_montage.py <work> sheet [out.jpg] [--cols 4]
   python3 12_montage.py <work> drop 3 7      |  keep 1 2 5   |  undo
   python3 12_montage.py <work> plan [--dur 30] [--shot 1.5] [--bpm 0] [--order energy|best|folder]
+                                   [--beats beats.json [--on beats|accents|onsets]]   ← القطع على نبضات الأغنية الفعلية (beat.py)
   python3 12_montage.py <work> build [out.mp4] [--ar 9:16] [--xfade 0] [--amb 0] [--zoom 1]
 
 الاختيار على المشهد نفسه: وضوح الصورة · حركة بمقدار (لا جمود ولا رجّة) · إضاءة · لون.
@@ -431,11 +432,54 @@ def cmd_plan(W, args):
         seq = [c for c in seq if c["i"] != top]
         seq.insert(0, ranked[0])
 
+    # 🥁 القطع على نبضات حقيقية (beats.json من beat.py) — أدق من --bpm لأن الأغنية تتمايل والنبضة مو شبكة مثالية
+    bj = flag(args, "--beats", "", str)
+    on = flag(args, "--on", "beats", str)
+    cand, accs, FPSR = None, set(), 30
+    if bj:
+        if not os.path.exists(bj):
+            die("ما لقيت ملف النبضات: " + bj + " — شغّل: python3 scripts/beat.py <الأغنية>")
+        B = json.load(open(bj))
+        if on == "onsets":
+            hs = sorted(h for _, h in B.get("onsets", [])) or [0]
+            med = hs[len(hs) // 2]
+            cand = [t for t, h in B.get("onsets", []) if h >= med] + B.get("beats", [])
+        elif on == "accents":
+            cand = B.get("accents", []) + B.get("downbeats", [])
+        else:
+            cand = list(B.get("beats", []))
+        # على شبكة الفريمات: القطع يوقع على فريم بالضبط، والأطوال أعداد فريمات صحيحة (ما يتراكم انزياح)
+        cand = sorted(set(round(t * FPSR) / FPSR for t in cand if t > 0.2))
+        # احتياط: كل النبضات — لو ما فيه مرشح أساسي بالمدى (ضربات قوية متباعدة) ينزل القطع على نبضة عادية مو برا الإيقاع
+        cand2 = sorted(set(round(t * FPSR) / FPSR for t in B.get("beats", []) if t > 0.2))
+        accs = set(round(t * FPSR) for t in B.get("accents", []))
+        P = 60.0 / B["bpm"] if B.get("bpm") else 0.5
+        bpm = B.get("bpm", 0)
+
     plan, tot = [], 0.0
+    offbeat, fell, stretched, short_clips = 0, 0, 0, []
     for k, c in enumerate(seq):
         want = durs[k % len(durs)]
         avail = max(0.35, c["dur"] - 0.20)
         L = min(want, avail)
+        if cand is not None:
+            lo, hi = tot + max(0.3, want * 0.5), tot + min(avail, want * 1.6)
+            opts = [x for x in cand if lo - 1e-6 <= x <= hi + 1e-6]
+            if not opts and on != "beats":   # الضربة القوية الجاية أبعد من 1.6× الطول: نطوّل اللقطة لها لو المقطع يكفي
+                opts = [x for x in cand if lo - 1e-6 <= x <= tot + min(avail, want * 2.5) + 1e-6][:1]
+                if opts:
+                    stretched += 1
+            if not opts and on != "beats":   # ولا تكفي: نبضة عادية
+                opts = [x for x in cand2 if lo - 1e-6 <= x <= hi + 1e-6]
+                if opts:
+                    fell += 1
+            if opts:   # الأقرب للطول المطلوب، والضربة القوية لها أفضلية
+                cut = min(opts, key=lambda x: abs(x - tot - want) - (0.3 * P if round(x * FPSR) in accs else 0))
+            else:
+                cut = round((tot + L) * FPSR) / FPSR
+                offbeat += 1
+                short_clips.append(c["name"])
+            L = round((cut - tot) * FPSR) / FPSR
         mid = (c["pick"][0] + c["pick"][1]) / 2.0
         a = max(0.0, min(mid - L / 2.0, c["dur"] - L))
         plan.append({"i": c["i"], "file": c["file"], "name": c["name"],
@@ -446,6 +490,23 @@ def cmd_plan(W, args):
             break
     d["plan"] = plan
     d["shot"] = shot
+    if cand is not None:   # أوقات القطع — 23_beatfx_render.js يحط الانتقالات عليها
+        acc_t, cuts = 0.0, []
+        for p in plan[:-1]:
+            acc_t += p["dur"]
+            cuts.append(round(acc_t, 3))
+        d["cuts"], d["beats_file"] = cuts, os.path.abspath(bj)
+        if stretched:
+            print(f"ℹ️  {stretched} لقطة طوّلتها لين الضربة القوية الجاية (أطول من --shot {shot}) عشان القطع يبقى على ضربة")
+        if fell:
+            gaps = sorted(b - a for a, b in zip(cand, cand[1:])) or [0]
+            print(f"ℹ️  {fell} قطعة نزلت على نبضة عادية لأن الضربات ({on}) متباعدة ~{gaps[len(gaps) // 2]:.1f} ث "
+                  f"وهذا أطول من --shot {shot}. تبيها كلها على الضربات؟ كبّر --shot لـ{gaps[len(gaps) // 2]:.1f}")
+        if offbeat:
+            print(f"⚠️  {offbeat} قطعة طاحت برا الإيقاع: المقطع أقصر من المسافة لأقرب نبضة ({'، '.join(short_clips[:4])}). "
+                  "شيل هالمقاطع (drop) أو حط مقاطع أطول — القطع هذا ما ياخذ مؤثر انتقال")
+    else:
+        d.pop("cuts", None); d.pop("beats_file", None)
     save(W, d)
     if target and tot < target * 0.92:
         print(f"⚠️  المقاطع ما تكفي {target:.0f} ثانية — طلع {tot:.1f}. "
@@ -473,6 +534,9 @@ def cmd_build(W, args):
         die("المقاس المتاح: " + " · ".join(AR))
     OW, OH = AR[ar]
     xf = flag(args, "--xfade", 0.0)
+    if xf > 0 and d.get("cuts"):
+        print("ℹ️  الخطة على النبضات — التلاشي يزيح القطعات عن النبضة، فوقّفته. الانتقالات تجي من 23_beatfx_render.js")
+        xf = 0.0
     amb = flag(args, "--amb", 0.0)
     zoom = flag(args, "--zoom", 1.0)
     R = 30
@@ -481,7 +545,10 @@ def cmd_build(W, args):
     ev = ":eval=frame" if "eval" in run(["ffmpeg", "-hide_banner", "-h", "filter=crop"]).stdout else ""
     ins, fc, vs, nozoom = [], [], [], 0
     for k, p in enumerate(plan):
-        ins += ["-ss", f"{p['in']:.3f}", "-t", f"{p['dur']:.3f}", "-i", p["file"]]
+        # عدد فريمات صحيح لكل لقطة: -t بثلاث خانات (0.667) كان يطلّع فريماً زايداً (21 بدل 20)
+        # فتتراكم القطعات عن النبضة. نقرأ زيادة بسيطة ونقصّ بعدد الفريمات بالضبط.
+        nf = max(1, int(round(p["dur"] * R)))
+        ins += ["-ss", f"{p['in']:.3f}", "-t", f"{p['dur'] + 0.1:.3f}", "-i", p["file"]]
         # زوم داخلي خفيف — بس إذا كان المصدر أكبر من المخرَج بمراحل.
         # على مصدر بحجم المخرَج القصّ يتحرك بكسلاً كاملاً بالفريم فيبين الزوم متقطّعاً.
         K = 0.055
@@ -491,7 +558,7 @@ def cmd_build(W, args):
             nozoom += 1
         crop = (f"crop=w='iw/(1+{K}*t/{p['dur']:.3f})':h='ih/(1+{K}*t/{p['dur']:.3f})'"
                 f":x='(iw-ow)/2':y='(ih-oh)/2'{ev},") if (zoom and big) else ""
-        fc.append(f"[{k}:v]setpts=PTS-STARTPTS,fps={R},{crop}"
+        fc.append(f"[{k}:v]setpts=PTS-STARTPTS,fps={R},trim=end_frame={nf},setpts=PTS-STARTPTS,{crop}"
                   f"scale={OW}:{OH}:force_original_aspect_ratio=increase:flags=lanczos,"
                   f"crop={OW}:{OH},setsar=1,"
                   f"setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709,"
@@ -501,21 +568,21 @@ def cmd_build(W, args):
     if xf > 0 and len(plan) > 1:
         prev, off = "[v0]", 0.0
         for k in range(1, len(plan)):
-            off += plan[k - 1]["dur"] - xf
+            off += round(plan[k - 1]["dur"] * R) / R - xf
             lbl = f"[x{k}]"
             fc.append(f"{prev}[v{k}]xfade=transition=fade:duration={xf:.3f}:offset={off:.3f}{lbl}")
             prev = lbl
         fc.append(f"{prev}null[vo]")
-        total = sum(p["dur"] for p in plan) - xf * (len(plan) - 1)
+        total = sum(round(p["dur"] * R) / R for p in plan) - xf * (len(plan) - 1)
     else:
         fc.append("".join(vs) + f"concat=n={len(plan)}:v=1:a=0[vo]")
-        total = sum(p["dur"] for p in plan)
+        total = sum(round(p["dur"] * R) / R for p in plan)
 
     # الصوت: أجواء المقاطع إن طُلبت وكلها فيها صوت، وإلا مسار صامت (يلزمه 06b_master)
     use_amb = amb > 0 and all(p.get("audio") for p in plan) and xf <= 0
     if use_amb:
         for k, p in enumerate(plan):
-            fc.append(f"[{k}:a]asetpts=PTS-STARTPTS,aresample=48000,"
+            fc.append(f"[{k}:a]atrim=0:{round(p['dur'] * R) / R:.4f},asetpts=PTS-STARTPTS,aresample=48000,"
                       f"aformat=sample_fmts=fltp:channel_layouts=stereo,"
                       f"afade=t=in:st=0:d=0.05,afade=t=out:st={max(0,p['dur']-0.08):.3f}:d=0.08[a{k}]")
         fc.append("".join(f"[a{k}]" for k in range(len(plan))) + f"concat=n={len(plan)}:v=0:a=1[ac]")

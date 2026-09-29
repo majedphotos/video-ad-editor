@@ -252,7 +252,9 @@ def plan(W):
         print("المشاهد: 1 — تسجيل الشاشة فوق والشخص تحت طول الفيديو"); return P
     QW=("هل","ليش","ليه","شنو","شلون","كيف","وش","متى","وين","لماذا","ماذا","من","كم","هو","هي")
     quote=None
+    hk=theme.get("hook"); hk_end=(float(hk.get("dur",2.4))+0.4) if isinstance(hk,dict) and hk.get("text") else 0.0   # 🪝 v3.8.1: السؤال الكبير ما ينحط تحت الهوك المكتوب
     for u in units:
+        if u["s"]<hk_end: continue
         ws=cards[u["i"]]["w"]; txt=" ".join(w["t"] for w in ws)
         qi=next((k for k,w in enumerate(ws) if w["t"] in QW),None)
         if qi is None and not txt.endswith("؟"): continue

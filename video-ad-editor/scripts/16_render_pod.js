@@ -22,6 +22,7 @@ function pupp(){ for(const p of [process.env.PUPPETEER_PATH,'puppeteer-core','pu
   const p=await b.newPage(); p.on('pageerror',e=>console.log('PAGEERR',e.message));
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1}); await p.setCacheEnabled(false);
   await p.goto(url(SC+'compose.PODCAST.html'),{waitUntil:'networkidle0'});
+  if(theme.hook) await p.addScriptTag({path:SC+'hook-card.js'});   /* 🪝 v3.8: الهوك المكتوب أول الريل (theme.json ← hook — يكتبه 22_hook.py) */
   await p.evaluate((c,s,o,t,h,f)=>window.init({caps:c,scenes:s,outro:o,theme:t,headbox:h,faces:f}),caps,plan.scenes,OUTRO,theme,behind.headbox||{},faces);
   const FF=theme.font||'Cairo';
   const ok=await p.evaluate(async f=>{ await Promise.all(['400','700'].map(w=>document.fonts.load(w+' 60px '+f))); await document.fonts.ready; return document.fonts.check('700 60px '+f); },FF);

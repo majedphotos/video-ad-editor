@@ -39,20 +39,31 @@ def newt(t,si):
 cards=[]
 for i,seg in enumerate(tr["segments"]):
     ws=seg.get("words",[]); f=FIX[i]
-    if len(ws)!=len(f):
-        sys.exit(f"❌ الجملة {i}: وِسبر {len(ws)} كلمة، fixes.json {len(f)} — لازم يتساوون")
-    si=seg_of((ws[0]["start"]+ws[-1]["end"])/2)
+    if not ws: continue
+    # 🆕 v3.5 (حلقة ← ريلات): "seg" = رقم القطعة بـcut.json — لازم لما الهوك مأخوذ من وسط الجواب (القطع متداخلة بالوقت
+    #    وأقرب قطعة تطلع غلط، فكابشن الجواب ينحط فوق الهوك). 20_episode_cuts.py يكتبه لحاله.
+    si=seg["seg"] if isinstance(seg.get("seg"),int) else seg_of((ws[0]["start"]+ws[-1]["end"])/2)
+    if isinstance(f,str):
+        # نص بدل قائمة = وِسبر هلوس بهالجملة (كلماته غلط وعددها ما يفيد) → الكلمات الصحيحة تتوزّع على مدة الجملة بنسبة طولها
+        toks=f.split(); s0,e0=ws[0]["start"],ws[-1]["end"]; tot=sum(len(t) for t in toks) or 1; c=0; pairs=[]
+        for t in toks: a0=s0+(e0-s0)*c/tot; c+=len(t); pairs.append((t,a0,s0+(e0-s0)*c/tot))
+    else:
+        if len(ws)!=len(f):
+            sys.exit(f"❌ الجملة {i}: وِسبر {len(ws)} كلمة، fixes.json {len(f)} — لازم يتساوون (أو اكتبها نص وحدة إذا وِسبر هلوس)")
+        pairs=[(txt,w["start"],w["end"]) for w,txt in zip(ws,f) if txt]   # "" = الكلمة تنشال من الكابشن (الصوت يبقى)
+    if not pairs: continue
     o=[]
-    for w,txt in zip(ws,f):
-        s,e=newt(w["start"],si),newt(w["end"],si)
-        if e<=s: e=s+0.12
-        _w={"t":txt,"s":round(s,3),"e":round(e,3),"hot":txt in HOT or txt in FXMAP}
+    for txt,ws0,we0 in pairs:
+        s1,e1=newt(ws0,si),newt(we0,si)
+        if e1<=s1: e1=s1+0.12
+        _w={"t":txt,"s":round(s1,3),"e":round(e1,3),"hot":txt in HOT or txt in FXMAP}
         if txt in FXMAP: _w["fx"]=FXMAP[txt]
         o.append(_w)
     a,b=keep[si]
     cs=max(o[0]["s"]-0.10, off[si])
     ce=min(max(x["e"] for x in o)+0.28, off[si]+(b-a))
     cards.append({"s":round(cs,3),"e":round(ce,3),"w":o})
+cards.sort(key=lambda c:c["s"])
 for i in range(len(cards)-1):
     if cards[i]["e"]>cards[i+1]["s"]: cards[i]["e"]=round(cards[i+1]["s"]-0.02,3)
 json.dump({"total":round(acc,3),"cards":cards},open(os.path.join(W,"caps.json"),"w"),ensure_ascii=False,indent=1)

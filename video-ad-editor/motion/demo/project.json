@@ -1,0 +1,75 @@
+{
+ "name": "demo — إثبات المحرّك",
+ "fps": 60,
+ "width": 1080,
+ "height": 1920,
+ "bpm": 120,
+ "beatsPerBar": 4,
+ "beatOffset": 0,
+ "palette": {
+  "bg": "#F0EBE0",
+  "ink": "#1B1A17",
+  "acc": "#D97757",
+  "clay": "#C15F3C",
+  "hi": "#E8A283",
+  "mut": "#8A847A"
+ },
+ "fonts": {
+  "display": "Lalezar",
+  "body": "IBM Plex Sans Arabic",
+  "num": "Inter"
+ },
+ "post": {
+  "grain": 0.05,
+  "vignette": 0
+ },
+ "voice": {
+  "name": "ar-KW-FahedNeural",
+  "rate": "+6%"
+ },
+ "timing": {
+  "snap": "half",
+  "snapTarget": "line",
+  "snapLines": "all",
+  "leadIn": 0.2,
+  "gap": 0.12,
+  "startPad": 0.2,
+  "tail": 0.3
+ },
+ "sections": [
+  {
+   "name": "intro",
+   "at": 0
+  },
+  {
+   "name": "drop",
+   "at": "scene:s2"
+  },
+  {
+   "name": "outro",
+   "at": 2.6
+  }
+ ],
+ "scenes": [
+  {
+   "id": "s1",
+   "file": "scenes/s1_core.js",
+   "lines": [
+    "l1"
+   ],
+   "minDur": 1.4
+  },
+  {
+   "id": "s2",
+   "file": "scenes/s2_faster.js",
+   "lines": [
+    "l2"
+   ],
+   "transition": {
+    "type": "wipe",
+    "dur": 0.36,
+    "dir": "rtl"
+   }
+  }
+ ]
+}

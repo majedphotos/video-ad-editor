@@ -29,6 +29,16 @@ python3 scripts/15_podcast.py make <work>
 ## الثيم
 `theme.json` بمجلد الشغل (أو بمجلد الكاميرات وينسخه) — نفس مفاتيح وضع الكلام + `capStyle: "shadow"` (نص أبيض بظل بلا خلفية، كلمتين-ثلاث، الكلمة المنطوقة بلون التمييز) أو `"card"` · `fontFiles` لخط محلي (`[{src, weight}]`) · `logo` · `site`. **الألوان من الشخص نفسه (الخطوة 1) — ما فيه ثيم افتراضي.** الأرقام غربية دائماً حتى لو الخط يرسمها هندية.
 
+## 🪝 الهوك المكتوب (v3.8.1 — إلزامي لكل ريل)
+كل ريل يبدأ بجملة هوك **مكتوبة** على الشاشة 1.5-3 ث (مو أول جملة قالها — من أقوى سطر بالمقطع)، والمقطع يشتغل تحتها، ثم يطلع ويرجع الكابشن.
+```bash
+python3 scripts/22_hook.py suggest <work>                       # أقوى السطور + الأرقام المسموحة
+python3 scripts/22_hook.py check <work> "هوك 1" "هوك 2" "هوك 3"  # 3-8 كلمات · أداة شد · لهجة · الرقم من كلامه
+python3 scripts/22_hook.py apply <work> "الهوك" [--kicker "اسم البودكاست"] [--style card]
+python3 scripts/22_hook.py preview <work>                       # hook_sheet.jpg — اقراها قبل الرسم الكامل
+```
+`16_render_pod.js` يركّبه وحده لو `theme.json ← hook` موجود — ويحط الهوك على الفاصل بـSPLIT، وفوق على الورقة بـHEAD، ويطفي «السؤال الكبير» وكولاج الكلام وقته. طبّق الهوك **قبل** `plan` عشان السؤال الكبير يختار سؤالاً بعده. القواعد والصيغ: `references/podcast-hook.md`.
+
 ## بعد `make`
 - اقرأ `sheet.jpg` وحدها واعرضها عليه.
 - تعديل مشهد؟ عدّل `plan.json` ثم `node scripts/16_render_pod.js <work> range <من> <إلى>` وأعد التجميع من `make` (يكمّل بلا إعادة القصّ).
@@ -37,4 +47,4 @@ python3 scripts/15_podcast.py make <work>
 - **ملفات المخرج:** `pod-master.mp4` · `pod-master.srt` · `pod-master.txt` · `sheet.jpg`.
 - التسليم: اذكر عدد الكاميرات وفرق المزامنة وأي عطب استُبعد.
 
-الملفات: `15_podcast.py` · `16_render_pod.js` · `compose.PODCAST.html` · `facetrack.swift`.
+الملفات: `15_podcast.py` · `16_render_pod.js` · `compose.PODCAST.html` · `facetrack.swift` · `22_hook.py` + `hook-card.js`.
