@@ -28,12 +28,9 @@
 سكل عربي لـ[Claude Code](https://claude.com/claude-code) يشتغل كله على جهازك.
 
 ## 🎬 شوف النتيجة
-<p align="center">
-  <a href="https://github.com/majedphotos/video-ad-editor/releases/download/v3.8/demo-reel.mp4">
-    <img alt="آخر ريل انتشر — مونتاج كامل بالسكل بلا برنامج مونتاج" src="_pkg/demo.gif" width="300">
-  </a>
-  <br><sub>آخر ريل نشرناه — مونتاج كامل بالسكل. اضغط الصورة تشوف الفيديو كامل بالصوت.</sub>
-</p>
+آخر ريل نشرناه — مونتاج كامل بالسكل، بلا برنامج مونتاج:
+
+https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 ![لقطة من إعلان أُنتج بالسكل](video-ad-editor/img/behind.jpg)
 
