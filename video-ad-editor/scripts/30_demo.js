@@ -3,9 +3,9 @@
 // demo.json (المسارات نسبة لمكانه):
 // {
 //   "src": "screen.mov" | "web/scroll_mobile.mp4" | ["web/mobile_01.png","web/mobile_02.png"],   // فيديو، أو صور (كل وحدة hold ثانية)
-//   "hold": 2.5,                       // للصور: كم ثانية لكل صورة
+//   "hold": 2.5,  "holds": [2.5,3,3],   // للصور: كم ثانية لكل صورة (holds = لكل صورة لحالها)
 //   "size": [1080,1920],               // أو [1920,1080] لليوتيوب
-//   "device": "phone" | "browser" | "none",  "url": "example.com",      // شريط العنوان بالمتصفح
+//   "device": "phone" | "laptop" | "browser" | "none",  "url": "example.com",      // شريط العنوان بالمتصفح
 //   "bg": ["#1B1530","#3A1F5C"],       // لون أو تدرّج (من theme.json لو موجود: bg + acc)
 //   "tilt": 8,                         // ميلان خفيف دايم (درجات) — 0 = مسطّح
 //   "zooms": [ {"s":2.0,"e":4.2,"x":0.5,"y":0.3,"scale":2.2,"tilt":0} ],   // x,y = نقطة الاهتمام بنسبة الشاشة المصوّرة (0-1)
@@ -38,13 +38,16 @@ if (srcs.length === 1 && /\.(mp4|mov|m4v|webm|mkv)$/i.test(srcs[0])) {
   }
   frames = fs.readdirSync(fd).filter(f => f.endsWith('.jpg')).sort().map(f => path.join(fd, f)); DUR = frames.length / FPS;
 } else {
-  const hold = D.hold || 2.5; frames = srcs.map(s => path.resolve(BASE, s)); DUR = frames.length * hold;
+  const hs = D.holds || srcs.map(() => D.hold || 2.5); frames = srcs.map(s => path.resolve(BASE, s)); DUR = hs.reduce((a, b) => a + b, 0);
+  frames.holds = hs;
 }
 const probe = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', frames[0]]).toString().trim().split(',');
 srcW = +probe[0]; srcH = +probe[1];
 if (D.duration) DUR = Math.min(DUR, D.duration);
-const frameAt = t => Array.isArray(D.src) && !/\.(mp4|mov|m4v|webm|mkv)$/i.test(srcs[0])
-  ? frames[Math.min(frames.length - 1, Math.floor(t / (D.hold || 2.5)))] : frames[Math.min(frames.length - 1, Math.floor(t * FPS))];
+const frameAt = t => {
+  if (frames.holds) { let acc = 0; for (let i = 0; i < frames.length; i++) { acc += frames.holds[i]; if (t < acc) return frames[i]; } return frames[frames.length - 1]; }
+  return frames[Math.min(frames.length - 1, Math.floor(t * FPS))];
+};
 
 // 2) حالة الكاميرا بأي لحظة: زوم + تحريك للنقطة + ميلان
 const ease = x => x < 0 ? 0 : x > 1 ? 1 : (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
@@ -84,19 +87,20 @@ body{background:${Array.isArray(BG) ? `radial-gradient(120% 90% at 80% 10%, ${BG
 #bar i{width:16px;height:16px;border-radius:50%;display:inline-block}
 #bar b{flex:1;margin-left:18px;height:38px;border-radius:10px;background:#fff;color:#555;font:600 22px system-ui;display:flex;align-items:center;padding:0 16px}
 #tap{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border:6px solid ${ACC};opacity:0}
-#title{position:absolute;left:60px;right:60px;top:${OH > OW ? 170 : 34}px;text-align:center;color:${INK};font-weight:900;font-size:${OH > OW ? 72 : 52}px;opacity:0;text-shadow:0 8px 30px rgba(0,0,0,.35)}
+#title{position:absolute;left:60px;right:60px;top:${OH > OW ? 170 : 34}px;text-align:center;color:${INK};font-weight:900;font-size:${OH > OW ? 72 : 52}px;opacity:0;z-index:20}
+#title span{display:inline-block;background:rgba(8,8,16,.78);padding:10px 34px 16px;border-radius:26px;box-shadow:0 10px 40px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
 </style></head><body><div id="stage"><div id="dev"><div id="scr"><img id="im"></div><div id="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><b></b></div><div id="tap"></div></div></div><div id="title"></div>
 <script>
 const OW=${OW},OH=${OH},SW=${srcW},SH=${srcH},DEV=${JSON.stringify(D.device || 'phone')},URL_=${JSON.stringify(D.url || '')};
 // حجم الجهاز: يملأ 72% من الارتفاع (طولي) أو 70% من العرض (عرضي) بنسبة المصدر بالضبط
-const barH = DEV==='browser'?64:0, bez = DEV==='phone'?Math.round(Math.min(OW,OH)*0.022):0;
-let sh = OH>OW ? OH*0.70 : OH*0.68, sw = sh*SW/SH; const maxW = OW*(OH>OW?0.84:0.80);
+const barH = DEV==='browser'?64:0, bez = DEV==='phone'?Math.round(Math.min(OW,OH)*0.022):DEV==='laptop'?Math.round(Math.min(OW,OH)*0.018):0;
+let sh = OH>OW ? OH*0.70 : OH*0.68, sw = sh*SW/SH; const maxW = OW*(OH>OW?(DEV==='laptop'?0.86:0.84):(DEV==='laptop'?0.62:0.80));
 if (sw>maxW){ sw=maxW; sh=sw*SH/SW; }
 const dw=sw+2*bez, dh=sh+2*bez+barH, dev=document.getElementById('dev'), scr=document.getElementById('scr'), im=document.getElementById('im');
 dev.className=DEV==='phone'?'phone':DEV==='browser'?'browser':''; dev.style.width=dw+'px'; dev.style.height=dh+'px';
-dev.style.borderRadius=(DEV==='phone'?Math.round(dw*0.13):DEV==='browser'?22:18)+'px';
+dev.style.borderRadius=(DEV==='phone'?Math.round(dw*0.13):DEV==='browser'?22:DEV==='laptop'?Math.round(dw*0.025):18)+'px';
 scr.style.left=bez+'px'; scr.style.top=(bez+barH)+'px'; scr.style.width=sw+'px'; scr.style.height=sh+'px';
-scr.style.borderRadius=DEV==='phone'?(Math.round(dw*0.13)-bez)+'px':DEV==='browser'?'0 0 22px 22px':'18px';
+scr.style.borderRadius=DEV==='phone'?(Math.round(dw*0.13)-bez)+'px':DEV==='browser'?'0 0 22px 22px':DEV==='laptop'?'6px':'18px';
 if(DEV==='phone'){
   const R=Math.round(dw*0.13), T=Math.max(10,Math.round(dw*0.03));          // سماكة الجوال
   for(let i=1;i<=T;i++){ const e=document.createElement('div'); e.style.cssText='position:absolute;inset:0;border-radius:'+R+'px;transform:translateZ(-'+i+'px);background:'+(i===T?'#1a1a1d':'linear-gradient(90deg,#8d8f94,#d9dade 18%,#9a9ca1 50%,#e2e3e6 82%,#7f8186)'); dev.appendChild(e); }
@@ -105,6 +109,17 @@ if(DEV==='phone'){
   const isl=document.createElement('div'); isl.style.cssText='position:absolute;left:50%;top:'+(bez+sh*0.014)+'px;width:'+(sw*0.30)+'px;height:'+(sw*0.088)+'px;margin-left:-'+(sw*0.15)+'px;border-radius:999px;background:#000;z-index:5'; dev.appendChild(isl);
   const g=document.createElement('div'); g.id='glare'; g.style.cssText='position:absolute;left:'+bez+'px;top:'+bez+'px;width:'+sw+'px;height:'+sh+'px;border-radius:'+(R-bez)+'px;pointer-events:none;z-index:6;mix-blend-mode:screen'; dev.appendChild(g); window.glare=g;
   dev.style.background='#050506';
+}
+if(DEV==='laptop'){
+  // ماك بوك: غطاء الشاشة (إطار أسود + نوتش) والقاعدة الألمنيوم ممدودة لقدّام بزاوية
+  dev.style.background='#0c0c0e'; dev.style.boxShadow='0 0 0 2px #9a9ca1, 0 40px 90px rgba(0,0,0,.45)';
+  const notch=document.createElement('div'); notch.style.cssText='position:absolute;left:50%;top:0;width:'+(dw*0.11)+'px;height:'+(bez*0.9)+'px;margin-left:-'+(dw*0.055)+'px;background:#0c0c0e;border-radius:0 0 10px 10px;z-index:5'; dev.appendChild(notch);
+  const base=document.createElement('div'); const bd=dh*0.66;
+  base.style.cssText='position:absolute;left:-'+(dw*0.06)+'px;width:'+(dw*1.12)+'px;top:'+(dh-2)+'px;height:'+bd+'px;transform-origin:50% 0;transform:rotateX(84deg);border-radius:0 0 '+(dw*0.03)+'px '+(dw*0.03)+'px;'+
+    'background:linear-gradient(180deg,#d9dbdf,#c4c6cb 60%,#b3b5ba);box-shadow:inset 0 0 0 2px #a8aaaf';
+  const kb=document.createElement('div'); kb.style.cssText='position:absolute;left:12%;right:12%;top:8%;height:48%;border-radius:10px;background:repeating-linear-gradient(90deg,#2a2b2f 0 7.2%,#c8cace 7.2% 7.8%),#2a2b2f;opacity:.88';
+  const tp=document.createElement('div'); tp.style.cssText='position:absolute;left:34%;right:34%;top:62%;height:30%;border-radius:12px;background:#cfd1d5;box-shadow:inset 0 0 0 2px #b9bbc0';
+  base.appendChild(kb); base.appendChild(tp); dev.appendChild(base);
 }
 document.getElementById('bar').style.display=DEV==='browser'?'flex':'none'; document.querySelector('#bar b').textContent=URL_;
 im.style.width=sw+'px'; im.style.height=sh+'px';
@@ -117,11 +132,11 @@ window.pose=(c,tap,title)=>{
   const lift=(1+(s-1)*0.03)*(c.ds||1);
   // زوم الجهاز على نقطة: نحرّك الجهاز بحيث (fx,fy) من الشاشة يجي بنص الكادر
   const ox=-((c.fx??.5)-.5)*dw*lift, oy=-((c.fy??.5)-.5)*dh*lift;
-  dev.style.transform='translate(-50%,-50%) translate('+ox+'px,'+(oy+(OH>OW?40:62))+'px) rotateX('+c.rx+'deg) rotateY('+c.ry+'deg) rotateZ('+(c.rz||0)+'deg) scale('+lift+')';
+  dev.style.transform='translate(-50%,-50%) translate('+ox+'px,'+(oy+(OH>OW?40:62)-(DEV==='laptop'?dh*0.16*lift:0))+'px) rotateX('+c.rx+'deg) rotateY('+c.ry+'deg) rotateZ('+(c.rz||0)+'deg) scale('+lift+')';
   if(window.glare) glare.style.background='linear-gradient('+(115+c.ry*2)+'deg, rgba(255,255,255,0) 30%, rgba(255,255,255,'+(0.10+Math.abs(c.ry)/250)+') 48%, rgba(255,255,255,0) 62%)';
   const tp=document.getElementById('tap');
   if(tap){ const px=bez+(tap.x*sw*s+clampX), py=bez+barH+(tap.y*sh*s+clampY); tp.style.left=px+'px'; tp.style.top=py+'px'; tp.style.opacity=tap.o; tp.style.transform='scale('+tap.k+')'; } else tp.style.opacity=0;
-  const T=document.getElementById('title'); if(title){ T.textContent=title.text; T.style.opacity=title.o; T.style.transform='translateY('+(1-title.o)*30+'px)'; } else T.style.opacity=0;
+  const T=document.getElementById('title'); if(title){ T.innerHTML='<span></span>'; T.firstChild.textContent=title.text; T.style.opacity=title.o; T.style.transform='translateY('+(1-title.o)*30+'px)'; } else T.style.opacity=0;
 };
 </script></body></html>`;
 fs.writeFileSync(path.join(WORK, 'page.html'), PAGE);
