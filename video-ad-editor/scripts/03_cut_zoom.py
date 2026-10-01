@@ -61,12 +61,14 @@ fc.append("".join(v)+f"concat=n={len(PIECES)}:v=1:a=0[vc]")
 fc.append("".join(a)+f"concat=n={len(PIECES)}:v=0:a=1[ac]")
 # التدرّج اللوني اختياري تماماً — الافتراضي مطفي (الفيديو يطلع بألوانه الأصلية)
 _g = ("eq=brightness=0.015:saturation=0.96:contrast=1.05,"
-      "colorbalance=rs=0.02:gs=0.005:bs=-0.02,") if GRADE else ""
+      "colorbalance=rs=0.02:gs=0.005:bs=-0.02,") if GRADE is True else ""
+# 🔬 v3.9 "grade":"auto" → يتحسب تحت بعد تحويل HDR (نقيس الصورة اللي بتنقص فعلاً)
+if GRADE == "auto": _g = "__AUTOGRADE__"
 # ⚠️ مصدر آيفون HDR يجي موسوماً bt2020/HLG — أي متصفح يحترم الوسم ويطلّع صورة برتقالية.
 # setparams يعيد الوسم لـbt709 فتطلع الألوان طبيعية بكل مكان.
 fc.append("[vc]fps=30," + _g +
           "setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709,format=yuv420p[vo]")
-print("التدرّج اللوني:", "مفعّل" if GRADE else "مطفي (ألوان أصلية)")
+print("التدرّج اللوني:", {True: "مفعّل", "auto": "تصحيح مقاس"}.get(GRADE, "مطفي (ألوان أصلية)"))
 fc.append("[ac]afade=t=in:st=0:d=0.06,dynaudnorm=f=200:g=5:p=0.9[ao]")
 # 🎨 ماجد (8 سبتمبر): «صفر تعديل لوني». فيديو الآيفون يجي HDR (HLG/Dolby Vision) وتحويله الساذج لـSDR يغيّر الألوان
 #    (باهت وبارد) — نحوّله بمكتبة أبل نفسها (AVFoundation) قبل أي شي، فيطلع بنفس مظهره على الجوال.
@@ -86,6 +88,13 @@ def _hdr_to_sdr(src):
         if r.returncode!=0 or not os.path.exists(out): print("⚠️ فشل التحويل — أكمل بالأصل"); return src
     return out
 SRC=_hdr_to_sdr(SRC)
+if GRADE == "auto":   # بموافقته بعد فحص 25_scopes.py: يصحّح بس المشكلة المقاسة (غامج · مايل · باهت)
+    _sp = os.path.join(W, "scopes.json")
+    if not os.path.exists(_sp):
+        subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "25_scopes.py"), W])
+    _fix = json.load(open(_sp)).get("fix", "") if os.path.exists(_sp) else ""
+    fc = [x.replace("__AUTOGRADE__", (_fix + ",") if _fix else "") for x in fc]
+    print("التصحيح المقاس:", _fix or "ما يحتاج — الصورة سليمة")
 _OUT=os.path.join(W,"cutz.mp4")
 print(f"✂️  أقص وأركّب {len(k)} مقطعاً… (بلا عدّاد — سطر واحد بالنهاية)", flush=True)
 _rc=subprocess.call(["ffmpeg","-v","error","-nostats",*SEEK,"-i",SRC,"-filter_complex",";".join(fc),

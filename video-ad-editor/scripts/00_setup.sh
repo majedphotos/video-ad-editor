@@ -1,6 +1,7 @@
 #!/bin/bash
 # فحص وتجهيز الأدوات.  ./00_setup.sh          → يفحص ويقول وش ناقص
 #                      ./00_setup.sh --install → ينزّل الناقص (بعد إذن المستخدم)
+#                      ./00_setup.sh --extras  → الإضافات الاختيارية: تنظيف صوت ذكي · نبض · بحث بالمعنى
 # ✏️ معدّل ليشتغل على ويندوز وماك ولينكس. الأصل الماكي محفوظ بـ00_setup.sh.mac-orig
 . "$(dirname "$0")/_compat.sh"
 INSTALL=0; [ "$1" = "--install" ] && INSTALL=1
@@ -30,7 +31,7 @@ if [ "$1" = "--update" ]; then
   TMP="$(mktemp -d)"; echo "⬇️ أنزّل آخر إصدار…"
   if curl -sL -m 120 -o "$TMP/skill.zip" https://github.com/majedphotos/video-ad-editor/releases/latest/download/video-ad-editor.skill \
      && unzip -q -o "$TMP/skill.zip" -d "$TMP/x" && [ -f "$TMP/x/video-ad-editor/SKILL.md" ]; then
-    rsync -a --delete --exclude=hdr2sdr --exclude=personmask --exclude=facetrack --exclude=node_modules "$TMP/x/video-ad-editor/" "$SKROOT/" \
+    rsync -a --delete --exclude=bin --exclude=hdr2sdr --exclude=personmask --exclude=facetrack --exclude=node_modules "$TMP/x/video-ad-editor/" "$SKROOT/" \
       && echo "✅ انحدّث السكل إلى v$(cat "$SKROOT/VERSION" 2>/dev/null) — كمّل شغلك عادي" || echo "⚠️ ما قدرت أستبدل الملفات"
   else echo "⚠️ ما قدرت أنزّل التحديث — جرّب لاحقاً"; fi
   rm -rf "$TMP"; exit 0
@@ -38,6 +39,40 @@ fi
 LATEST="$(curl -sL -m 5 https://api.github.com/repos/majedphotos/video-ad-editor/releases/latest 2>/dev/null | sed -n 's/.*"tag_name": *"v\([0-9.]*\)".*/\1/p' | head -1)"
 if [ -n "$LATEST" ] && [ "$LATEST" != "$LOCALV" ] && [ "$(printf '%s\n%s' "$LOCALV" "$LATEST" | sort -V | tail -1)" = "$LATEST" ]; then
   echo "🆕 فيه إصدار أحدث من السكل: v$LATEST (عندك v$LOCALV) — اسأل المستخدم، ولو وافق شغّل: bash scripts/00_setup.sh --update"
+fi
+
+# ➕ الإضافات (v3.9، أفكار Palmier) — اختيارية، السكل يشتغل بدونها وكل وحدة ترجع للطريق القديم لو ناقصة:
+#    ‹deep-filter› تنظيف صوت ذكي (02c) · ‹transformers› البحث بالمعنى (26)
+extras_status(){
+  local e=()
+  { [ -x "$SKILL/bin/deep-filter" ] || [ -x "$SKILL/bin/deep-filter.exe" ] || have deep-filter; } && e+=("تنظيف-الصوت✅") || e+=("تنظيف-الصوت—")
+  "$PY" -c "import transformers,PIL" 2>/dev/null && e+=("البحث-بالمعنى✅") || e+=("البحث-بالمعنى—")
+  echo "${e[*]}"
+}
+if [ "$1" = "--extras" ]; then
+  pipx2(){ "$PY" -m pip install --quiet "$@" || "$PY" -m pip install --quiet --break-system-packages "$@"; }
+  mkdir -p "$SKILL/bin"
+  DFV=0.5.6
+  case "$OS-$(uname -m)" in
+    mac-arm64)          T=aarch64-apple-darwin ;;
+    mac-x86_64)         T=x86_64-apple-darwin ;;
+    win-*)              T=x86_64-pc-windows-msvc.exe ;;
+    linux-x86_64)       T=x86_64-unknown-linux-musl ;;
+    *)                  T="" ;;
+  esac
+  DF="$SKILL/bin/deep-filter"; [ "$OS" = win ] && DF="$DF.exe"
+  if [ -n "$T" ] && [ ! -x "$DF" ]; then
+    line "⏬ تنظيف الصوت الذكي (DeepFilterNet3، ~20 ميقا)…"
+    if curl -sfL -m 180 -o "$DF" "https://github.com/Rikorose/DeepFilterNet/releases/download/v$DFV/deep-filter-$DFV-$T" \
+       && [ "$(wc -c < "$DF")" -gt 1000000 ]; then
+      chmod +x "$DF"; [ "$OS" = mac ] && xattr -d com.apple.quarantine "$DF" 2>/dev/null
+      "$DF" --help >/dev/null 2>&1 && line "   ✅ جاهز" || { rm -f "$DF"; line "   ⚠️ نزل بس ما اشتغل — يبقى فلتر ffmpeg العادي"; }
+    else rm -f "$DF"; line "   ⚠️ ما قدرت أنزّله — يبقى فلتر ffmpeg العادي"; fi
+  fi
+  "$PY" -c "import torch" 2>/dev/null || { line "⏬ torch (أساس الموديلات)…"; pipx2 torch; }
+  "$PY" -c "import transformers,PIL" 2>/dev/null || { line "⏬ البحث بالمعنى (transformers — الموديل ~1.5 قيقا ينزل أول بحث)…"; pipx2 "transformers>=4.49" pillow sentencepiece protobuf || line "   ⚠️ فشل"; }
+  line "الإضافات: $(extras_status)"
+  exit 0
 fi
 
 have ffmpeg  && OK+=("ffmpeg")  || MISS+=("ffmpeg")
@@ -67,6 +102,7 @@ CHROME="$(find_chrome)" && OK+=("chrome") || MISS+=("chrome")
 line "النظام: $OS · بايثون: $PY"
 [ -n "$CHROME" ] && line "كروم: $CHROME"
 line "الجاهز: ${OK[*]:-لا شيء}"
+line "الإضافات (اختيارية — 00_setup.sh --extras): $(extras_status)"
 if have npm; then line "المحرّك الثاني (ريموشن): متاح عند الطلب — 04b_remotion.sh setup ينزّله (~500 ميقا)"
 else line "المحرّك الثاني (ريموشن): يحتاج npm — غير متاح، والخفيف يكفي"; fi
 [ "$OS" = mac ] || NOTE+=("مؤثّر «الكلام ورا الشخص» (11_behind_text.js) يشتغل على ماك فقط — بقية السكل يشتغل عادي")

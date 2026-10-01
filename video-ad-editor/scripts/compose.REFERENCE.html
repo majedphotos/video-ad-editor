@@ -15,10 +15,11 @@ let GRID=true;        /* شبكة خفيفة بالخلفية (theme.json ← gr
 let BADGE_UNTIL=0;    /* ⛔ شارة الحساب مطفية (قرار ماجد ٢ سبتمبر): اسمه ظاهر بالمنصة نفسها
                          وبكرت النهاية، وفوق الشاشة مساحة للرسم. theme.json ← badgeUntil:3 تعيدها */
 let CAPS=[],VEND=0,OUTRO=0,DUR=0;
+let THEME_RAW=null;
 function init(d){
   CAPS=d.cards;VEND=d.total;OUTRO=d.outro;DUR=VEND+OUTRO;
   BEHIND=d.behind||null;
-  const t=d.theme||{};
+  const t=d.theme||{}; THEME_RAW=t;
   BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; CLAY=t.clay||CLAY; MUT=t.mut||MUT;
   FONT=t.font||FONT; HANDLE=t.handle||HANDLE; CAPSTYLE=t.capStyle||CAPSTYLE;
   ONACC=(typeof t.onAcc==='string'&&/^#[0-9A-Fa-f]{6}$/.test(t.onAcc))?t.onAcc:null;   /* لون النص فوق التمييز (صفحة التعارف تكتبه) — بدونه القاعدة القديمة */
@@ -120,7 +121,14 @@ function hookScale(t){ const H0=HOOK_END; if(!H0||t>H0+0.3) return 1;
   return 1.30-0.30*ease((t-H0)/0.3); }
 function hookZoom(t){ if(t>=VEND) return; const s=hookScale(t); if(s<=1.001||!isFull(vtarget(t))) return;
   if(_behindLine(t)) return;   /* 28 سبتمبر: الزوم يعيد رسم الفيديو فوق «ورا الراس/طبقات» فيمسحها، وقناع الشخص ما يطابق الصورة المكبّرة — النص نفسه ضربة الهوك */
-  const cx=540, cy=760; X.save(); X.translate(cx,cy); X.scale(s,s); X.translate(-cx,-cy); X.drawImage(VF,0,0,W,H); X.restore(); }
+  const [cx,cy]=hookCenter(); X.save(); X.translate(cx,cy); X.scale(s,s); X.translate(-cx,-cy); X.drawImage(VF,0,0,W,H); X.restore(); }
+/* مركز الزوم = وجهه (2 أكتوبر — كان نقطة ثابتة): theme.hookCenter [x,y] (يكتبه 22b_hook_center.py) ← وإلا وسط وجهه من behind.json بمدى الهوك ← وإلا 540,760 */
+let _HC=null;
+function hookCenter(){ if(_HC) return _HC;
+  if(Array.isArray(THEME_RAW&&THEME_RAW.hookCenter)) return (_HC=THEME_RAW.hookCenter);
+  if(BEHIND&&BEHIND.faces){ const xs=[],ys=[]; for(let fr=1;fr<=Math.ceil((HOOK_END+0.3)*30)+1;fr++){ const f=BEHIND.faces[fr]; if(f){xs.push(f.x+f.w/2); ys.push(f.y+f.h/2);} }
+    if(xs.length>=5){ xs.sort((a,b)=>a-b); ys.sort((a,b)=>a-b); return (_HC=[xs[xs.length>>1],ys[ys.length>>1]]); } }
+  return (_HC=[540,760]); }
 SCENE_LIST.push(['hookZoom',hookZoom,'video']);
 function rectByName(n){return ({R_FULL,R_DOWN,R_LOWER,R_STAGE,R_SIDE,R_COLLAGE,R_OFF:(typeof R_OFF!=='undefined'?R_OFF:R_FULL)})[n]||R_FULL;}   /* عند النداء لا عند التحميل — R_OFF يتعرّف بعدين */
 let STICK=[];

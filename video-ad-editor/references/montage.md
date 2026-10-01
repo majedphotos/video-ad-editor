@@ -26,6 +26,13 @@ python3 scripts/12_montage.py <work> sheet          # 4 أعمدة · ارتفا
 كل لقطة عليها رقم مقطعها. **اقرأ الورقة وحدة — لا تقرأ الصور فرادى.**
 واعرضها عليه: «هذي أحلى لحظة بكل مقطع — شنو تبي أشيل؟»
 
+**يدوّر لقطة معيّنة؟** («أبي لقطة القهوة وهي تنصب بالبداية») — ابحث بالمعنى بدل ما تفتّش الورقة:
+```bash
+python3 scripts/26_find_shots.py <work> index <مجلد_المقاطع>        # مرة وحدة
+python3 scripts/26_find_shots.py <work> where "coffee being poured into a cup" --sheet
+```
+يطبع رقم مقطع المونتاج لكل نتيجة — استخدمه بـ`keep`. التفاصيل: `references/find-shots.md`.
+
 ### 3) شيل اللي ما عجبه
 ```bash
 python3 scripts/12_montage.py <work> drop 4 11      # يشيل
