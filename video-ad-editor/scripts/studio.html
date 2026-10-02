@@ -31,6 +31,7 @@ let CAPS=[],VEND=0,OUTRO=0,DUR=0;
 function init(d){
   CAPS=d.cards;VEND=d.total;OUTRO=d.outro;DUR=VEND+OUTRO;
   const t=d.theme||{};
+  BOUNCE=!!(t.motion&&t.motion.bounce);
   BG=t.bg||BG; INK=t.ink||INK; ACC=t.acc||ACC; CLAY=t.clay||CLAY; MUT=t.mut||MUT;
   FONT=t.font||FONT; HANDLE=t.handle||HANDLE;
   ONACC=(typeof t.onAcc==='string'&&/^#[0-9A-Fa-f]{6}$/.test(t.onAcc))?t.onAcc:null;
@@ -55,7 +56,9 @@ const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,k)=>a+(b-a)*k;
 const ease=t=>1-Math.pow(1-t,3);
 const eio=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-const back=t=>{const c=1.9,s=c+1;return 1+s*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+/* v3.9.3: بلا ارتداد افتراضياً (references/motion-rules.md) — theme.json ← "motion":{"bounce":true} يرجّعه */
+let BOUNCE=false;
+const back=t=>{ if(!BOUNCE) return ease(t); const c=1.9,s=c+1;return 1+s*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
 const pr=(t,a,b)=>cl((t-a)/(b-a),0,1);
 function rr(x,y,w,h,r){r=Math.min(r,w/2,h/2);X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath();}
 function sh(b,y,a){X.shadowColor=cINK(a);X.shadowBlur=b;X.shadowOffsetY=y;}
