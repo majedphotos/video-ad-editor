@@ -14,7 +14,7 @@
 <table width="100%"><tr>
 <td width="33%" align="center"><img src="_pkg/talk.gif" width="100%"><br><b>إعلان كلام</b><br><sub>سكتات أقل · كابشن بتوقيت الكلمة · زوم على الوجه</sub></td>
 <td width="33%" align="center"><img src="_pkg/motion.gif" width="100%"><br><b>شرح بالموشن</b><br><sub>فيلم 3D بـ60 فريم من نص بس</sub></td>
-<td width="33%" align="center"><img src="_pkg/demo.gif" width="100%"><br><b>شرح موقع وتطبيق</b><br><sub>آيفون 3D · زوم على الميزة · لقطات حقيقية</sub></td>
+<td width="33%" align="center"><img src="_pkg/demo.gif" width="100%"><br><b>شرح موقع وتطبيق</b><br><sub>آيفون وماك بوك 3D حقيقي · زوم على الميزة</sub></td>
 </tr></table>
 
 <p align="center">🎬 <b>فيديو كامل منتجه السكل:</b></p>

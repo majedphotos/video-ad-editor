@@ -1,0 +1,160 @@
+<!doctype html>
+<html dir="rtl"><head><meta charset="utf-8">
+<!-- أجهزة ثلاثية الأبعاد حقيقية (آيفون · ماك بوك) — يفتحه scripts/31_device3d.js. معدن يعكس، زجاج، ظل، توهج -->
+<script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
+<style>
+html,body{margin:0;overflow:hidden;background:#0B0A12}
+canvas{display:block}
+#title{position:fixed;left:60px;right:60px;text-align:center;font-weight:900;opacity:0;z-index:5;pointer-events:none}
+#title span{display:inline-block;padding:10px 34px 16px;border-radius:26px;background:rgba(8,8,16,.72);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+</style></head><body><div id="title"></div>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const C = window.CFG;                       // يحقنه 31_device3d.js
+const RF = C.reflect ?? 0.25;               // قوة الانعكاس 0-1 (طلب ماجد: خففها، التركيز على الشاشة)
+const [W, H] = C.size; const DEV = C.device || 'phone';
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;   // انعكاسات المعدن والزجاج
+
+// الخلفية: تدرّج شعاعي بلونين (bg + glow)
+const bgc = document.createElement('canvas'); bgc.width = 512; bgc.height = 512; const bx = bgc.getContext('2d');
+const g = bx.createRadialGradient(360, 120, 20, 300, 260, 520); g.addColorStop(0, C.bg[1]); g.addColorStop(1, C.bg[0]);
+bx.fillStyle = g; bx.fillRect(0, 0, 512, 512); scene.background = new THREE.CanvasTexture(bgc); scene.background.colorSpace = THREE.SRGBColorSpace;
+
+const camera = new THREE.PerspectiveCamera(W > H ? 30 : 34, W / H, 0.05, 100);
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 5, 6); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 8; key.shadow.camera.left = -4; key.shadow.camera.right = 4; key.shadow.camera.top = 4; key.shadow.camera.bottom = -4;
+scene.add(key);
+const rim = new THREE.DirectionalLight(new THREE.Color(C.acc), 0.6 + 1.0 * RF); rim.position.set(-5, 2, -4); scene.add(rim);
+scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.35 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+
+// شاشة: كانفس يتبدل محتواه بكل فريم (contain بنسبة المصدر — النسبة مقدّسة)
+const scrC = document.createElement('canvas'); const scrX = scrC.getContext('2d');
+const scrTex = new THREE.CanvasTexture(scrC); scrTex.colorSpace = THREE.SRGBColorSpace; scrTex.anisotropy = 8;
+function roundedRectShape(w, h, r) {
+  const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r);
+  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h); s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+}
+function screenMesh(w, h, r) {   // شكل مدوّر + UV من 0 لين 1
+  const geo = new THREE.ShapeGeometry(roundedRectShape(w, h, r), 24); const p = geo.attributes.position, uv = [];
+  for (let i = 0; i < p.count; i++) uv.push(p.getX(i) / w + .5, p.getY(i) / h + .5);
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: scrTex, toneMapped: false }));
+}
+const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0, roughness: 0.1, transparent: true, opacity: 0.05 * RF, clearcoat: 0.4 * RF, clearcoatRoughness: 0.2, envMapIntensity: 0.15 * RF });
+glassMat.visible = RF > 0.05;
+
+const rig = new THREE.Group(); scene.add(rig);           // الكاميرا تلف الجهاز بهالمجموعة
+let screen, SW, SH;                                        // أبعاد الشاشة بوحدات العالم
+if (DEV === 'phone') {
+  const BW = 0.716, BH = 1.466, BD = 0.083;              // آيفون 15 برو تقريباً (÷100 مم)
+  const ti = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(C.metal || '#8f9196'), metalness: 0.85, roughness: 0.55 - 0.2 * RF, clearcoat: 0.2 * RF, envMapIntensity: 0.35 + 0.65 * RF });
+  const body = new THREE.Mesh(new RoundedBoxGeometry(BW, BH, BD, 8, 0.1), ti); body.castShadow = true; rig.add(body);
+  const front = new THREE.Mesh(new THREE.ShapeGeometry(roundedRectShape(BW - 0.012, BH - 0.012, 0.095), 24), new THREE.MeshStandardMaterial({ color: 0x050506, roughness: 0.3 }));
+  front.position.z = BD / 2 + 0.0005; rig.add(front);
+  SW = BW - 0.06; SH = BH - 0.06; screen = screenMesh(SW, SH, 0.07); screen.position.z = BD / 2 + 0.001; rig.add(screen);
+  const glass = new THREE.Mesh(new THREE.ShapeGeometry(roundedRectShape(BW - 0.012, BH - 0.012, 0.095), 24), glassMat); glass.position.z = BD / 2 + 0.002; rig.add(glass);
+  const isl = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.15, 6, 16), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+  isl.rotation.z = Math.PI / 2; isl.scale.z = 0.05; isl.position.set(0, SH / 2 - 0.05, BD / 2 + 0.0015); rig.add(isl);
+  // الأزرار الجانبية والكاميرات ورا
+  const btn = (x, y, h) => { const b = new THREE.Mesh(new RoundedBoxGeometry(0.012, h, 0.03, 3, 0.005), ti); b.position.set(x, y, 0); rig.add(b); };
+  btn(-BW / 2 - 0.004, 0.38, 0.06); btn(-BW / 2 - 0.004, 0.26, 0.11); btn(-BW / 2 - 0.004, 0.12, 0.11); btn(BW / 2 + 0.004, 0.2, 0.18);
+  const bump = new THREE.Mesh(new RoundedBoxGeometry(0.36, 0.38, 0.03, 6, 0.06), new THREE.MeshPhysicalMaterial({ color: 0x2a2b2e, metalness: 0.3, roughness: 0.2, clearcoat: 1 }));
+  bump.position.set(-BW / 2 + 0.22, BH / 2 - 0.23, -BD / 2 - 0.012); rig.add(bump);
+  for (const [x, y] of [[-0.07, 0.08], [-0.07, -0.08], [0.08, 0]]) {
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.058, 0.03, 32), new THREE.MeshPhysicalMaterial({ color: 0x0a0a0c, metalness: 0.8, roughness: 0.05, clearcoat: 1 }));
+    l.rotation.x = Math.PI / 2; l.position.set(bump.position.x + x, bump.position.y + y, -BD / 2 - 0.03); rig.add(l);
+  }
+} else {
+  // ماك بوك: قاعدة ألمنيوم + كيبورد بأزرار مجسّمة + تراكباد + غطاء على مفصلة
+  const alu = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(C.metal || '#b9bbc0'), metalness: 0.85, roughness: 0.6 - 0.2 * RF, envMapIntensity: 0.35 + 0.5 * RF });
+  const BW = 3.04, BD = 2.12, BT = 0.06;
+  const base = new THREE.Mesh(new RoundedBoxGeometry(BW, BT, BD, 6, 0.03), alu); base.castShadow = true; base.position.y = BT / 2; rig.add(base);
+  const keyGeo = new RoundedBoxGeometry(0.17, 0.012, 0.16, 3, 0.02), keyMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.55 });
+  const keys = new THREE.InstancedMesh(keyGeo, keyMat, 14 * 5); let k = 0; const m4 = new THREE.Matrix4();
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 14; c++) { m4.makeTranslation(-1.24 + c * 0.19, BT + 0.004, -0.92 + r * 0.19); keys.setMatrixAt(k++, m4); }
+  rig.add(keys);
+  const pad = new THREE.Mesh(new RoundedBoxGeometry(1.2, 0.004, 0.72, 3, 0.002), new THREE.MeshPhysicalMaterial({ color: 0xbfc1c5, metalness: 0.6, roughness: 0.25 }));
+  pad.position.set(0, BT + 0.001, 0.56); rig.add(pad);
+  const hinge = new THREE.Group(); hinge.position.set(0, BT, -BD / 2 + 0.01); rig.add(hinge);
+  const LH = 1.96, LT = 0.04;
+  const lid = new THREE.Mesh(new RoundedBoxGeometry(BW, LH, LT, 6, 0.02), alu); lid.castShadow = true; lid.position.set(0, LH / 2, 0); hinge.add(lid);
+  const bezel = new THREE.Mesh(new THREE.ShapeGeometry(roundedRectShape(BW - 0.03, LH - 0.03, 0.06), 24), new THREE.MeshStandardMaterial({ color: 0x060607, roughness: 0.25 }));
+  bezel.position.set(0, LH / 2, LT / 2 + 0.0008); hinge.add(bezel);
+  SW = BW - 0.16; SH = LH - 0.2; screen = screenMesh(SW, SH, 0.03); screen.position.set(0, LH / 2 - 0.02, LT / 2 + 0.0015); hinge.add(screen);
+  const notch = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.05), new THREE.MeshBasicMaterial({ color: 0x060607 })); notch.position.set(0, LH / 2 - 0.02 + SH / 2 - 0.022, LT / 2 + 0.002); hinge.add(notch);
+  const glass = new THREE.Mesh(new THREE.ShapeGeometry(roundedRectShape(BW - 0.03, LH - 0.03, 0.06), 24), glassMat); glass.position.set(0, LH / 2, LT / 2 + 0.003); hinge.add(glass);
+  hinge.rotation.x = -0.18;                                 // الغطاء مفتوح ~100°
+  window.__hinge = hinge;
+}
+// نقطة على الشاشة (fx,fy من 0-1 من فوق يسار) ← موقع بالعالم
+const tmpV = new THREE.Vector3();
+function screenPoint(fx, fy) { tmpV.set((fx - .5) * SW, (.5 - fy) * SH, 0.002); return screen.localToWorld(tmpV.clone()); }
+
+// حلقة الضغط
+const tap = new THREE.Mesh(new THREE.RingGeometry(SW * 0.03, SW * 0.042, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(C.acc), transparent: true, opacity: 0, toneMapped: false }));
+scene.add(tap);
+
+const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.12 + 0.2 * RF, 0.5, 1.05); composer.addPass(bloom); composer.addPass(new OutputPass());
+
+const img = new Image();
+window.setFrame = src => new Promise(r => {
+  if (img.dataset.s === src) return r();
+  img.onload = () => {
+    const sw = img.naturalWidth, sh = img.naturalHeight; const cw = 1024, ch = Math.round(cw * SH / SW);
+    if (scrC.width !== cw || scrC.height !== ch) { scrC.width = cw; scrC.height = ch; }
+    scrX.fillStyle = '#000'; scrX.fillRect(0, 0, cw, ch);
+    const sc = Math.min(cw / sw, ch / sh), dw = sw * sc, dh = sh * sc;      // contain
+    const fit = C.fit === 'cover' ? Math.max(cw / sw, ch / sh) : sc;
+    const ew = sw * fit, eh = sh * fit; scrX.drawImage(img, (cw - ew) / 2, C.fit === 'cover' ? 0 : (ch - eh) / 2, ew, eh);
+    scrTex.needsUpdate = true; r();
+  };
+  img.dataset.s = src; img.src = src;
+});
+// الوضعية: الجهاز يلف (rx,ry,rz)، والكاميرا تقرّب على نقطة من الشاشة (s, fx, fy)
+const target = new THREE.Vector3();
+window.pose = (c, tp, title) => {
+  const d2r = Math.PI / 180;
+  rig.rotation.set(c.rx * d2r, c.ry * d2r, (c.rz || 0) * d2r);
+  rig.position.y = DEV === 'phone' ? 0.95 + (c.lift || 0) : 0;
+  rig.updateMatrixWorld(true);
+  const fit = DEV === 'phone' ? (W > H ? 3.0 : 3.5) : (W > H ? 6.2 : 9.2);   // بعد الكاميرا بلا زوم
+  const dist = fit / (c.s || 1);
+  const center = DEV === 'phone' ? new THREE.Vector3(0, 0.95, 0) : new THREE.Vector3(0, 0.9, -0.2);
+  const focus = screenPoint(c.fx ?? .5, c.fy ?? .5);
+  const k = Math.min(1, Math.max(0, ((c.s || 1) - 1) / 1.2));             // كل ما قرّبنا، الهدف يروح للنقطة
+  target.copy(center).lerp(focus, k);
+  // الكاميرا قدّام الشاشة (اتجاه نورمال الشاشة) مع ارتفاع خفيف
+  const n = new THREE.Vector3(0, 0, 1).applyQuaternion(screen.getWorldQuaternion(new THREE.Quaternion()));
+  const viewDir = new THREE.Vector3(0, 0.18, 1).normalize().lerp(n, k * 0.6).normalize();
+  camera.position.copy(target).addScaledVector(viewDir, dist);
+  camera.lookAt(target);
+  if (tp) { tap.position.copy(screenPoint(tp.x, tp.y)); tap.quaternion.copy(screen.getWorldQuaternion(new THREE.Quaternion())); tap.scale.setScalar(tp.k); tap.material.opacity = tp.o; }
+  else tap.material.opacity = 0;
+  const T = document.getElementById('title');
+  if (title) { T.innerHTML = '<span></span>'; T.firstChild.textContent = title.text; T.style.opacity = title.o; T.style.transform = 'translateY(' + (1 - title.o) * 30 + 'px)'; }
+  else T.style.opacity = 0;
+  composer.render();
+};
+const T = document.getElementById('title');
+T.style.top = (H > W ? 170 : 40) + 'px'; T.style.fontSize = (H > W ? 72 : 54) + 'px'; T.style.color = C.ink; T.style.fontFamily = "'" + C.font + "',sans-serif";
+window.READY = true;
+</script></body></html>
