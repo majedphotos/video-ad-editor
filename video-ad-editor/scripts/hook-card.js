@@ -38,7 +38,7 @@
     if(!hook.text||!String(hook.text).trim()) return;
     const TH=theme||{};
     FONTF=TH.font||eng('font')||'Cairo'; ACCC=TH.acc||eng('acc')||'#FFFFFF'; BGC=TH.bg||eng('bg')||'#FFFFFF'; INKC=TH.ink||eng('ink')||'#111111';
-    if(!TH.acc) console.error('⚠️ الهوك: theme.json ما فيه acc — لون التمييز من المحرّك/محايد. حط acc بـtheme.json عشان ألوان هويتك');
+    if(!TH.acc) console.error('⚠️ الهوك: theme.json ما فيه acc — لون التمييز من المحرّك/محايد. شغّل 00_onboard عشان ألوان هويتك');
     const text=toWestern(hook.text).trim(), n=nWords(text);
     CFG={text, n, from:+hook.from||0, dur:+hook.dur||cl(0.9+0.28*n,1.6,3.0), pos:hook.pos||'auto', style:hook.style||'bold',
          kicker:hook.kicker?toWestern(hook.kicker):'', em:hook.em||null, keepCaps:!!hook.keepCaps,

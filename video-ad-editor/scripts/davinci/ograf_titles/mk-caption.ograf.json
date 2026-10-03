@@ -1,0 +1,68 @@
+{
+ "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+ "id": "mk-caption",
+ "name": "MK كابشن",
+ "description": "كابشن عربي بكلمة مظلّلة — النص يتعدّل من الإنسبكتر",
+ "main": "mk-caption.js",
+ "supportsRealTime": false,
+ "supportsNonRealTime": true,
+ "stepCount": 1,
+ "v_bmd": {
+  "duration": 120
+ },
+ "schema": {
+  "type": "object",
+  "properties": {
+   "text": {
+    "type": "string",
+    "title": "النص",
+    "default": "اكتب الكابشن هني"
+   },
+   "hot": {
+    "type": "string",
+    "title": "الكلمة المظلّلة",
+    "default": ""
+   },
+   "y": {
+    "type": "number",
+    "title": "الارتفاع (من فوق، بكسل)",
+    "default": 1330,
+    "minimum": 160,
+    "maximum": 1600
+   },
+   "size": {
+    "type": "number",
+    "title": "حجم الخط",
+    "default": 62,
+    "minimum": 36,
+    "maximum": 110
+   },
+   "card": {
+    "type": "boolean",
+    "title": "بطاقة وراه",
+    "default": true
+   },
+   "ink": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون النص",
+    "default": "#1f1f1d"
+   },
+   "acc": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون التظليل",
+    "default": "#d97757"
+   },
+   "bg": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون البطاقة",
+    "default": "#f0eee6"
+   }
+  }
+ }
+}

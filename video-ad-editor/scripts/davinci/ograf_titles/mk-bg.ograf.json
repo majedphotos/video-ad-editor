@@ -1,0 +1,30 @@
+{
+ "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+ "id": "mk-bg",
+ "name": "MK خلفية",
+ "description": "خلفية بلون الثيم + شبكة خفيفة — اللون يتعدّل من الإنسبكتر",
+ "main": "mk-bg.js",
+ "supportsRealTime": false,
+ "supportsNonRealTime": true,
+ "stepCount": 1,
+ "v_bmd": {
+  "duration": 600
+ },
+ "schema": {
+  "type": "object",
+  "properties": {
+   "bg": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون الخلفية",
+    "default": "#f0eee6"
+   },
+   "grid": {
+    "type": "boolean",
+    "title": "شبكة خفيفة",
+    "default": true
+   }
+  }
+ }
+}

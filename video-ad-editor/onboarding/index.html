@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ذوقك بالفيديو</title>
+<meta name="description" content="أول ما يشتغل سكل الفيديو: اختار ألوانك وخطك وشكل الكابشن والإيقاع — أو اكتب اللي تبيه وتخطّ الباقي.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%234F46E5%22/%3E%3Cpath d=%22M12 9l11 7-11 7z%22 fill=%22white%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Noto+Kufi+Arabic:wght@400;700;900&family=Readex+Pro:wght@400;700&family=Almarai:wght@400;700;800&family=Lalezar&family=Changa:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── ألوان الصفحة نفسها (مو ألوان الفيديو) — محايدة، لا هوية أحد ── */
+:root{
+  --bg:#F6F6F4; --surface:#FFFFFF; --surface2:#EFEFEC; --line:#E2E2DD; --ink:#16161A; --ink2:#55555E; --ink3:#8A8A93;
+  --acc:#4F46E5; --acc-ink:#FFFFFF; --acc-soft:rgba(79,70,229,.10); --ok:#10B981; --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.05);
+  --r:16px; --r-sm:11px;
+  /* ألوان المعاينة = ألوان الفيديو اللي اختارها (تتغيّر مع اختياره) */
+  --p-bg:#101828; --p-ink:#F5F7FA; --p-acc:#F2B33D; --p-on:#101828; --p-font:'Cairo';
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E0E11; --surface:#17171C; --surface2:#1F1F26; --line:#2A2A33; --ink:#F2F2F5; --ink2:#A9A9B5; --ink3:#72727E;
+    --acc:#8B85FF; --acc-ink:#0E0E11; --acc-soft:rgba(139,133,255,.14); --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E0E11; --surface:#17171C; --surface2:#1F1F26; --line:#2A2A33; --ink:#F2F2F5; --ink2:#A9A9B5; --ink3:#72727E;
+  --acc:#8B85FF; --acc-ink:#0E0E11; --acc-soft:rgba(139,133,255,.14); --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
+  font-size:15px;line-height:1.6;padding-bottom:110px;overflow-x:hidden}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+button,input,textarea{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ── الرأس ── */
+header{padding:28px 0 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+h1{font-size:clamp(24px,4.4vw,34px);line-height:1.25;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--ink2);margin:0;max-width:560px}
+.iconbtn{flex:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.iconbtn svg{width:20px;height:20px}
+
+/* ── الطريق السريع ── */
+.quick{margin:18px 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.quick label{display:block;font-weight:700;margin-bottom:8px}
+.quick textarea{width:100%;min-height:84px;resize:vertical;border:1px solid var(--line);background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;line-height:1.7;outline:none}
+.quick textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.quick .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:10px}
+.quick .hint{color:var(--ink3);font-size:13px}
+.cwarn{margin:10px 0 0;font-size:13px;color:#B45309;background:rgba(245,158,11,.12);border-radius:10px;padding:8px 12px}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn-ghost{background:var(--surface2);color:var(--ink);border:1px solid var(--line)}
+.btn-pri{background:var(--acc);color:var(--acc-ink)}
+.btn:focus-visible,.opt:focus-within,.iconbtn:focus-visible{outline:3px solid var(--acc-soft);outline-offset:2px}
+
+/* ── الأقسام ── */
+section.q{margin-top:26px}
+.qh{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.qn{flex:none;width:26px;height:26px;border-radius:8px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--ink2);transform:translateY(3px)}
+section.q.done .qn{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+h2{font-size:18px;margin:0;font-weight:700}
+.qs{color:var(--ink3);font-size:13px;margin:0 36px 12px 0}
+.sub{font-weight:700;font-size:14px;margin:16px 0 8px;color:var(--ink2)}
+
+/* الخيار العام */
+.opt{position:relative;display:block;cursor:pointer;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-sm);transition:border-color .15s,background .15s,transform .1s}
+.opt:hover{border-color:var(--ink3)}
+.opt:active{transform:scale(.985)}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt.on{border-color:var(--acc);background:var(--acc-soft)}
+.opt .tick{position:absolute;top:8px;left:8px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:var(--acc-ink);display:none;place-items:center;z-index:2}
+.opt .tick svg{width:12px;height:12px}
+.opt.on .tick{display:grid}
+.t{font-weight:700;display:block}
+.d{color:var(--ink3);font-size:12.5px;display:block;line-height:1.5}
+
+.grid{display:grid;gap:10px}
+.g-pal{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+.g-font{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.g-cap{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}
+.g-3{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.g-2{grid-template-columns:repeat(2,minmax(0,250px))}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips .opt{border-radius:999px;padding:8px 15px}
+.chips .opt .t{font-weight:500}
+.chips .opt.on .t{font-weight:700}
+.chips .opt .tick{display:none!important}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:5px}
+.seg .opt{border:0;background:transparent;border-radius:10px;padding:7px 14px}
+.seg .opt.on{background:var(--surface);box-shadow:var(--shadow)}
+.seg .opt .tick{display:none!important}
+
+/* تبويبات الهوية */
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:500}
+.tab[aria-selected="true"]{border-color:var(--acc);background:var(--acc-soft);font-weight:700}
+.panel[hidden]{display:none}
+
+/* لوحات الألوان */
+.pal{padding:8px}
+.pal .mini{height:78px;border-radius:9px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:9px}
+.pal .mini b{font-size:15px;line-height:1.2}
+.pal .mini i{font-style:normal;align-self:flex-start;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:5px}
+.pal .dots{display:flex;gap:4px;margin:8px 2px 2px}
+.pal .dots span{width:14px;height:14px;border-radius:50%;border:1px solid rgba(128,128,128,.35)}
+.pal .t{font-size:13px;margin:4px 2px 0}
+
+.custom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:560px}
+.cpick{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px;display:flex;flex-direction:column;gap:6px}
+.cpick input[type=color]{width:100%;height:44px;border:0;padding:0;background:none;border-radius:8px;cursor:pointer}
+.cpick input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.cpick input[type=color]::-webkit-color-swatch{border:1px solid var(--line);border-radius:8px}
+.cpick small{color:var(--ink3);font-size:12px}
+.field{display:flex;flex-direction:column;gap:6px;max-width:560px}
+.field input[type=url],.field input[type=text]{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r-sm);padding:11px 13px;outline:none;width:100%}
+.field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.field small{color:var(--ink3);font-size:12.5px}
+.ltr{direction:ltr;text-align:left}
+.logo-row{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.logo-prev{width:52px;height:52px;border-radius:12px;border:1.5px dashed var(--line);display:grid;place-items:center;overflow:hidden;background:var(--surface2);color:var(--ink3);font-size:11px}
+.logo-prev img{max-width:100%;max-height:100%}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* الخطوط */
+.fontc{padding:14px 14px 12px}
+.fontc .s{display:block;font-size:22px;line-height:1.35;margin:2px 0 6px;color:var(--ink)}
+.fontc .n{display:flex;justify-content:space-between;color:var(--ink3);font-size:12px}
+.fontc.auto .s{font-family:inherit;font-size:16px;color:var(--ink2);padding:9px 0}
+
+/* معاينات الكابشن — نفس ستايلات المحرّك (capStyle) */
+.capc{padding:8px}
+.phone{display:block;aspect-ratio:9/13;border-radius:10px;overflow:hidden;position:relative;background:
+   radial-gradient(60% 42% at 50% 36%,rgba(255,255,255,.18),transparent 70%),
+   linear-gradient(180deg,#5b6472 0%,#3b414b 60%,#2a2e35 100%)}
+.phone .person{display:block;position:absolute;left:22%;right:22%;top:5%;bottom:0;
+   background:radial-gradient(circle at 50% 15%,#c9b3a1 0 19%,transparent 20%),radial-gradient(ellipse 80% 62% at 50% 100%,#2c3440 0 98%,transparent 100%);opacity:.9}
+.phone .cap{position:absolute;left:6%;right:6%;bottom:9%;display:flex;flex-wrap:wrap;justify-content:center;gap:3px 5px;
+   font-family:var(--p-font),'Cairo',sans-serif;font-weight:800;font-size:13.5px;line-height:1.25;direction:rtl}
+.cap .w{transition:color .12s,opacity .12s,transform .15s;position:relative;display:inline-block}
+/* card */
+.cap-card .cap{background:var(--p-bg);border-radius:8px;padding:4px 6px;color:var(--p-ink)}
+.cap-card .w.a{color:var(--p-acc)}
+/* shadow */
+.cap-shadow .cap{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.65);font-size:15px}
+.cap-shadow .w{opacity:.6}.cap-shadow .w.a,.cap-shadow .w.p{opacity:1}.cap-shadow .w.a.h{color:var(--p-acc)}
+/* big */
+.cap-big .cap{bottom:10%;font-size:28px;font-weight:900;color:#fff;text-shadow:0 3px 8px rgba(0,0,0,.55)}
+.cap-big .w{display:none}.cap-big .w.a{display:inline-block;animation:pop .22s ease-out}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+/* underline */
+.cap-underline .cap{color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.6)}
+.cap-underline .w::after{content:"";position:absolute;right:0;bottom:-3px;height:3px;border-radius:2px;background:var(--p-acc);width:0;transition:width .2s}
+.cap-underline .w.a::after,.cap-underline .w.p::after{width:100%}
+/* bar */
+.cap-bar .cap{color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.55)}
+.cap-bar .w{padding:0 4px;border-radius:5px}
+.cap-bar .w.a{background:var(--p-acc);color:var(--p-on);text-shadow:none}
+/* type */
+.cap-type .cap{color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.6)}
+.cap-type .w{display:none}.cap-type .w.p,.cap-type .w.a{display:inline-block}
+.cap-type .w.a::before{content:"";position:absolute;left:-5px;top:12%;width:3px;height:76%;background:var(--p-acc);animation:blink .6s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* auto */
+.cap-auto .phone{display:grid;place-items:center;background:var(--surface2)}
+.cap-auto .phone svg{width:44px;height:44px;color:var(--ink3)}
+.capc .t{font-size:13.5px;margin:7px 2px 0}.capc .d{margin:0 2px 2px}
+
+/* الإيقاع */
+.pacec{padding:10px}
+.stage{display:block;height:84px;border-radius:9px;background:var(--surface2);position:relative;overflow:hidden}
+.stage .fr{position:absolute;inset:0;display:grid;place-items:center}
+.stage .fr span{display:block;width:34px;height:34px;border-radius:50%;background:var(--ink3);opacity:.55;box-shadow:0 30px 0 12px var(--ink3)}
+.stage .tl{position:absolute;left:8px;right:8px;bottom:7px;height:4px;display:flex;gap:2px}
+.stage .tl b{flex:1;border-radius:2px;background:var(--ink3);opacity:.35}
+.pace-calm .fr{animation:calm 6s ease-in-out infinite}
+@keyframes calm{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.pace-fast .fr{animation:fast 2.4s steps(1) infinite}
+@keyframes fast{0%{transform:scale(1)}50%{transform:scale(1.18) translateY(4px)}}
+.pace-hyper .fr{animation:hyper 1.2s steps(1) infinite}
+.pace-hyper .fl{position:absolute;inset:0;background:#fff;opacity:0;animation:flash 1.2s linear infinite}
+@keyframes hyper{0%{transform:scale(1)}25%{transform:scale(1.25) rotate(-2deg)}50%{transform:scale(1.05) translateX(-6px)}75%{transform:scale(1.32) translateY(6px)}}
+@keyframes flash{0%,24%{opacity:0}25%{opacity:.35}30%,100%{opacity:0}}
+.pacec .t{margin-top:8px}
+
+/* المقاس */
+.orc{padding:12px;display:flex;align-items:center;gap:12px}
+.shape{display:block;flex:none;border:2px solid var(--ink2);border-radius:5px;background:var(--surface2)}
+.opt.on .shape{border-color:var(--acc);background:var(--acc-soft)}
+
+/* الأصوات */
+.voices{margin-top:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.voices[hidden]{display:none}
+.vgroup{padding:10px 12px;border-top:1px solid var(--line)}
+.vgroup:first-child{border-top:0}
+.vgroup h3{margin:0 0 6px;font-size:13px;color:var(--ink3);font-weight:500}
+.vrow{display:flex;flex-wrap:wrap;gap:8px}
+.vopt{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:999px}
+.vopt .t{font-weight:500;font-size:14px}
+.vopt .d{display:inline;font-size:12px}
+.play{width:30px;height:30px;border-radius:50%;border:0;background:var(--surface2);display:grid;place-items:center;cursor:pointer;flex:none}
+.play svg{width:13px;height:13px}
+.play.busy{animation:spin 1s linear infinite}
+.vopt[hidden]{display:none!important}
+.vauto{margin:10px 0 4px;border-style:dashed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.voices details.more{border-top:1px solid var(--line)}
+.voices summary{padding:10px 12px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink2);list-style-position:inside}
+.vnote{padding:9px 12px;font-size:12.5px;color:var(--ink3);background:var(--surface2)}
+
+/* كرت النهاية */
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;user-select:none}
+.switch input{position:absolute;opacity:0}
+.switch .k{width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;transition:background .15s}
+.switch .k::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:right .15s}
+.switch input:checked+.k{background:var(--acc)}
+.switch input:checked+.k::after{right:21px}
+.endf{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.endf[hidden]{display:none}
+
+/* الشريط السفلي */
+.bar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px}
+.prog{display:flex;align-items:center;gap:10px;min-width:0}
+.prog .meter{width:90px;height:6px;border-radius:9px;background:var(--line);overflow:hidden;flex:none}
+.prog .meter i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.prog span{color:var(--ink2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .btn-pri{padding:12px 22px}
+
+/* شاشة النهاية */
+.done-ov{position:fixed;inset:0;background:var(--bg);display:none;place-items:center;z-index:50;padding:16px;text-align:center}
+.done-ov.show{display:grid}
+.done-ov .ok{width:72px;height:72px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;margin:0 auto 18px}
+.done-ov .ok svg{width:36px;height:36px}
+.done-ov h2{font-size:24px;margin-bottom:6px}
+.done-ov p{color:var(--ink2);margin:0 auto;max-width:420px}
+.done-ov pre{direction:ltr;text-align:left;max-width:560px;max-height:40vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12px;margin:14px auto 0;white-space:pre-wrap;word-break:break-word}
+.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1}
+
+@media (max-width:560px){
+  body{font-size:14.5px}
+  .g-cap{grid-template-columns:repeat(3,1fr);gap:8px}
+  .capc{padding:6px}.capc .d{display:none}
+  .phone .cap{font-size:12px;left:4%;right:4%;bottom:7%}.cap-shadow .cap{font-size:13px}.cap-big .cap{font-size:24px}
+  #paces{grid-template-columns:repeat(2,1fr)}
+  #ors{grid-template-columns:repeat(3,1fr);gap:8px}
+  .orc{flex-direction:column;align-items:flex-start;gap:8px;padding:10px}.orc .d{font-size:11px}
+  .g-2{grid-template-columns:1fr 1fr}.g-2 .fontc .s{font-size:18px}
+  .g-pal{grid-template-columns:repeat(2,1fr)}
+  .g-font{grid-template-columns:1fr}
+  .custom{grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .cpick{padding:8px}
+  .prog .meter{display:none}
+  .qs{margin-right:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<form id="f" autocomplete="off" onsubmit="return false">
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>قبل ما نبدأ، عرّفني على ذوقك</h1>
+    <p class="lead">دقيقتين بالكثير. أي شي ما تختاره أقرره أنا حسب الفيديو، وتقدر تغيّره بعدين بكلمة «غيّر إعداداتي».</p>
+  </div>
+  <button type="button" class="iconbtn" id="themeBtn" aria-label="الوضع الليلي والنهاري">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
+</header>
+
+<div class="quick">
+  <label for="note">اكتب اللي تبيه وخلّ الباقي علي</label>
+  <textarea id="note" name="note" placeholder="مثلاً: إعلان لمطعمي، ألوان الشعار أحمر وأبيض، إيقاع سريع، وبالنهاية «احجز الحين»"></textarea>
+  <div class="row">
+    <span class="hint">تبي تختصر؟ اكتب هني واضغط تخطّ — أو كمّل تحت.</span>
+    <button type="button" class="btn btn-ghost" id="skipBtn">تخطّ الأسئلة وابدأ</button>
+  </div>
+</div>
+
+<!-- 1 الهوية -->
+<section class="q" data-g="identity">
+  <div class="qh"><span class="qn">1</span><h2>ألوانك</h2></div>
+  <p class="qs">كل الكروت والنصوص بالفيديو تاخذ من هالألوان. صورتك نفسها ما تنصبغ.</p>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab" role="tab" data-tab="palette" aria-selected="true">ألوان جاهزة</button>
+    <button type="button" class="tab" role="tab" data-tab="custom" aria-selected="false">أختارها بنفسي</button>
+    <button type="button" class="tab" role="tab" data-tab="url" aria-selected="false">من موقعي أو حسابي</button>
+  </div>
+  <div class="panel" data-panel="palette"><div class="grid g-pal" id="pals"></div></div>
+  <div class="panel" data-panel="custom" hidden>
+    <div class="custom">
+      <label class="cpick"><small>الخلفية</small><input type="color" name="c_bg" value="#111827"></label>
+      <label class="cpick"><small>النص</small><input type="color" name="c_ink" value="#F9FAFB"></label>
+      <label class="cpick"><small>لون التمييز</small><input type="color" name="c_acc" value="#22C55E"></label>
+    </div>
+    <p class="cwarn" id="cwarn" hidden>لون التمييز قريب من الخلفية — الكلمة المميزة ما راح تبان زين. جرّب لون أغمق أو أفتح.</p>
+  </div>
+  <div class="panel" data-panel="url" hidden>
+    <div class="field">
+      <input type="url" name="url" class="ltr" placeholder="https://instagram.com/yourname  أو  https://yoursite.com" inputmode="url">
+      <small>أطلّع ألوانك وخطك وشعارك من الرابط أول ما تبدأ، وأوريك قبل ما أستخدمها.</small>
+    </div>
+  </div>
+  <div class="logo-row">
+    <div class="logo-prev" id="logoPrev">شعار</div>
+    <label class="btn btn-ghost filebtn">ارفع شعارك (اختياري)<input type="file" id="logoIn" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+  </div>
+</section>
+
+<!-- 2 الخط -->
+<section class="q" data-g="font">
+  <div class="qh"><span class="qn">2</span><h2>الخط</h2></div>
+  <p class="qs">كلها تدعم العربي كامل. اختار اللي يشبهك.</p>
+  <div class="grid g-font" id="fonts"></div>
+</section>
+
+<!-- 3 الكابشن -->
+<section class="q" data-g="capStyle">
+  <div class="qh"><span class="qn">3</span><h2>شكل الكابشن</h2></div>
+  <p class="qs">الكلمة تتلوّن لحظة ما تنطقها. المعاينة بألوانك وخطك اللي فوق.</p>
+  <div class="grid g-cap" id="caps"></div>
+</section>
+
+<!-- 4 الأرقام -->
+<section class="q" data-g="digits">
+  <div class="qh"><span class="qn">4</span><h2>الأرقام</h2></div>
+  <p class="qs">بالكابشن والرسومات.</p>
+  <div class="grid g-2">
+    <label class="opt fontc"><input type="radio" name="digits" value="western"><span class="tick"></span><span class="s" style="font-family:Cairo;font-size:22px">خصم 25٪ على 3 قطع</span><span class="t">غربية</span></label>
+    <label class="opt fontc"><input type="radio" name="digits" value="arabic"><span class="tick"></span><span class="s" style="font-family:Cairo;font-size:22px">خصم ٢٥٪ على ٣ قطع</span><span class="t">عربية</span></label>
+  </div>
+</section>
+
+<!-- 5 الإيقاع -->
+<section class="q" data-g="pace">
+  <div class="qh"><span class="qn">5</span><h2>إيقاع المونتاج</h2></div>
+  <p class="qs">كم مرة الكادر يتحرك ويتغيّر.</p>
+  <div class="grid g-3" id="paces"></div>
+</section>
+
+<!-- 6 نوع الفيديو -->
+<section class="q" data-g="content">
+  <div class="qh"><span class="qn">6</span><h2>نوع الفيديو</h2></div>
+  <p class="qs">لو ما اخترت، أعرفه من المقطع نفسه.</p>
+  <div class="chips" id="ctypes"></div>
+  <div class="sub">فيه أحد يطلع بالفيديو؟</div>
+  <div class="seg" id="persons"></div>
+</section>
+
+<!-- 7 المقاس -->
+<section class="q" data-g="orientation">
+  <div class="qh"><span class="qn">7</span><h2>المقاس</h2></div>
+  <p class="qs">تقدر تختار أكثر من واحد.</p>
+  <div class="grid g-3" id="ors"></div>
+</section>
+
+<!-- 8 وين تنشر -->
+<section class="q" data-g="platforms">
+  <div class="qh"><span class="qn">8</span><h2>وين تنشر؟</h2></div>
+  <p class="qs">عشان أبعد النص عن أزرار كل منصة. أكثر من وحدة عادي.</p>
+  <div class="chips" id="plats"></div>
+  <div class="sub">طول الفيديو</div>
+  <div class="seg" id="lens"></div>
+</section>
+
+<!-- 9 الصوت -->
+<section class="q" data-g="audio">
+  <div class="qh"><span class="qn">9</span><h2>الصوت</h2></div>
+  <p class="qs">التعليق الصوتي يلزم بس للفيديو اللي ما فيه أحد يتكلم.</p>
+  <div class="sub" style="margin-top:4px">التعليق الصوتي</div>
+  <div class="seg" id="vmodes"></div>
+  <div class="voices" id="voices" hidden>
+    <div class="sub">لغة التعليق</div>
+    <div class="seg" id="vlangs"></div>
+    <div class="sub">صوت رجل ولا امرأة؟</div>
+    <div class="seg" id="vsexes"></div>
+    <div id="vlist"></div>
+  </div>
+  <div class="sub">ملف صوتي بالخلفية</div>
+  <div class="seg" id="bgs"></div>
+  <div class="sub">مؤثرات صوتية (ووش، ضربة، نقرة)</div>
+  <div class="seg" id="sfxs"></div>
+</section>
+
+<!-- 10 كرت النهاية -->
+<section class="q" data-g="endCard">
+  <div class="qh"><span class="qn">10</span><h2>كرت النهاية</h2></div>
+  <p class="qs">آخر ثواني الفيديو: حسابك وجملة تدعو للتفاعل. اختياري.</p>
+  <label class="switch"><input type="checkbox" name="end_on" id="endOn"><span class="k"></span><span>أبي كرت بالنهاية</span></label>
+  <div class="endf" id="endf" hidden>
+    <div class="field"><small>حسابك</small><input type="text" name="handle" class="ltr" placeholder="@yourname"></div>
+    <div class="field"><small>الجملة الأخيرة — قصيرة تطلع كبيرة</small><input type="text" name="cta" maxlength="60" placeholder="تابعني للجزء الثاني"></div>
+    <div class="field"><small>كلمة يعلّقون فيها (اختياري)</small><input type="text" name="word" placeholder="أبي"></div>
+  </div>
+</section>
+
+</div>
+
+<div class="bar"><div class="wrap">
+  <div class="prog"><div class="meter"><i id="meterI"></i></div><span id="progT">كل شي تلقائي — اختار اللي يهمك بس</span></div>
+  <button type="button" class="btn btn-pri" id="saveBtn">احفظ وخلّنا نبدأ
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+</div></div>
+</form>
+
+<div class="done-ov" id="doneOv" role="dialog" aria-live="polite">
+  <div>
+    <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+    <h2 id="doneH">انحفظ</h2>
+    <p id="doneP">ارجع لكلود — بدأ الشغل. تقدر تسكّر هالصفحة.</p>
+    <pre id="doneJ" hidden></pre>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════ البيانات ═══════════ */
+const TICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const PALETTES=[  /* محايدة — ولا وحدة منها هوية أحد */
+  {id:'night-gold', n:'ليل وذهبي',   bg:'#101828',ink:'#F5F7FA',acc:'#F2B33D',clay:'#C98B18',mut:'#98A2B3'},
+  {id:'paper-indigo',n:'أبيض ونيلي', bg:'#F7F8FC',ink:'#111827',acc:'#3B5BFD',clay:'#2A3FC0',mut:'#6B7280'},
+  {id:'coal-lime',  n:'فحمي وليموني',bg:'#0E0F0C',ink:'#F4F4EF',acc:'#C6F432',clay:'#93B51F',mut:'#8C8F85'},
+  {id:'deep-mint',  n:'أخضر عميق',  bg:'#0B2A26',ink:'#EAF6F2',acc:'#3DDC97',clay:'#1FA774',mut:'#8FB5AA'},
+  {id:'plum-pink',  n:'بنفسجي ووردي',bg:'#1A1030',ink:'#F7F2FF',acc:'#FF5C8A',clay:'#D63A6A',mut:'#A89BC2'},
+  {id:'white-red',  n:'أبيض وأحمر', bg:'#FFFFFF',ink:'#0A0A0A',acc:'#FF3B30',clay:'#C62A22',mut:'#737373'},
+  {id:'ocean',      n:'بحري',       bg:'#06283D',ink:'#EAF4FB',acc:'#47B5FF',clay:'#1C82C9',mut:'#8BA9BD'},
+  {id:'white-teal', n:'أبيض وتركوازي',bg:'#F4F8F8',ink:'#0B1F24',acc:'#0E9C9C',clay:'#0A7575',mut:'#5E7479'},
+];
+const FONTS=[
+  {f:'Cairo',n:'كايرو',d:'متوازن وواضح'},
+  {f:'Tajawal',n:'تجوال',d:'نظيف وخفيف'},
+  {f:'IBM Plex Sans Arabic',n:'آي بي إم بلكس',d:'عصري ورسمي'},
+  {f:'Noto Kufi Arabic',n:'نوتو كوفي',d:'كوفي هندسي'},
+  {f:'Readex Pro',n:'ريدكس برو',d:'حديث وعريض'},
+  {f:'Almarai',n:'المراعي',d:'بسيط ومقروء'},
+  {f:'Changa',n:'تشانغا',d:'مضغوط وقوي'},
+  {f:'Lalezar',n:'لاله‌زار',d:'عريض للعناوين'},
+];
+const FONT_SAMPLE='خلّ الفيديو يحكي عنك — 2026';
+const CAPS_ST=[  /* نفس أسماء المحرّك: theme.json ← capStyle */
+  {v:'card',     n:'كرت',      d:'كرت بلونك والكلمة تنصبغ'},
+  {v:'shadow',   n:'ظل',       d:'أبيض كبير بلا خلفية'},
+  {v:'big',      n:'كلمة كلمة',d:'كلمة وحدة ضخمة'},
+  {v:'underline',n:'خط تحت',   d:'خط بلونك تحت الكلمة'},
+  {v:'bar',      n:'شريط',     d:'شريط بلونك ورا الكلمة'},
+  {v:'type',     n:'كتابة',    d:'تنكتب قدامك بمؤشر'},
+];
+const CAP_WORDS=['كلامك','يطلع','كلمة','كلمة'];
+const PACES=[
+  {v:'calm', n:'هادي', d:'زوم ناعم وقطعات قليلة — للشرح والمحتوى الراقي', seg:3},
+  {v:'fast', n:'سريع', d:'تغيير كل ثانية ونص تقريباً — ريلز عادي', seg:8},
+  {v:'hyper',n:'صاروخ',d:'شي يتحرك كل نص ثانية — هوك وترند', seg:16},
+];
+const CTYPES=[
+  {v:'auto',n:'تلقائي'},{v:'talking',n:'كلام للكاميرا'},{v:'podcast',n:'بودكاست'},{v:'review',n:'مراجعة منتج'},
+  {v:'news',n:'خبر'},{v:'montage',n:'مونتاج مقاطع'},{v:'explainer',n:'شرح موشن بلا شخص (تجريبي)'},
+];
+const PERSONS=[{v:'auto',n:'تلقائي'},{v:'with',n:'إي، فيه أحد'},{v:'without',n:'لا، بدون شخص'}];
+const ORS=[
+  {v:'9:16',n:'طولي 9:16',d:'ريلز · تيك توك · شورتس',w:18,h:32},
+  {v:'16:9',n:'عرضي 16:9',d:'يوتيوب · لينكدإن',w:36,h:20},
+  {v:'1:1', n:'مربع 1:1', d:'بوست · إعلان',w:26,h:26},
+];
+const PLATS=[
+  {v:'instagram',n:'انستقرام'},{v:'tiktok',n:'تيك توك'},{v:'shorts',n:'يوتيوب شورتس'},{v:'snapchat',n:'سناب'},
+  {v:'youtube',n:'يوتيوب'},{v:'x',n:'إكس'},{v:'linkedin',n:'لينكدإن'},
+];
+const LENS=[{v:'auto',n:'تلقائي'},{v:'30',n:'أقل من 30 ث'},{v:'60',n:'دقيقة'},{v:'90',n:'دقيقة ونص'},{v:'full',n:'مثل ما هو'}];
+const VMODES=[{v:'auto',n:'تلقائي'},{v:'own',n:'صوتي أنا'},{v:'tts',n:'صوت مولّد مجاني'}];
+const VLANGS=[{v:'fusha',n:'فصحى (بلا غلط)'},{v:'dialect',n:'لهجة (تجريبي)'},{v:'auto',n:'تلقائي'}];
+const VSEXES=[{v:'auto',n:'تلقائي'},{v:'m',n:'رجل'},{v:'f',n:'امرأة'}];
+const VOICES=[  /* edge-tts — أصوات مايكروسوفت العربية المجانية */
+  ['الخليج',[['ar-KW-FahedNeural','فهد','كويتي','رجل'],['ar-KW-NouraNeural','نورة','كويتية','امرأة'],
+            ['ar-SA-HamedNeural','حامد','سعودي','رجل'],['ar-SA-ZariyahNeural','زارية','سعودية','امرأة'],
+            ['ar-AE-HamdanNeural','حمدان','إماراتي','رجل'],['ar-AE-FatimaNeural','فاطمة','إماراتية','امرأة'],
+            ['ar-QA-MoazNeural','معاذ','قطري','رجل'],['ar-QA-AmalNeural','أمل','قطرية','امرأة'],
+            ['ar-BH-AliNeural','علي','بحريني','رجل'],['ar-BH-LailaNeural','ليلى','بحرينية','امرأة'],
+            ['ar-OM-AbdullahNeural','عبدالله','عماني','رجل'],['ar-OM-AyshaNeural','عائشة','عمانية','امرأة']]],
+  ['الشام والعراق واليمن',[['ar-IQ-BasselNeural','باسل','عراقي','رجل'],['ar-IQ-RanaNeural','رنا','عراقية','امرأة'],
+            ['ar-JO-TaimNeural','تيم','أردني','رجل'],['ar-JO-SanaNeural','سناء','أردنية','امرأة'],
+            ['ar-LB-RamiNeural','رامي','لبناني','رجل'],['ar-LB-LaylaNeural','ليلى','لبنانية','امرأة'],
+            ['ar-SY-LaithNeural','ليث','سوري','رجل'],['ar-SY-AmanyNeural','أماني','سورية','امرأة'],
+            ['ar-YE-SalehNeural','صالح','يمني','رجل'],['ar-YE-MaryamNeural','مريم','يمنية','امرأة']]],
+  ['مصر والمغرب العربي',[['ar-EG-ShakirNeural','شاكر','مصري','رجل'],['ar-EG-SalmaNeural','سلمى','مصرية','امرأة'],
+            ['ar-MA-JamalNeural','جمال','مغربي','رجل'],['ar-MA-MounaNeural','منى','مغربية','امرأة'],
+            ['ar-TN-HediNeural','هادي','تونسي','رجل'],['ar-TN-ReemNeural','ريم','تونسية','امرأة'],
+            ['ar-DZ-IsmaelNeural','إسماعيل','جزائري','رجل'],['ar-DZ-AminaNeural','أمينة','جزائرية','امرأة'],
+            ['ar-LY-OmarNeural','عمر','ليبي','رجل'],['ar-LY-ImanNeural','إيمان','ليبية','امرأة']]],
+];
+const BGS=[{v:'auto',n:'قرّر وقتها'},{v:'none',n:'بدون'},{v:'own',n:'عندي ملف'}];
+const SFXS=[{v:'auto',n:'تلقائي'},{v:'on',n:'شغّلها'},{v:'off',n:'بدونها'}];
+const SERVER=location.protocol.startsWith('http');
+
+/* ═══════════ بناء الخيارات ═══════════ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function opt(type,name,v,inner,cls=''){return `<label class="opt ${cls}"><input type="${type}" name="${name}" value="${esc(v)}"><span class="tick">${TICK}</span>${inner}</label>`;}
+function simple(box,type,name,list){ $(box).innerHTML=list.map(o=>opt(type,name,o.v,`<span class="t">${o.n}</span>`)).join(''); }
+
+$('#pals').innerHTML=PALETTES.map(p=>opt('radio','palette',p.id,
+  `<span class="mini" style="background:${p.bg};color:${p.ink}"><b style="font-family:Cairo">أهلاً فيك</b><i style="background:${p.acc};color:${onColor(p.acc,p.ink,p.bg)}">جديد</i></span>
+   <span class="dots">${[p.bg,p.ink,p.acc].map(c=>`<span style="background:${c}"></span>`).join('')}</span><span class="t">${p.n}</span>`,'pal')).join('');
+
+$('#fonts').innerHTML=opt('radio','font','auto',`<span class="s">أختاره أنا حسب الفيديو</span><span class="n"><span class="t">تلقائي</span></span>`,'fontc auto')+
+  FONTS.map(x=>opt('radio','font',x.f,`<span class="s" style="font-family:'${x.f}';font-weight:${x.f==='Lalezar'?400:700}">${FONT_SAMPLE}</span>
+   <span class="n"><span class="t" style="color:var(--ink)">${x.n}</span><span>${x.d}</span></span>`,'fontc')).join('');
+
+const capWords=CAP_WORDS.map((w,i)=>`<span class="w${i===0?' h':''}">${w}</span>`).join('');
+$('#caps').innerHTML=opt('radio','capStyle','auto',`<span class="phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></span><span class="t">تلقائي</span><span class="d">أختار حسب الفيديو</span>`,'capc cap-auto')+
+  CAPS_ST.map(c=>opt('radio','capStyle',c.v,`<span class="phone"><span class="person"></span><span class="cap">${capWords}</span></span><span class="t">${c.n}</span><span class="d">${c.d}</span>`,'capc cap-'+c.v)).join('');
+
+$('#paces').innerHTML=opt('radio','pace','auto',`<span class="stage" style="display:grid;place-items:center;color:var(--ink3);font-size:13px">حسب الكلام</span><span class="t">تلقائي</span><span class="d">أختار حسب نوع الفيديو</span>`,'pacec')+
+  PACES.map(p=>opt('radio','pace',p.v,`<span class="stage pace-${p.v}"><span class="fr"><span></span></span><span class="fl"></span><span class="tl">${'<b></b>'.repeat(p.seg)}</span></span><span class="t">${p.n}</span><span class="d">${p.d}</span>`,'pacec')).join('');
+
+simple('#ctypes','radio','ctype',CTYPES);
+simple('#persons','radio','person',PERSONS);
+$('#ors').innerHTML=ORS.map(o=>opt('checkbox','orientation',o.v,`<span class="shape" style="width:${o.w}px;height:${o.h}px"></span><span><span class="t">${o.n}</span><span class="d">${o.d}</span></span>`,'orc')).join('');
+simple('#plats','checkbox','platforms',PLATS);
+simple('#lens','radio','length',LENS);
+simple('#vmodes','radio','voiceMode',VMODES);
+simple('#bgs','radio','bgAudio',BGS);
+simple('#sfxs','radio','sfx',SFXS);
+simple('#vlangs','radio','voiceLang',VLANGS); simple('#vsexes','radio','voiceSex',VSEXES);
+$('#vlist').innerHTML=`<label class="opt vopt vauto"><input type="radio" name="voice" value="auto"><span class="t">اختاره أنا</span><span class="d">أجرّب الأصوات على نصّك وأختار الأوضح</span></label>`+VOICES.map(([g,vs],gi)=>`${gi===1?'<details class="more"><summary>لهجات ثانية (الشام، العراق، اليمن، مصر، المغرب العربي)</summary>':''}<div class="vgroup"><h3>${g}</h3><div class="vrow">${vs.map(([id,n,dial,sex])=>
+  `<label class="opt vopt" data-sex="${sex==='رجل'?'m':'f'}"><input type="radio" name="voice" value="${id}"><button type="button" class="play" data-v="${id}" aria-label="اسمع ${n}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><span class="t">${n}</span><span class="d">${dial} · ${sex}</span></label>`).join('')}</div></div>${gi===VOICES.length-1?'</details>':''}`).join('')+
+  `<div class="vnote" id="vnote">${SERVER?'اضغط زر التشغيل تسمع العيّنة (يحتاج نت، أول مرة ثانيتين).':'العيّنات تشتغل لما تنفتح الصفحة من كلود.'} الأصوات مجانية من مايكروسوفت. بالفصحى المشكّلة تطلع مثل مذيع بلا غلط، وباللهجة ممكن تطلع مكسّرة — أجرّبها قبل وأسمعك.</div>`;
+
+/* ═══════════ الألوان والمعاينة ═══════════ */
+function hx(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));}
+function toHex(a){return '#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();}
+function lum(h){return hx(h).map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);}).reduce((s,v,i)=>s+v*[0.2126,0.7152,0.0722][i],0);}
+function contrast(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);}
+function onColor(acc,ink,bg){ /* النص فوق لون التمييز — نفس on_accent بـ00_onboard.py حرفياً (ينكتب theme.onAcc والمحرّك يرسم فيه):
+  الأوضح من ألوانه (ink/bg) لو تباينه 4.5 وفوق، وإلا الأوضح من ألوانه + الأبيض + الأسود */
+  const best=[ink,bg].reduce((b,c)=>contrast(c,acc)>contrast(b,acc)?c:b);
+  if(contrast(best,acc)>=4.5) return best;
+  return [ink,bg,'#FFFFFF','#111111'].reduce((b,c)=>contrast(c,acc)>contrast(b,acc)?c:b); }
+function mix(a,b,k){const A=hx(a),B=hx(b);return toHex(A.map((v,i)=>v+(B[i]-v)*k));}
+let idMode='palette';
+function currentColors(){
+  if(idMode==='custom'){const f=$('#f'); const bg=f.c_bg.value.toUpperCase(), ink=f.c_ink.value.toUpperCase(), acc=f.c_acc.value.toUpperCase();
+    return {bg,ink,acc,clay:mix(acc,'#000000',0.22),mut:mix(bg,ink,0.55)};}
+  const id=($('input[name=palette]:checked')||{}).value; const p=PALETTES.find(x=>x.id===id);
+  return p?{bg:p.bg,ink:p.ink,acc:p.acc,clay:p.clay,mut:p.mut}:null;
+}
+function applyPreview(){
+  const c=currentColors()||PALETTES[0]; const r=document.documentElement.style;
+  const w=$('#cwarn'); if(w) w.hidden=!(idMode==='custom'&&(contrast(c.acc,c.bg)<1.8||contrast(onColor(c.acc,c.ink,c.bg),c.acc)<3));
+  r.setProperty('--p-bg',c.bg); r.setProperty('--p-ink',c.ink); r.setProperty('--p-acc',c.acc); r.setProperty('--p-on',onColor(c.acc,c.ink,c.bg));
+  const f=($('input[name=font]:checked')||{}).value; r.setProperty('--p-font',(f&&f!=='auto')?`'${f}'`:"'Cairo'");
+}
+/* كلمة كلمة — نفس فكرة تظليل الكلمة المنطوقة */
+let wi=0;
+setInterval(()=>{ wi=(wi+1)%(CAP_WORDS.length+2);
+  $$('.phone .cap').forEach(cap=>[...cap.children].forEach((w,i)=>{w.classList.toggle('a',i===wi);w.classList.toggle('p',i<wi);}));
+},420);
+
+/* ═══════════ التفاعل ═══════════ */
+const touched=new Set();
+const GROUPS=['identity','font','capStyle','digits','pace','content','orientation','platforms','audio','endCard'];
+const groupOf={palette:'identity',c_bg:'identity',c_ink:'identity',c_acc:'identity',url:'identity',font:'font',capStyle:'capStyle',digits:'digits',pace:'pace',
+  ctype:'content',person:'content',orientation:'orientation',platforms:'platforms',length:'platforms',voiceMode:'audio',voice:'audio',bgAudio:'audio',sfx:'audio',
+  end_on:'endCard',handle:'endCard',cta:'endCard',word:'endCard'};
+function syncOn(){ $$('.opt input').forEach(i=>i.closest('.opt').classList.toggle('on',i.checked)); }
+function progress(){
+  GROUPS.forEach(g=>{const s=$(`section[data-g="${g}"]`); if(s) s.classList.toggle('done',touched.has(g));});
+  const n=touched.size; $('#meterI').style.width=(n/GROUPS.length*100)+'%';
+  $('#progT').textContent=n===0?'كل شي تلقائي — اختار اللي يهمك بس':`اخترت ${n} من ${GROUPS.length} — الباقي أقرره أنا`;
+}
+$('#f').addEventListener('change',e=>{
+  const n=e.target.name; if(groupOf[n]) touched.add(groupOf[n]);
+  if(n==='voice'){ setRadio('voiceMode','tts'); }
+  if(n==='voiceMode') $('#voices').hidden=e.target.value!=='tts';
+  if(n==='voiceSex') filterVoices();
+  if(n==='ctype'&&e.target.value==='explainer') setRadio('person','without');
+  if(n==='end_on') $('#endf').hidden=!e.target.checked;
+  syncOn(); applyPreview(); progress();
+});
+$('#f').addEventListener('input',e=>{ const n=e.target.name;
+  if(['handle','cta','word','url'].includes(n)&&e.target.value.trim()) touched.add(groupOf[n]);
+  if(n&&n.startsWith('c_')){touched.add('identity'); applyPreview();} progress(); });
+function setRadio(name,v){const i=$(`input[name="${name}"][value="${v}"]`); if(i){i.checked=true;} if(name==='voiceMode') $('#voices').hidden=v!=='tts'; syncOn();}
+
+$$('.tab').forEach(t=>t.addEventListener('click',()=>{
+  idMode=t.dataset.tab; $$('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  $$('.panel').forEach(p=>p.hidden=p.dataset.panel!==idMode);
+  if(idMode==='custom') touched.add('identity');
+  applyPreview(); progress();
+}));
+
+/* الشعار */
+let logoData=null;
+$('#logoIn').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return;
+  if(file.size>6*1024*1024){ toast('الشعار كبير — أقل من 6 ميقا لو سمحت'); return; }
+  const rd=new FileReader(); rd.onload=()=>{ logoData={name:file.name,data:rd.result};
+    $('#logoPrev').innerHTML=`<img alt="" src="${rd.result}">`; touched.add('identity'); progress(); }; rd.readAsDataURL(file); });
+
+function filterVoices(){ const sx=val('voiceSex'); $$('#vlist .vopt[data-sex]').forEach(l=>{ l.hidden=(sx==='m'||sx==='f')&&l.dataset.sex!==sx; }); }
+/* عيّنات الأصوات */
+let audio=null;
+$('#voices').addEventListener('click',async e=>{
+  const b=e.target.closest('.play'); if(!b) return; e.preventDefault(); e.stopPropagation();
+  setRadio('voice',b.dataset.v); setRadio('voiceMode','tts'); touched.add('audio'); progress();
+  if(!SERVER){ toast('العيّنات تشتغل لما تنفتح الصفحة من كلود'); return; }
+  if(audio){audio.pause();}
+  b.classList.add('busy');
+  try{ const r=await fetch('/api/voice?v='+encodeURIComponent(b.dataset.v)+'&lang='+(val('voiceLang')==='dialect'?'dialect':'fusha')); if(!r.ok) throw new Error(await r.text());
+    const blob=await r.blob(); audio=new Audio(URL.createObjectURL(blob)); await audio.play();
+  }catch(err){ toast('ما قدرت أشغّل العيّنة — يمكن النت مفصول. الصوت ينحفظ عادي.'); }
+  finally{ b.classList.remove('busy'); }
+});
+
+/* الوضع الليلي */
+function themeInit(){ let t=null; try{t=localStorage.getItem('vae-theme');}catch(e){} if(t) document.documentElement.dataset.theme=t; }
+$('#themeBtn').addEventListener('click',()=>{ const dark=getComputedStyle(document.documentElement).colorScheme.includes('dark');
+  const t=dark?'light':'dark'; document.documentElement.dataset.theme=t; try{localStorage.setItem('vae-theme',t);}catch(e){} });
+themeInit();
+
+function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ═══════════ الجمع والإرسال ═══════════ */
+const val=n=>{const i=$(`input[name="${n}"]:checked`); return i?i.value:'auto';};
+const vals=n=>$$(`input[name="${n}"]:checked`).map(i=>i.value);
+function collect(){
+  const f=$('#f');
+  let identity={mode:'auto'};
+  if(idMode==='palette'&&$('input[name=palette]:checked')){ identity={mode:'palette',palette:val('palette'),colors:currentColors()}; }
+  else if(idMode==='custom'){ identity={mode:'custom',colors:currentColors()}; }
+  else if(idMode==='url'&&f.url.value.trim()){ identity={mode:'url',url:f.url.value.trim()}; }
+  if(logoData) identity.logo=logoData;
+  const vm=val('voiceMode');
+  return {
+    version:1, skip:false, note:f.note.value.trim(),
+    identity,
+    font:val('font'), capStyle:val('capStyle'), digits:val('digits')==='auto'?'western':val('digits'), pace:val('pace'),
+    content:{type:val('ctype'),person:val('person')},
+    orientation:vals('orientation').length?vals('orientation'):['9:16'],
+    platforms:vals('platforms'), length:val('length'),
+    voice:{mode:vm, lang:vm==='tts'?(val('voiceLang')||'fusha'):null, gender:vm==='tts'?(val('voiceSex')||'auto'):null, tts:(vm==='tts'&&val('voice')&&val('voice')!=='auto')?val('voice'):null},   /* tts:null = كلود يجرّب الأصوات على النص ويختار — ما فيه صوت ثابت */
+    bgAudio:val('bgAudio'), sfx:val('sfx'),
+    endCard:{on:f.end_on.checked, handle:f.handle.value.trim(), cta:f.cta.value.trim(), word:f.word.value.trim()},
+    answered:[...touched],
+  };
+}
+async function send(obj){
+  const btns=[$('#saveBtn'),$('#skipBtn')]; btns.forEach(b=>b.disabled=true);
+  obj.savedAt=new Date().toISOString();
+  if(!SERVER){ showDone(obj,false); return; }
+  try{ const r=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
+    const j=await r.json(); if(!j.ok) throw new Error(j.error||'x'); showDone(obj,true);
+  }catch(e){ btns.forEach(b=>b.disabled=false); toast('ما انحفظ — تأكد إن كلود للحين شغّال وجرّب مرة ثانية'); }
+}
+function showDone(obj,saved){
+  $('#doneOv').classList.add('show');
+  if(obj.skip){ $('#doneH').textContent='تمام، خلّها علي'; }
+  if(!saved){ $('#doneH').textContent='انسخ هذا وارسله لكلود'; $('#doneP').textContent='الصفحة مفتوحة بدون كلود، فما قدرت أحفظ بنفسي.';
+    const o={...obj}; if(o.identity&&o.identity.logo) o.identity={...o.identity,logo:'(ارفع الشعار بالشات)'}; const pre=$('#doneJ'); pre.hidden=false; pre.textContent=JSON.stringify(o,null,2); }
+}
+$('#saveBtn').addEventListener('click',()=>send(collect()));
+$('#skipBtn').addEventListener('click',()=>send({version:1,skip:true,note:$('#note').value.trim()}));
+
+/* ═══════════ تعبئة من ملف سابق (لما يقول «غيّر إعداداتي») ═══════════ */
+async function prefill(){
+  if(!SERVER) return;
+  let p=null; try{ const r=await fetch('/api/profile'); if(r.ok) p=await r.json(); }catch(e){}
+  if(!p||!p.version||p.skip) return;
+  const f=$('#f');
+  if(p.note) f.note.value=p.note;
+  const id=p.identity||{};
+  if(id.mode==='palette'&&id.palette){ setRadio('palette',id.palette); }
+  else if(id.mode==='custom'&&id.colors){ ['bg','ink','acc'].forEach(k=>{ if(id.colors[k]) f['c_'+k].value=id.colors[k].toLowerCase(); }); $('.tab[data-tab="custom"]').click(); }
+  else if(id.mode==='url'&&id.url){ f.url.value=id.url; $('.tab[data-tab="url"]').click(); }
+  if(id.logo&&typeof id.logo==='string'){ $('#logoPrev').innerHTML=`<img alt="" src="/api/logo">`; }
+  const R=(n,v)=>{ if(v&&v!=='auto') setRadio(n,v); };
+  R('font',p.font); R('capStyle',p.capStyle); R('digits',p.digits); R('pace',p.pace);
+  if(p.content){R('ctype',p.content.type);R('person',p.content.person);}
+  if(Array.isArray(p.orientation)&&p.orientation.length){   /* المحفوظ يستبدل الافتراضي (9:16) — لا يضيف عليه */
+    $$('input[name=orientation]').forEach(i=>{i.checked=p.orientation.includes(i.value);}); }
+  if(Array.isArray(p.platforms)) $$('input[name=platforms]').forEach(i=>{i.checked=p.platforms.includes(i.value);});
+  R('length',p.length); R('bgAudio',p.bgAudio); R('sfx',p.sfx);
+  if(p.voice){ R('voiceMode',p.voice.mode); if(p.voice.lang) R('voiceLang',p.voice.lang); if(p.voice.gender) R('voiceSex',p.voice.gender); filterVoices(); if(p.voice.tts){ setRadio('voice',p.voice.tts); const i=$(`input[name=voice][value="${p.voice.tts}"]`); const d=i&&i.closest('details'); if(d) d.open=true; } }
+  if(p.endCard&&p.endCard.on){ f.end_on.checked=true; $('#endf').hidden=false; f.handle.value=p.endCard.handle||''; f.cta.value=p.endCard.cta||''; f.word.value=p.endCard.word||''; }
+  (p.answered||[]).forEach(g=>touched.add(g));
+  syncOn(); applyPreview(); progress();
+  toast('فتحت إعداداتك السابقة — غيّر اللي تبيه');
+}
+/* الافتراضي الظاهر */
+setRadio('ctype','auto'); setRadio('person','auto'); setRadio('length','auto'); setRadio('voiceMode','auto'); setRadio('bgAudio','auto'); setRadio('sfx','auto');
+setRadio('font','auto'); setRadio('capStyle','auto'); setRadio('pace','auto');
+$('input[name=orientation][value="9:16"]').checked=true;
+syncOn(); applyPreview(); progress(); prefill();
+</script>
+</body>
+</html>

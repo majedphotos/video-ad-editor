@@ -1,0 +1,12 @@
+{
+  "name": "majed-video",
+  "owner": { "name": "Majed Alzaabi", "url": "https://github.com/majedphotos" },
+  "description": "سكلات الفيديو العربية لـClaude Code",
+  "plugins": [
+    {
+      "name": "majed-video",
+      "source": "./",
+      "description": "ريل من فيديو كلام · شرح بالموشن 3D · بودكاست · مونتاج على الإيقاع"
+    }
+  ]
+}

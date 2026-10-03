@@ -1,0 +1,54 @@
+{
+ "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+ "id": "mk-headline",
+ "name": "MK عنوان + رقم + ختم",
+ "description": "مشهد وضع الكرت: سطر صغير، كلمة كبيرة، وختم — كلها تتعدّل من الإنسبكتر. الرسم بمنطقة الرسم فوق (240-860)",
+ "main": "mk-headline.js",
+ "supportsRealTime": false,
+ "supportsNonRealTime": true,
+ "stepCount": 1,
+ "v_bmd": {
+  "duration": 120
+ },
+ "schema": {
+  "type": "object",
+  "properties": {
+   "small": {
+    "type": "string",
+    "title": "السطر الصغير",
+    "default": "احنا الحين في"
+   },
+   "big": {
+    "type": "string",
+    "title": "الكلمة الكبيرة",
+    "default": "2026"
+   },
+   "stamp": {
+    "type": "string",
+    "title": "الختم (فاضي = بلا ختم)",
+    "default": "مصدر دخل ثاني"
+   },
+   "stampAt": {
+    "type": "number",
+    "title": "الختم يطلع بالثانية",
+    "default": 5,
+    "minimum": 0,
+    "maximum": 30
+   },
+   "ink": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون النص",
+    "default": "#1f1f1d"
+   },
+   "acc": {
+    "type": "string",
+    "gddType": "color-rrggbb",
+    "pattern": "^#[0-9a-f]{6}$",
+    "title": "لون التمييز",
+    "default": "#d97757"
+   }
+  }
+ }
+}
