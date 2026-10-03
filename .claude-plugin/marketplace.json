@@ -4,12 +4,12 @@
     "name": "Majed Alzaabi",
     "url": "https://github.com/majedphotos"
   },
-  "description": "سكلات الفيديو العربية لـClaude Code",
+  "description": "Arabic video editing plugin for Claude Code",
   "plugins": [
     {
       "name": "majed-video",
       "source": "./",
-      "description": "6 سكلات: ريل من فيديو كلام · شرح بالموشن 3D · بودكاست · مونتاج على الإيقاع · كفر وثمبنيل · دافنشي"
+      "description": "6 skills: reels from talking videos · 3D motion explainers · podcasts · beat-synced montage · covers & thumbnails · DaVinci Resolve"
     }
   ]
 }

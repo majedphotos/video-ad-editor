@@ -1,7 +1,7 @@
 {
   "name": "majed-video",
-  "version": "4.3.0",
-  "description": "بلقن فيديو عربي لـClaude Code — 6 سكلات بمحرّك واحد: ريل من فيديو كلام، شرح بالموشن 3D، بودكاست وحلقات، مونتاج مقاطع على الإيقاع، كفر وثمبنيل، ودافنشي.",
+  "version": "4.3.1",
+  "description": "Arabic video editing for Claude Code — 6 skills: talking-head reels, 3D motion explainers, podcasts, beat-synced montage, covers & thumbnails, DaVinci Resolve.",
   "author": {
     "name": "Majed Alzaabi",
     "url": "https://github.com/majedphotos"
