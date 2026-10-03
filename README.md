@@ -36,6 +36,8 @@ claude plugin install majed-video@majed-video
 
 </div>
 
+> 💡 طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟ معناها المتجر مضاف عندك من قبل (من تطبيق كلود) — عادي، كمّل الأمر الثاني.
+
 بعدها **شغّل التحديث التلقائي**: اكتب `claude` ← Enter، وبعدين:
 
 <div dir="ltr">
