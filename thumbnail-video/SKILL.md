@@ -10,10 +10,19 @@ description: يصمم كفر الريل (أول فريم بالفيديو، كل
 
 **اقرأ أول شي:** `references/thumbnails.md` — الأحجام الدنيا ومصادرها. الشبكة تصغّر الكفر لـ12٪، فاللي تحت الحد ما ينقرا.
 
+## قبل ما تبدأ — سؤال واحد
+**«آخذ صورتك من الفيديو، ولا عندك صور تعطيني؟»**
+- **من الفيديو:** السكربت يختار أوضح فريم ووجهك كبير فيه، ويقصّك على خلفية كريمية (`--cut` للكفر · `--video` للثمبنيل — يحتاج ماك).
+- **صورك:** صورة مقصوصة بخلفية شفافة (`--photo`) — الأحسن للثمبنيل: انفعال واضح (ابتسامة كبيرة، دهشة).
+- لو ما رد: من الفيديو.
+
+**التصميم من موضوع الفيديو كل مرة — مو قالب:** العنوان من كلامه، والشعارات/العناصر من اللي يتكلم عنه (أداة، شركة، رقم). الهيكل ثابت والمحتوى يتغيّر.
+**الخلفية كريمية مثل كلود** (`#F0EEE6`، أو `bg` الثيم لو فاتح) — `--bg` يغيّرها، و`--bg video` ياخذ لون خلفية الفيديو.
+
 ## كفر الريل (9:16) — ويصير أول فريم بالفيديو
 
 ```bash
-python3 scripts/28_cover.py <work> "سطر|*كلمة مميزة*" [--photo me.png] [--x قديم.png --ok جديد.png] [--first ad-master.mp4]
+python3 scripts/28_cover.py <work> "سطر|*كلمة مميزة*" [--photo me.png | --cut] [--x قديم.png --ok جديد.png] [--first ad-master.mp4]
 python3 scripts/34_phone_preview.py <work>/cover.jpg
 ```
 
@@ -26,7 +35,7 @@ python3 scripts/34_phone_preview.py <work>/cover.jpg
 ## ثمبنيل يوتيوب (16:9) — ثلاث أفكار
 
 ```bash
-python3 scripts/33_thumb.py <work> "سطر|*كلمة مميزة*" --photo me.png [--logo شي.png] [--x قديم.png --ok جديد.png]
+python3 scripts/33_thumb.py <work> "سطر|*كلمة مميزة*" [--photo me.png | --video src.mov] [--logo شي.png] [--x قديم.png --ok جديد.png]
 python3 scripts/34_phone_preview.py <work>/thumb_A_1280.jpg --youtube
 ```
 

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """ثمبنيل يوتيوب 16:9 — ثلاث أفكار مختلفة يختار منها (قواعد references/thumbnails.md)
-   python3 33_thumb.py <work> "سطر أول|*كلمة مميزة*" --photo me.png [--logo a.png] [--x old.png --ok new.png] [--bg "#1E2A44"]
-   - --photo: صورة الشخص مقصوصة (خلفية شفافة) — الوجه كبير وبانفعال واضح.
+   python3 33_thumb.py <work> "سطر أول|*كلمة مميزة*" [--photo me.png | --video src.mov [--t 3.2]] [--logo a.png] [--x old.png --ok new.png] [--bg "#F0EEE6"]
+   - الصورة: اسأل المستخدم «آخذ صورتك من الفيديو ولا عندك صور تعطيني؟»
+     --photo: صورته مقصوصة (خلفية شفافة) · بدونها: يختار أحسن فريم من الفيديو ويقصّه (_cutout.py — ماك).
+   - الخلفية كريمية مثل كلود (#F0EEE6 أو bg الثيم لو فاتح) والكلام غامق — --bg يغيّرها.
    - --logo: شعار/شي من محتوى الفيديو (الفكرة B). --x/--ok: قبل/بعد (الفكرة C) — بس لو الفيديو «من كذا لكذا».
    يطلّع لكل فكرة: thumb_A.jpg (3840×2160 — الموصى من يوتيوب) + thumb_A_1280.jpg (أخف، أقل من 2 ميقا للجوال)
    + thumbs_sheet.jpg (الثلاث جنب بعض) — اعرض الورقة، وبعدها 34_phone_preview.py <الأحسن> --youtube.
@@ -21,23 +23,39 @@ def chrome():
 
 def uri(p): return "file://" + html.escape(os.path.abspath(p))
 
-flags = ("--photo", "--logo", "--x", "--ok", "--bg")
+flags = ("--photo", "--logo", "--x", "--ok", "--bg", "--video", "--t")
 pos = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and sys.argv[i - 1] not in flags]
 if len(pos) < 2: print(__doc__); sys.exit(1)
 W, title = os.path.abspath(pos[0]), pos[1]
 J = lambda p: p if (not p or os.path.isabs(p)) else os.path.join(W, p)
 photo, logo, xlogo, oklogo = J(arg("--photo")), J(arg("--logo")), J(arg("--x")), J(arg("--ok"))
-if not photo or not os.path.exists(photo): sys.exit("❌ الثمبنيل يحتاج --photo (صورة مقصوصة بخلفية شفافة)")
+if not photo:   # بلا صورة منه: أحسن فريم من الفيديو نفسه، مقصوص
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import _cutout
+    video = J(arg("--video")) or _cutout.find_video(W)
+    if not video or not os.path.exists(video): sys.exit("❌ الثمبنيل يحتاج --photo (صورة مقصوصة) أو --video (يقص من الفيديو)")
+    photo = os.path.join(W, "thumb_cut.png")
+    print(f"✂️ صورته من الفيديو: الثانية {_cutout.cutout(video, photo, float(arg('--t') or -1), cache=os.path.join(W, 'bt')):.2f}")
+if not os.path.exists(photo): sys.exit(f"❌ ما لقيت {photo}")
 # الثمبنيل يبي وجه كبير: نقص الصورة لين الراس والكتوف (من فوق الراس لين ~نص الجسم)
 import numpy as np
 _im = Image.open(photo).convert("RGBA"); _al = np.asarray(_im)[:, :, 3]
 _rows = np.where(_al.max(1) > 40)[0]; _top, _hb = _rows[0], _rows[-1] - _rows[0]
 _cols = np.where(_al[_top:_top + int(_hb * 0.45)].max(0) > 40)[0]
 bust = os.path.join(W, "thumb_bust.png")
-_im.crop((max(0, _cols[0] - 40), max(0, _top - int(_hb * 0.04)), min(_im.width, _cols[-1] + 40), _top + int(_hb * 0.42))).save(bust)
+_bot = _top + int(_hb * 0.42)
+if os.path.exists(photo + ".face.json"):   # من الفيديو: الجسم مقطوع عند حد الفريم، فنقيس من الوجه (لين الكتوف ≈ 2.8 من طوله)
+    _f = json.load(open(photo + ".face.json")); _bot = min(_rows[-1], int(_f["y"] + _f["h"] * 2.8))
+    _cols = np.where(_al[_top:_bot].max(0) > 40)[0]
+_im.crop((max(0, _cols[0] - 40), max(0, _top - int(_hb * 0.04)), min(_im.width, _cols[-1] + 40), _bot)).save(bust)
 photo = bust
 th = json.load(open(os.path.join(W, "theme.json"))) if os.path.exists(os.path.join(W, "theme.json")) else {}
-bg = arg("--bg") or th.get("bg", "#141821"); acc = th.get("acc", "#F2B33D"); font = th.get("font", "Cairo")
+CREAM = "#F0EEE6"   # خلفية كلود الكريمية — قرار ماجد 3 أكتوبر
+lum = lambda h: sum(int(h.lstrip("#")[i:i + 2], 16) * w for i, w in ((0, .299), (2, .587), (4, .114)))
+bg = arg("--bg") or (th["bg"] if th.get("bg", "").startswith("#") and lum(th["bg"]) > 170 else CREAM)
+light = lum(bg) > 150
+bg2 = "#%02X%02X%02X" % tuple(int(int(bg.lstrip("#")[i:i + 2], 16) * (.9 if light else .45)) for i in (0, 2, 4))   # الأطراف أغمق شوي — مو أسود
+ink = th.get("ink", "#1F1F1D") if light else "#FFFFFF"
+acc = th.get("acc", "#D97757"); font = th.get("font", "Cairo")
 words = len(title.replace("|", " ").replace("*", "").split())
 if words > 5: print(f"⚠️ العنوان {words} كلمات — 3-5 أحسن للثمبنيل")
 lines = title.split("|"); longest = max(len(l.replace("*", "")) for l in lines)
@@ -55,11 +73,15 @@ def page(variant):
     # مساحة الكلام وعرضه حسب الفكرة — الحجم من طول أطول سطر (كايرو 900 ≈ 0.62 من الحجم للحرف)، وأصغر شي 120
     box_w = {"A": 640, "B": 640, "C": 1180}[variant]
     size = int(max(120, min(210, box_w / (0.62 * max(longest, 1)))))
-    face = {"A": "right:0;height:700px", "B": "left:0;height:700px", "C": "left:50%;transform:translateX(-50%);height:400px"}[variant]
+    face = {"A": "right:0;height:700px", "B": "left:0;height:700px", "C": "left:50%;transform:translateX(-50%);height:540px"}[variant]
     text = {"A": "left:56px;top:70px;width:640px;text-align:left",
             "B": "right:56px;top:56px;width:640px;text-align:right",
-            "C": "left:50px;right:50px;top:24px;text-align:center"}[variant]
-    if variant == "C": size = 120   # سطرين فوق الوجه: 120 × 2 ≈ 260 والوجه يبدأ من 320
+            "C": "left:40px;right:40px;top:14px;text-align:center;white-space:nowrap"}[variant]
+    body_t = tt
+    if variant == "C":   # سطر واحد فوق الراس (سطرين كانوا يصغّرون الوجه لـ400) — الوجه 540 والراس يبدأ تحت 180 (العنوان ينتهي ≈165)
+        flat = len(title.replace("|", " ").replace("*", ""))
+        size = int(max(96, min(140, 1200 / (0.62 * max(flat, 1)))))
+        body_t = tt.replace("<br>", " ")
     extra = ""
     if variant == "B" and logo and os.path.exists(logo):
         extra = f'<div class="obj" style="right:330px;bottom:60px"><img src="{uri(logo)}"></div>'   # يسار منطقة المدة (تحت يمين 310×145 فاضي)
@@ -69,17 +91,17 @@ def page(variant):
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
 @import url('https://fonts.googleapis.com/css2?family={font.replace(' ', '+')}:wght@800;900&display=swap');
 *{{margin:0}} html,body{{width:1280px;height:720px;overflow:hidden}}
-body{{position:relative;background:radial-gradient(ellipse 75% 85% at 50% 45%,{bg} 0%,#000 140%);font-family:'{font}',Cairo,sans-serif}}
-.me{{position:absolute;bottom:0;{face};filter:drop-shadow(0 18px 40px rgba(0,0,0,.45))}}
-.t{{position:absolute;{text};direction:rtl;font-size:{size}px;font-weight:900;line-height:1.08;color:#fff;
-   text-shadow:0 4px 0 rgba(0,0,0,.35),0 10px 34px rgba(0,0,0,.65)}}   /* بلا text-stroke: يكسّر الحروف العربية المتصلة */
+body{{position:relative;background:radial-gradient(ellipse 75% 85% at 50% 45%,{bg} 0%,{bg2} 130%);font-family:'{font}',Cairo,sans-serif}}
+.me{{position:absolute;bottom:0;{face};filter:drop-shadow(0 18px 40px rgba(0,0,0,{.22 if light else .45}))}}
+.t{{position:absolute;{text};direction:rtl;font-size:{size}px;font-weight:900;line-height:1.08;color:{ink};
+   text-shadow:{"0 3px 0 rgba(255,255,255,.6),0 8px 24px rgba(0,0,0,.10)" if light else "0 4px 0 rgba(0,0,0,.35),0 10px 34px rgba(0,0,0,.65)"}}}   /* بلا text-stroke: يكسّر الحروف العربية المتصلة */
 .t b{{color:{acc}}}
 .obj{{position:absolute;width:280px;height:170px;background:#fff;border-radius:34px;display:flex;align-items:center;justify-content:center;
-     box-shadow:0 14px 34px rgba(0,0,0,.35)}}
+     box-shadow:0 14px 34px rgba(0,0,0,{.14 if light else .35})}}
 .obj img{{max-width:220px;max-height:140px}}
 .mk{{position:absolute;top:-34px;right:-30px;width:90px;height:90px;border-radius:50%;border:6px solid #fff;display:flex;align-items:center;justify-content:center}}
 .mk svg{{width:58px;height:58px}}
-</style></head><body><img class="me" src="{uri(photo)}">{extra}<div class="t">{tt}</div></body></html>"""
+</style></head><body><img class="me" src="{uri(photo)}">{extra}<div class="t">{body_t}</div></body></html>"""
 
 
 variants = ["A"] + (["B"] if logo else []) + (["C"] if (xlogo or oklogo) else [])

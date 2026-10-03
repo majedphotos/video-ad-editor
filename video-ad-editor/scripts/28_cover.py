@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """كفر الريل (v2 — 3 أكتوبر 2026) — ويتحط أول فريم بالفيديو
    python3 28_cover.py <work> "سطر أول|*سطر ثاني ملوّن*" ["سطر صغير فوقه"]
-        [--photo me.png]            صورة شخص مقصوصة (خلفية شفافة) بدل فريم من الفيديو
+        [--photo me.png]            صورته مقصوصة (خلفية شفافة) — من عنده
+        [--cut]                     صورته من الفيديو: أحسن فريم مقصوص (_cutout.py — ماك) على خلفية كريمية
+        (بلا الاثنين: الفريم كامل بخلفيته — اسأل المستخدم أول: «آخذ صورتك من الفيديو ولا عندك صور تعطيني؟»)
         [--video src.mov] [--t 3.2] [--n 16]   مصدر الفريم (بدون --t يختار أوضح فريم)
-        [--bg "#EE9A6E"]            لون الخلفية مع --photo (بدونه: ياخذه من خلفية الفيديو نفسه)
+        [--bg "#F0EEE6"]            لون الخلفية مع --photo/--cut (الافتراضي كريمي مثل كلود · "video" = لون خلفية الفيديو نفسه)
         [--x manychat.png]          شعار عليه ✕ (اللي تركته / الخطأ)
         [--ok zorcha.png]           شعار عليه ✓ (البديل / الصح)
         [--first ad-master.mp4]     يركّب الكفر أول فريم بالفيديو ← <الاسم>-cover.mp4
@@ -52,6 +54,7 @@ def hexc(c):
 
 def main():
     flags = ("--video", "--t", "--n", "--photo", "--bg", "--x", "--ok", "--first", "--hold")
+    cut = "--cut" in sys.argv
     pos = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and sys.argv[i - 1] not in flags]
     if len(pos) < 2: print(__doc__); sys.exit(1)
     W, title = os.path.abspath(pos[0]), pos[1]; eyebrow = pos[2] if len(pos) > 2 else ""
@@ -73,25 +76,40 @@ def main():
                         "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920", frame], check=True)
     elif not photo:
         sys.exit("❌ ما لقيت الفيديو — اعطه --video أو --photo")
+    if cut and not photo:   # صورته من الفيديو نفسه، مقصوصة — نفس الثانية لو حددها
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import _cutout
+        photo = os.path.join(W, "cover_cut.png")
+        t = _cutout.cutout(video, photo, arg("--t", -1.0), cache=os.path.join(W, "bt"))
 
     if photo:
         # الخلفية من لون خلفية الفيديو نفسه (فوق الراس + الجوانب) — أو --bg
         c_in, c_out = arg("--bg", ""), ""
+        if not c_in and bg.startswith("#") and sum(int(bg[i:i + 2], 16) for i in (1, 3, 5)) > 510: c_in = bg   # ثيم فاتح
+        if not c_in: c_in = "#F0EEE6"   # كريمي مثل كلود — قرار ماجد 3 أكتوبر
+        if c_in == "video": c_in = ""
         if not c_in and os.path.exists(frame):
             a = np.asarray(Image.open(frame).convert("RGB"), dtype=np.float32)
             top = a[60:260, 300:780].reshape(-1, 3).mean(0); side = a[700:1100, 0:110].reshape(-1, 3).mean(0)
             lo, hi = (top, side) if top.mean() < side.mean() else (side, top)
             c_in, c_out = hexc(np.minimum(hi * 1.08, 255)), hexc(lo * 0.92)
-        c_in = c_in or "#EE9A6E"; c_out = c_out or c_in
+        c_in = c_in or "#EE9A6E"
+        light = sum(int(c_in[i:i + 2], 16) for i in (1, 3, 5)) > 510
+        c_out = c_out or (hexc([int(c_in[i:i + 2], 16) * .92 for i in (1, 3, 5)]) if light else c_in)   # الأطراف أغمق شوي
         im = Image.open(photo).convert("RGBA"); al = np.asarray(im)[:, :, 3]
         rows = np.where(al.max(1) > 40)[0]; top_y, bot_y = rows[0], rows[-1]; hb = bot_y - top_y
         band = al[top_y:top_y + int(hb * 0.12)]; cols = np.where(band.max(0) > 40)[0]; cx = (cols[0] + cols[-1]) / 2
         head_y = SQ0 + (270 if (xlogo or oklogo) else 30)   # فيه شعارات؟ صفّها أعلى المربع والراس تحتها — ولا شي على الراس
         s = (1920 - head_y) / (0.62 * hb)                 # الراس عند head_y، والجسم لين الورك يعبي تحت
+        fj = photo + ".face.json"                         # من الفيديو (--cut): الجسم مقطوع عند الصدر — الذقن لازم فوق العنوان (≈1000)
+        if os.path.exists(fj):
+            fc = json.load(open(fj)); s = min(s, (1000 - head_y) / (fc["y"] + fc["h"] - top_y))
         pw, ph = im.width * s, im.height * s
         px, py = 540 - cx * s, head_y - top_y * s
-        visual = (f'<div class="bgc"></div><img class="me" src="{uri(photo)}" style="left:{px:.0f}px;top:{py:.0f}px;width:{pw:.0f}px;height:{ph:.0f}px">'
-                  f'<div class="sh2"></div>')
+        fade = ""                                         # الجسم مقطوع (حد الفريم تحت أو على الجوانب): يذوب بالخلفية بدل حواف حادة
+        if py + ph < 1900 or (al[:, :3].max() > 40 and al[:, -3:].max() > 40):
+            fade = "-webkit-mask-image:radial-gradient(ellipse 62% 64% at 50% 34%,#000 66%,transparent 100%);"
+        visual = (f'<div class="bgc"></div><img class="me" src="{uri(photo)}" style="{fade}left:{px:.0f}px;top:{py:.0f}px;width:{pw:.0f}px;height:{ph:.0f}px">'
+                  + ('' if light else '<div class="sh2"></div>'))   # الظل الغامق تحت يوسّخ الكريمي
         bgcss = f".bgc{{position:absolute;inset:0;background:radial-gradient(ellipse 80% 58% at 50% 50%,{c_in} 0%,{c_out} 100%)}}"
     else:
         visual = f'<img class="fr" src="{uri(frame)}"><div class="sh"></div>'; bgcss = ""
