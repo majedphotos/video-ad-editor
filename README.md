@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 ## ⚡ التثبيت
 
-**داخل Claude Code — أمرين** (الأربع سكلات + المحرّك المشترك، وتتحدّث من نفس الأمر):
+**داخل Claude Code — أمرين** (الخمس سكلات + المحرّك المشترك، وتتحدّث من نفس الأمر):
 ```
 /plugin marketplace add majedphotos/video-ad-editor
 /plugin install majed-video@majed-video
@@ -33,7 +33,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 > 💬 **بالشات (claude.ai)؟** السكل للتخطيط بس: السكربت، خطة المونتاج، الثيم من صورك، وكابشن البوست. **المونتاج نفسه يحتاج Claude Code على جهازك.**
 
-## 🎬 أربع سكلات — كل وحدة لشغلة
+## 🎬 خمس سكلات — كل وحدة لشغلة
 
 <table width="100%"><tr>
 <td width="25%" align="center" valign="top"><img src="_pkg/talk.gif" width="100%"><br><b>🎙️ ريل من فيديو كلام</b><br><sub>سكتات أقل · كابشن بتوقيت الكلمة · موشن من معنى كلامك</sub><br><code>«منتج هذا المقطع»</code></td>
@@ -41,6 +41,21 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 <td width="25%" align="center" valign="top"><img src="_pkg/f_wide.png" width="100%"><br><b>🎧 بودكاست ومقابلات</b><br><sub>كاميرتين ← ريلات بهوك مكتوب · الحلقة كاملة 16:9</sub><br><code>«سو ريلات من الحلقة»</code></td>
 <td width="25%" align="center" valign="top"><img src="_pkg/montage.gif" width="100%"><br><b>🎞️ مونتاج مقاطع</b><br><sub>مجلد مقاطع بلا كلام ← ريل على الإيقاع</sub><br><code>«مونتاج من هالمقاطع»</code></td>
 </tr></table>
+
+## 🖼️ كفر وثمبنيل ينقرون بالجوال — السكل الخامس
+<table width="100%"><tr>
+<td width="30%" align="center"><img src="_pkg/cover_reel.jpg" width="100%"><br><sub>كفر الريل = أول فريم</sub></td>
+<td width="70%">
+
+شبكة البروفايل تصغّر الكفر لـ**12٪** من حجمه — فأغلب الكفرات ما تنقرا. السكل يصمم بأحجام مقاسة على شاشة الجوال:
+- **كفر الريل:** كل المهم داخل مربع 1:1 بالنص (يبين صح بالبروفايل 3:4 والفيد 4:5)، العنوان ≥ 170 بكسل و5 كلمات بالكثير — ويتركّب **أول فريم بالفيديو**
+- **ثمبنيل يوتيوب:** ثلاث أفكار بـ3840×2160 — وجه كبير، هوك قصير، وتحت يمين فاضي لمدة الفيديو
+- **معاينة بحجمه الحقيقي بالجوال** قبل ما تنشر
+- قل له: **«سو كفر»** أو **«ثمبنيل يوتيوب»**
+
+<img src="_pkg/thumb_yt.jpg" width="100%">
+
+</td></tr></table>
 
 ## ✂️ امسح من الكلام — ينقص من الفيديو
 بعد التفريغ يطبع لك كلامك جملة جملة. تقول له **«شيل 5 و8»** — ويقصهم من الفيديو والصوت، والكابشن يمشي معاه. غيّرت رايك؟ **«رجّعها»**. ويكشف بروحه الجمل اللي قلتها مرتين.
@@ -60,7 +75,10 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 ## 🔌 استخدم اللي عندك
 عندك اشتراك بمنصة توليد (fal · Higgsfield · ElevenLabs · أو غيرها) وكونكتورها مركّب بكلود؟ قل له يستخدمها — يولّد منها البي-رول أو الصوت أو المشاهد ويركّبها بالمونتاج. ما عندك؟ يشتغل عادي بدونها.
 
-## 🆕 جديد في 4.0
+## 🆕 جديد في 4.1
+- **سكل الكفر والثمبنيل** (`thumbnail-video`) — أحجام تنقرا بالجوال (مقاسة + بحث)، كفر أول فريم، وثمبنيل يوتيوب بثلاث أفكار.
+
+## جديد في 4.0
 - **أربع سكلات بمحرّك واحد** بدل سكل واحد ثقيل — كل وضع يقرا تعليماته بس.
 - **صفحة التعارف** صارت للكل.
 - **وضع دافنشي** صار للكل — وقابل للتعديل: كل شي قطعة على مساره.
@@ -79,6 +97,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 | فيديو موشن من نص | «سو فيديو موشن من هالنص» |
 | شرح موقع | «اشرح هالموقع بفيديو: الرابط» |
 | ثيم من صور | أرسل الصور + «أبي ستايل جذي» |
+| كفر أو ثمبنيل | «سو كفر» · «ثمبنيل يوتيوب» |
 | تعدّل بنفسك | «افتح الاستوديو» |
 | تغيّر ذوقك | «غيّر إعداداتي» |
 
@@ -97,7 +116,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 </p>
 
 ## 🛠️ للمطوّرين
-خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md)
+خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md) · [`thumbnail-video`](thumbnail-video/SKILL.md)
 
 <details><summary>الإصدارات السابقة</summary>
 

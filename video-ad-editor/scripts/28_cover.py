@@ -13,6 +13,10 @@
       كل اللي لازم ينشاف — الوجه والكلام والشعارات — داخل مربع 1080×1080 بنص الصورة (y من 420 لين 1500).
       المربع وهمي: لا إطار ولا خط. برّاه خلفية بس (أو كمّلة الجسم).
    الكلام هوك مختصر (سطرين + سطر صغير) على الصدر أو تحته شوي.
+   📏 أحجام تنقرا بشبكة الجوال (بحث + قياس شاشة ماجد 3 أكتوبر — references/thumbnails.md):
+      الكفر ينعرض ≈ 0.12 من حجمه، وأصغر خط مقروء 11 نقطة ⇒ ولا نص تحت 91 بكسل.
+      العنوان العربي ≥ 170 · السطر الصغير ≥ 110 · الشعار ≥ 200 · 5 كلمات بالكثير · بلا الحساب (ما ينقرا ومكانه البروفايل).
+   ✕/✓ مو قاعدة: بس لو العنوان «من كذا لكذا» (ترك شي لشي). الشعارات صف تحت الوجه — مو على الراس.
    يطلّع: cover.jpg (1080×1920) + cover_grid.jpg (معاينة: 9:16 · 4:5 · 1:1 جنب بعض) — اعرض الثانية."""
 import sys, os, json, subprocess, tempfile, html
 import numpy as np
@@ -82,9 +86,10 @@ def main():
         im = Image.open(photo).convert("RGBA"); al = np.asarray(im)[:, :, 3]
         rows = np.where(al.max(1) > 40)[0]; top_y, bot_y = rows[0], rows[-1]; hb = bot_y - top_y
         band = al[top_y:top_y + int(hb * 0.12)]; cols = np.where(band.max(0) > 40)[0]; cx = (cols[0] + cols[-1]) / 2
-        s = (1920 - (SQ0 + 30)) / (0.62 * hb)            # الراس عند أول المربع، والجسم لين الورك يعبي تحت
+        head_y = SQ0 + (270 if (xlogo or oklogo) else 30)   # فيه شعارات؟ صفّها أعلى المربع والراس تحتها — ولا شي على الراس
+        s = (1920 - head_y) / (0.62 * hb)                 # الراس عند head_y، والجسم لين الورك يعبي تحت
         pw, ph = im.width * s, im.height * s
-        px, py = 540 - cx * s, (SQ0 + 30) - top_y * s
+        px, py = 540 - cx * s, head_y - top_y * s
         visual = (f'<div class="bgc"></div><img class="me" src="{uri(photo)}" style="left:{px:.0f}px;top:{py:.0f}px;width:{pw:.0f}px;height:{ph:.0f}px">'
                   f'<div class="sh2"></div>')
         bgcss = f".bgc{{position:absolute;inset:0;background:radial-gradient(ellipse 80% 58% at 50% 50%,{c_in} 0%,{c_out} 100%)}}"
@@ -96,10 +101,14 @@ def main():
         mark = ('<svg viewBox="0 0 40 40"><path d="M11 21 L18 28 L30 13" stroke="#fff" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' if ok else
                 '<svg viewBox="0 0 40 40"><path d="M13 13 L27 27 M27 13 L13 27" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/></svg>')
         return (f'<div class="lg {"ok" if ok else "no"}"><img src="{uri(path)}"><div class="mk" style="background:{"#2E8B57" if ok else "#D64545"}">{mark}</div></div>')
-    logos = badge(xlogo, False) + badge(oklogo, True)
+    logos = badge(oklogo, True) + badge(xlogo, False)   # الصف ltr: ✓ يسار و✕ يمين — العين العربية تبدأ من ✕ وتنتهي عند ✓
     tt = html.escape(title).replace('*', '<b>', 1).replace('*', '</b>', 1).replace('|', '<br>')
     longest = max(len(x.replace('*', '')) for x in title.split('|'))
-    size = 120 if longest <= 13 else 104 if longest <= 17 else 88 if longest <= 22 else 74
+    size = int(max(170, min(230, 960 / (0.62 * max(longest, 1)))))     # ⛔ أصغر شي 170 (العربي يبين أصغر من اللاتيني)
+    words = len(title.replace('|', ' ').replace('*', '').split())
+    if words > 5: print(f"⚠️ العنوان {words} كلمات — الأفضل 5 بالكثير عشان ينقرا بالشبكة")
+    if longest > 9: print(f"⚠️ سطر طويل ({longest} حرف) — بحجم 170 يدخل 9 أحرف بالسطر بس؛ اختصر العنوان (الشعارات والصورة تكمّل المعنى)")
+    if title.count('|') > 1: print("⚠️ أكثر من سطرين — بيطلع على الوجه؛ خله سطرين بالكثير")
     page = f"""<!doctype html><html dir="ltr"><head><meta charset="utf-8"><style>
 @import url('https://fonts.googleapis.com/css2?family={font.replace(' ', '+')}:wght@700;800;900&display=swap');
 *{{margin:0}} html{{overflow:hidden}} body{{width:1080px;height:1920px;position:relative;overflow:hidden;direction:ltr;font-family:'{font}',Tajawal,'Geeza Pro',sans-serif;background:#000}}
@@ -109,22 +118,24 @@ def main():
 .sh{{position:absolute;left:0;right:0;top:{SQ0+560}px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 40%,rgba(0,0,0,.7))}}
 .sh2{{position:absolute;left:0;right:0;top:{SQ0+620}px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.28) 45%,rgba(0,0,0,.35))}}
 .box{{position:absolute;left:60px;right:60px;top:{SQ0}px;height:{SQ1-SQ0-24}px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:16px;text-align:center;direction:rtl}}
-.eb{{font-size:44px;font-weight:800;color:{on};background:{acc};padding:4px 30px 10px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}}
+.eb{{font-size:110px;font-weight:800;line-height:1.15;color:{on};background:{acc};padding:6px 44px 16px;border-radius:34px;box-shadow:0 10px 30px rgba(0,0,0,.25)}}
 .t{{font-size:{size}px;font-weight:900;line-height:1.1;color:#fff;text-shadow:0 6px 26px rgba(0,0,0,.5)}}
 .t b{{color:{acc};filter:brightness(1.25)}}
-.lg{{position:absolute;top:{SQ0+60}px;width:250px;height:96px;background:#fff;border-radius:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,.25)}}
-.lg img{{max-width:190px;max-height:56px}} .lg.no{{right:50px;transform:rotate(4deg)}} .lg.ok{{left:50px;transform:rotate(-4deg)}}
+.lgs{{position:absolute;top:{SQ0+40}px;left:0;right:0;display:flex;gap:60px;justify-content:center;direction:ltr}}
+.lg{{position:relative;width:400px;height:200px;background:#fff;border-radius:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,.25)}}
+.lg img{{max-width:320px;max-height:140px}} .lg.no{{transform:rotate(3deg)}} .lg.ok{{transform:rotate(-3deg)}}
 .lg.no img{{opacity:.55}}
-.mk{{position:absolute;top:-24px;width:58px;height:58px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center}}
-.lg.no .mk{{left:-22px}} .lg.ok .mk{{right:-22px}} .mk svg{{width:38px;height:38px}}
+.mk{{position:absolute;top:-40px;width:104px;height:104px;border-radius:50%;border:7px solid #fff;display:flex;align-items:center;justify-content:center}}
+.lg.no .mk{{right:-36px}} .lg.ok .mk{{left:-36px}} .mk svg{{width:66px;height:66px}}
 .h{{position:absolute;top:{SQ1+40}px;left:0;right:0;text-align:center;font:700 32px sans-serif;color:#fff;opacity:.8;direction:ltr}}
-</style></head><body>{visual}{logos}
-<div class="box">{f'<div class="eb">{html.escape(eyebrow)}</div>' if eyebrow else ''}<div class="t">{tt}</div></div>
-{f'<div class="h">{html.escape(handle)}</div>' if handle else ''}</body></html>"""
+</style></head><body>{visual}
+{f'<div class="lgs">{logos}</div>' if logos else ''}<div class="box">{f'<div class="eb">{html.escape(eyebrow)}</div>' if eyebrow else ''}<div class="t">{tt}</div></div>
+</body></html>"""
     hp = os.path.join(W, "cover.html"); open(hp, "w", encoding="utf-8").write(page)
     png = os.path.join(W, "cover.png")
     subprocess.run([chrome(), "--headless=new", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files",
-                    "--virtual-time-budget=5000", f"--screenshot={png}", "--window-size=1080,1920", "file://" + hp], capture_output=True)
+                    "--virtual-time-budget=5000", f"--screenshot={png}", "--window-size=1080,1920", "file://" + hp],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)   # بلا capture: عملية كروم المساعدة تمسك الأنبوب فيتعلّق السكربت
     im = Image.open(png).convert("RGB").crop((0, 0, 1080, 1920)); os.remove(png)
     cj = os.path.join(W, "cover.jpg"); im.save(cj, quality=92)
     # معاينة: الكامل · قصّة 4:5 · قصّة 1:1 — بنفس الارتفاع
