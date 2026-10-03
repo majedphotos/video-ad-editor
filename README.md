@@ -1,11 +1,67 @@
 <div dir="rtl">
 
-<p align="center"><img src="_pkg/hero.png" alt="محرّر إعلان الفيديو — سكل عربي لـ Claude Code" width="100%"></p>
+<p align="center"><img src="_pkg/hero.png" alt="بلقن تحرير الفيديو — لـ Claude Code" width="100%"></p>
 
 <p align="center"><b>تتكلم للكاميرا… وتستلم ريل عمودي جاهز للنشر.</b><br>
 يشيل السكتات، يكتب كابشن عربي يمشي مع فمك، ويرسم موشن قرافيكس بألوانك — بلا برنامج مونتاج، وفيديوك ما يطلع من جهازك.</p>
 
-<p align="center">🎬 <b>فيديو كامل منتجه السكل:</b></p>
+<p align="center"><a href="#install"><img src="_pkg/btn-install.png" alt="ثبّت البلقن" width="420"></a></p>
+
+<a id="install"></a>
+
+## ⚡ ثبّت البلقن — 3 خطوات
+
+<p align="center"><img src="_pkg/install.gif" alt="شلون تثبّت البلقن" width="100%"></p>
+
+**البلقن = 6 سكلات بحزمة وحدة** (ريل · موشن · بودكاست · مونتاج · كفر وثمبنيل · دافنشي) — ويتحدّث بروحه.
+
+افتح **Claude Code** (الطرفية، أو تطبيق كلود ← تبويب **Code**)، والصق الأوامر **واحد واحد**: الأمر، Enter، وانتظره يخلص، بعدين اللي بعده.
+
+**1 · أضف المتجر**
+
+<div dir="ltr">
+
+```
+/plugin marketplace add majedphotos/video-ad-editor
+```
+
+</div>
+
+**2 · ثبّت البلقن** — واختر **Install for you**
+
+<div dir="ltr">
+
+```
+/plugin install majed-video@majed-video
+```
+
+</div>
+
+**3 · فعّل التحديث التلقائي** — مهم: بدونه البلقن ما يتحدّث بروحه
+
+<div dir="ltr">
+
+```
+/plugin  →  Marketplaces  →  majed-video  →  Enable auto-update
+```
+
+</div>
+
+🔁 **تبي آخر نسخة الحين؟**
+
+<div dir="ltr">
+
+```
+/plugin  →  Installed  →  majed-video  →  Update now
+```
+
+</div>
+
+> 🧹 **منصّب النسخة القديمة كسكل (ملف `.skill`)؟** شيلها حتى ما تتكرر — البلقن فيه كل شي.
+>
+> 📱 **تستخدم كلود من المتصفح أو الجوال؟** المونتاج ما يصير هناك — يحتاج **Claude Code على الكمبيوتر**، لأنه يشتغل على ملفات الفيديو بجهازك.
+
+<p align="center">🎬 <b>فيديو كامل منتجه البلقن:</b></p>
 
 https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
@@ -13,7 +69,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 <td width="38%" align="center"><img src="_pkg/davinci.gif" width="100%"></td>
 <td width="62%">
 
-### <img src="_pkg/davinci-logo.png" width="40" align="absmiddle"> أو خذه لدافنشي — وعدّل بإيدك
+### <img src="_pkg/davinci-logo.png" width="40" align="absmiddle"> دافنشي — وعدّل بإيدك
 عندك **دافنشي ريزولف ستوديو**؟ نفس العقل ونفس القواعد، والمخرج تايملاين داخل مشروعك:
 - **الفيديو** بمسار، **الرسم** بمسار، و**الكابشن** جملة جملة — كل قطعة تقصها وتسحبها لحالها
 - **النص يتعدّل** من الإنسبكتر: الكلام، الكلمة المظلّلة، المكان، والألوان
@@ -27,19 +83,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 </td></tr></table>
 
-## ⚡ التثبيت
-
-**داخل Claude Code — أمرين** (الخمس سكلات + المحرّك المشترك، وتتحدّث من نفس الأمر):
-```
-/plugin marketplace add majedphotos/video-ad-editor
-/plugin install majed-video@majed-video
-```
-
-**أو ملف واحد:** [نزّل `video-ad-editor.skill`](https://github.com/majedphotos/video-ad-editor/releases/latest/download/video-ad-editor.skill) ← دبل كليك ← وافق. فيه كل الأوضاع بسكل واحد — واللي منصّب النسخة القديمة يجيه التحديث بروحه.
-
-> 💬 **بالشات (claude.ai)؟** السكل للتخطيط بس: السكربت، خطة المونتاج، الثيم من صورك، وكابشن البوست. **المونتاج نفسه يحتاج Claude Code على جهازك.**
-
-## 🎬 خمس سكلات — كل وحدة لشغلة
+## 🎬 داخل البلقن — 6 سكلات، كل وحدة لشغلة
 
 <table width="100%"><tr>
 <td width="25%" align="center" valign="top"><img src="_pkg/talk.gif" width="100%"><br><b>🎙️ ريل من فيديو كلام</b><br><sub>سكتات أقل · كابشن بتوقيت الكلمة · موشن من معنى كلامك</sub><br><code>«منتج هذا المقطع»</code></td>
@@ -48,12 +92,12 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 <td width="25%" align="center" valign="top"><img src="_pkg/montage.gif" width="100%"><br><b>🎞️ مونتاج مقاطع</b><br><sub>مجلد مقاطع بلا كلام ← ريل على الإيقاع</sub><br><code>«مونتاج من هالمقاطع»</code></td>
 </tr></table>
 
-## 🖼️ كفر وثمبنيل ينقرون بالجوال — السكل الخامس
+## 🖼️ كفر وثمبنيل ينقرون بالجوال
 <table width="100%"><tr>
 <td width="30%" align="center"><img src="_pkg/cover_reel.jpg" width="100%"><br><sub>كفر الريل = أول فريم</sub></td>
 <td width="70%">
 
-شبكة البروفايل تصغّر الكفر لـ**12٪** من حجمه — فأغلب الكفرات ما تنقرا. السكل يصمم بأحجام مقاسة على شاشة الجوال:
+شبكة البروفايل تصغّر الكفر لـ**12٪** من حجمه — فأغلب الكفرات ما تنقرا. البلقن يصمم بأحجام مقاسة على شاشة الجوال:
 - **كفر الريل:** كل المهم داخل مربع 1:1 بالنص (يبين صح بالبروفايل 3:4 والفيد 4:5)، العنوان ≥ 170 بكسل و5 كلمات بالكثير — ويتركّب **أول فريم بالفيديو**
 - **ثمبنيل يوتيوب:** ثلاث أفكار بـ3840×2160 — وجه كبير، هوك قصير، وتحت يمين فاضي لمدة الفيديو
 - **صورتك من الفيديو** (يختار أوضح فريم ويقصّك) **أو من صورك** — يسألك أول · وخلفية كريمية هادية
@@ -83,7 +127,11 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 ## 🔌 استخدم اللي عندك
 عندك اشتراك بمنصة توليد (fal · Higgsfield · ElevenLabs · أو غيرها) وكونكتورها مركّب بكلود؟ قل له يستخدمها — يولّد منها البي-رول أو الصوت أو المشاهد ويركّبها بالمونتاج. ما عندك؟ يشتغل عادي بدونها.
 
-## 🆕 جديد في 4.2
+## 🆕 جديد في 4.3
+- **صار بلقن واضح:** 6 سكلات بحزمة وحدة — والسادسة **دافنشي** بروحها («سوّه بدافنشي»).
+- **فيديو تعليمي للتثبيت** فوق الصفحة + التحديث التلقائي.
+
+## جديد في 4.2
 - **الكفر والثمبنيل:** صورتك من الفيديو نفسه (قصّ آلي) أو من صورك · خلفية كريمية · الوجه أكبر بفكرة «قبل/بعد».
 - **دافنشي:** شنو النسخة اللي تشتغل (ستوديو من موقع بلاك ماجك — مو آب ستور).
 
@@ -114,12 +162,12 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 | تغيّر ذوقك | «غيّر إعداداتي» |
 
 ## 🔧 المتطلبات
-السكل ينزّلها بنفسه بعد إذنك: **ffmpeg** (القص والصوت) · **Whisper** (التفريغ بتوقيت الكلمة) · **Chrome** (الرسم). ماك وويندوز. وضع دافنشي يحتاج **دافنشي ريزولف ستوديو 21.1** أو أحدث — من موقع بلاك ماجك، مو من آب ستور (ما فيها البرمجة).
+البلقن ينزّلها بنفسه بعد إذنك: **ffmpeg** (القص والصوت) · **Whisper** (التفريغ بتوقيت الكلمة) · **Chrome** (الرسم). ماك وويندوز. وضع دافنشي يحتاج **دافنشي ريزولف ستوديو 21.1** أو أحدث — من موقع بلاك ماجك، مو من آب ستور (ما فيها البرمجة).
 
 ## 🔒 الخصوصية
 كل شي على جهازك. **فيديوك ما يرتفع لأي سيرفر.** الاستثناءات اختيارية وتشغّلها أنت (المشاهد المولّدة بالذكاء الاصطناعي).
 
-## 🎓 السكل مجاني — الدورة تعلّمك شلون تسوي مثله وأكثر
+## 🎓 البلقن مجاني — الدورة تعلّمك شلون تسوي مثله وأكثر
 كل اللي فوق انبنى بكلود. بالدورة تتعلم شلون تبني أدواتك انت: سكلات، أتمتة، ومحتوى يشتغل لك — من الصفر وبالعربي.
 
 <p align="center">
@@ -128,7 +176,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 </p>
 
 ## 🛠️ للمطوّرين
-خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md) · [`thumbnail-video`](thumbnail-video/SKILL.md)
+خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md) · [`thumbnail-video`](thumbnail-video/SKILL.md) · [`davinci-video`](davinci-video/SKILL.md)
 
 <details><summary>الإصدارات السابقة</summary>
 
