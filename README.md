@@ -5,39 +5,38 @@
 <p align="center"><b>تتكلم للكاميرا… وتستلم ريل عمودي جاهز للنشر.</b><br>
 يشيل السكتات، يكتب كابشن عربي يمشي مع فمك، ويرسم موشن قرافيكس بألوانك — بلا برنامج مونتاج، وفيديوك ما يطلع من جهازك.</p>
 
-<p align="center"><a href="#install"><img src="_pkg/btn-install.png" alt="ثبّت البلقن" width="420"></a></p>
+<p align="center"><a href="https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin"><img src="_pkg/btn-install.png" alt="حمّل البلقن" width="420"></a></p>
 
 <a id="install"></a>
 
-## ⚡ ثبّت البلقن — 3 خطوات
+## ⚡ ثبّت البلقن — طريقتين
 
-<p align="center"><img src="_pkg/install.gif" alt="شلون تثبّت البلقن" width="100%"></p>
+**البلقن = 6 سكلات بحزمة وحدة** (ريل · موشن · بودكاست · مونتاج · كفر وثمبنيل · دافنشي).
 
-**البلقن = 6 سكلات بحزمة وحدة** (ريل · موشن · بودكاست · مونتاج · كفر وثمبنيل · دافنشي) — ويتحدّث بروحه.
+### الطريقة الأولى — الأسهل: حمّل وارفع
 
-افتح **Claude Code** (الطرفية، أو تطبيق كلود ← تبويب **Code**)، والصق الأوامر **واحد واحد**: الأمر، Enter، وانتظره يخلص، بعدين اللي بعده.
+1. [**حمّل البلقن**](https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin) (ملف `majed-video.plugin`)
+2. افتح تطبيق **كلود** ← **Customize** ← **Plugins** ← **Upload plugin** ← اختر الملف
 
-**1 · أضف المتجر**
+> ⚠️ هالطريقة **ما تتحدّث بروحها** — كل نسخة جديدة حمّلها وارفعها من جديد.
 
-<div dir="ltr">
+### الطريقة الثانية — يتحدّث بروحه: من الطرفية
 
-```
-/plugin marketplace add majedphotos/video-ad-editor
-```
-
-</div>
-
-**2 · ثبّت البلقن** — واختر **Install for you**
+**الطرفية** = برنامج **Terminal** بالماك (أو **PowerShell** بالويندوز) — الشاشة اللي تكتب فيها أوامر. افتحها، والصق الأوامر **واحد واحد** (الأمر ← Enter ← انتظر):
 
 <div dir="ltr">
 
 ```
-/plugin install majed-video@majed-video
+claude plugin marketplace add majedphotos/video-ad-editor
+```
+
+```
+claude plugin install majed-video@majed-video
 ```
 
 </div>
 
-**3 · فعّل التحديث التلقائي** — مهم: بدونه البلقن ما يتحدّث بروحه
+بعدها **شغّل التحديث التلقائي**: اكتب `claude` ← Enter، وبعدين:
 
 <div dir="ltr">
 
@@ -47,16 +46,10 @@
 
 </div>
 
-🔁 **تبي آخر نسخة الحين؟**
+<p align="center"><img src="_pkg/install.gif" alt="الخطوات داخل Claude Code بالطرفية" width="100%"></p>
 
-<div dir="ltr">
-
-```
-/plugin  →  Installed  →  majed-video  →  Update now
-```
-
-</div>
-
+> 🔁 **تبي آخر نسخة الحين؟** بالطرفية: `claude plugin update majed-video@majed-video`
+>
 > 🧹 **منصّب النسخة القديمة كسكل (ملف `.skill`)؟** شيلها حتى ما تتكرر — البلقن فيه كل شي.
 >
 > 📱 **تستخدم كلود من المتصفح أو الجوال؟** المونتاج ما يصير هناك — يحتاج **Claude Code على الكمبيوتر**، لأنه يشتغل على ملفات الفيديو بجهازك.
