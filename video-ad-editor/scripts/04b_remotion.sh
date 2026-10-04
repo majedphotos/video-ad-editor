@@ -7,6 +7,7 @@
 # المشاهد تُكتب بـ<work>/remotion/src/Scenes.tsx — ما يُمسح بأي إعادة تشغيل.
 set -e
 W="$(cd "$1" && pwd)"; CMD="${2:-setup}"; ARG="$3"
+[ -d "$(dirname "$0")/remotion-template" ] || { mkdir -p "$(dirname "$0")/remotion-template" && unzip -qo "$(dirname "$0")/remotion-template.zip" -d "$(dirname "$0")/remotion-template"; }
 TPL="$(cd "$(dirname "$0")/remotion-template" && pwd)"
 R="$W/remotion"
 

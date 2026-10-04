@@ -1,7 +1,0 @@
-[
-  { "type": "riser", "at": "scene:s2", "dur": 1.0, "gain": 0.5 },
-  { "type": "swoosh-pass", "at": "scene:s2", "gain": 0.8 },
-  { "type": "impact", "at": "word:l2:-1", "gain": 0.7 },
-  { "type": "tick", "at": 2.2, "gain": 0.35 },
-  { "type": "shimmer", "at": 2.45, "gain": 0.4 }
-]
