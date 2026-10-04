@@ -42,7 +42,8 @@ for i,seg in enumerate(tr["segments"]):
     if not ws: continue
     # 🆕 v3.5 (حلقة ← ريلات): "seg" = رقم القطعة بـcut.json — لازم لما الهوك مأخوذ من وسط الجواب (القطع متداخلة بالوقت
     #    وأقرب قطعة تطلع غلط، فكابشن الجواب ينحط فوق الهوك). 20_episode_cuts.py يكتبه لحاله.
-    si=seg["seg"] if isinstance(seg.get("seg"),int) else seg_of((ws[0]["start"]+ws[-1]["end"])/2)
+    pin=isinstance(seg.get("seg"),int)
+    si=seg["seg"] if pin else seg_of((ws[0]["start"]+ws[-1]["end"])/2)
     if isinstance(f,str):
         # نص بدل قائمة = وِسبر هلوس بهالجملة (كلماته غلط وعددها ما يفيد) → الكلمات الصحيحة تتوزّع على مدة الجملة بنسبة طولها
         toks=f.split(); s0,e0=ws[0]["start"],ws[-1]["end"]; tot=sum(len(t) for t in toks) or 1; c=0; pairs=[]
@@ -54,14 +55,18 @@ for i,seg in enumerate(tr["segments"]):
     if not pairs: continue
     o=[]
     for txt,ws0,we0 in pairs:
-        s1,e1=newt(ws0,si),newt(we0,si)
+        if pin: s1,e1=newt(ws0,si),newt(we0,si)
+        else:
+            # 🐛 v4.0.1: كل كلمة بقطعتها هي — القص الضيّق يقسم الجملة على عدة قطع، وربطها كلها بقطعة الوسط
+            #    يلصق الكلمات اللي برّاها على طرفها فالكابشن يتأخر لين ~1.5 ث
+            sw=seg_of(ws0); s1,e1=newt(ws0,sw),newt(we0,max(sw,seg_of(we0)))
         if e1<=s1: e1=s1+0.12
         _w={"t":txt,"s":round(s1,3),"e":round(e1,3),"hot":txt in HOT or txt in FXMAP}
         if txt in FXMAP: _w["fx"]=FXMAP[txt]
         o.append(_w)
-    a,b=keep[si]
-    cs=max(o[0]["s"]-0.10, off[si])
-    ce=min(max(x["e"] for x in o)+0.28, off[si]+(b-a))
+    a,b=keep[si]; lo,hi=(off[si],off[si]+(b-a)) if pin else (0.0,acc)
+    cs=max(o[0]["s"]-0.10, lo)
+    ce=min(max(x["e"] for x in o)+0.28, hi)
     cards.append({"s":round(cs,3),"e":round(ce,3),"w":o})
 cards.sort(key=lambda c:c["s"])
 for i in range(len(cards)-1):
