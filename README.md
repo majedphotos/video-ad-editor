@@ -54,6 +54,8 @@ claude plugin install majed-video@majed-video
 >
 > 🧹 **منصّب النسخة القديمة كسكل (ملف `.skill`)؟** شيلها حتى ما تتكرر — البلقن فيه كل شي.
 >
+> 📦 **تبي سكل الريل بروحه؟** [نزّل `video-ad-editor.skill`](https://github.com/majedphotos/video-ad-editor/releases/latest/download/video-ad-editor.skill) ← دبل كليك ← وافق. (سكل وحدة بكل الأوضاع، بس ما فيها باقي سكلات البلقن)
+>
 > 📱 **تستخدم كلود من المتصفح أو الجوال؟** المونتاج ما يصير هناك — يحتاج **Claude Code على الكمبيوتر**، لأنه يشتغل على ملفات الفيديو بجهازك.
 
 <p align="center">🎬 <b>فيديو كامل منتجه البلقن:</b></p>
