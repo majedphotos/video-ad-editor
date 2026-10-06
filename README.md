@@ -36,6 +36,8 @@ claude plugin install majed-video@majed-video
 
 </div>
 
+> ⚠️ طلع لك `command not found: claude`؟ معناها **Claude Code مو منصّب** عندك — الطريقة الثانية تحتاجه. استخدم **الطريقة الأولى** (حمّل وارفع)، ما تحتاج شي ثاني.
+
 > 💡 طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟ معناها المتجر مضاف عندك من قبل (من تطبيق كلود) — عادي، كمّل الأمر الثاني.
 
 بعدها **شغّل التحديث التلقائي**: اكتب `claude` ← Enter، وبعدين:
@@ -56,7 +58,9 @@ claude plugin install majed-video@majed-video
 >
 > 📦 **تبي سكل الريل بروحه؟** [نزّل `video-ad-editor.skill`](https://github.com/majedphotos/video-ad-editor/releases/latest/download/video-ad-editor.skill) ← دبل كليك ← وافق. (سكل وحدة بكل الأوضاع، بس ما فيها باقي سكلات البلقن)
 >
-> 📱 **تستخدم كلود من المتصفح أو الجوال؟** المونتاج ما يصير هناك — يحتاج **Claude Code على الكمبيوتر**، لأنه يشتغل على ملفات الفيديو بجهازك.
+> 📱 **من الجوال أو المتصفح (v4.3.5):** المونتاج يشتغل بالسحابة — **أرفق الفيديو بمحادثة كلود** واطلب، والجوال يقدر يقفل والنتيجة تنتظرك بالمحادثة. ثبّت البلقن **مرة وحدة** من `claude.ai` ← **Customize** ← **Plugins** ← **Upload plugin** (حمّل الملف أول من الرابط فوق)، وبعدها يشتغل بمحادثاتك. السحابة أبطأ من جهازك (قص الشخص ≈ 18 دقيقة لفيديو 40 ثانية)، والتفاصيل: [`phone-cloud-playbook.md`](video-ad-editor/references/phone-cloud-playbook.md).
+>
+> 🤖 **كودكس وأي وكيل يشغّل أوامر:** يقرأ `SKILL.md` ومجلد `references/` كتعليمات ويشغّل نفس السكربتات ([`any-environment.md`](video-ad-editor/references/any-environment.md)) — *غير مجرَّب بعد على كودكس نفسه.*
 
 <p align="center">🎬 <b>فيديو كامل منتجه البلقن:</b></p>
 
@@ -176,6 +180,8 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md) · [`thumbnail-video`](thumbnail-video/SKILL.md) · [`davinci-video`](davinci-video/SKILL.md)
 
 <details><summary>الإصدارات السابقة</summary>
+
+- **4.3.5** إصلاح «Zip cannot contain nested zip files» (كان بـ4.3.3 و4.3.4) · **4.3.4** يشتغل بالجوال والسحابة · **4.3.3** أقل من 200 ملف
 
 - **3.9** الثيم من صور مرجعية · البودكاست كامل 16:9 · شرح موقع/تطبيق + آيفون وماك بوك 3D · كفر الريل · تنظيف صوت ذكي
 - **3.8** شرح بالموشن 3D · هوك البودكاست · «طبقات» · مؤثرات الإيقاع

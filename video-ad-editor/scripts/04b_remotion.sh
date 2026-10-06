@@ -7,8 +7,9 @@
 # المشاهد تُكتب بـ<work>/remotion/src/Scenes.tsx — ما يُمسح بأي إعادة تشغيل.
 set -e
 W="$(cd "$1" && pwd)"; CMD="${2:-setup}"; ARG="$3"
-[ -d "$(dirname "$0")/remotion-template" ] || { mkdir -p "$(dirname "$0")/remotion-template" && unzip -qo "$(dirname "$0")/remotion-template.zip" -d "$(dirname "$0")/remotion-template"; }
-TPL="$(cd "$(dirname "$0")/remotion-template" && pwd)"
+D0="$(cd "$(dirname "$0")" && pwd)"
+[ -d "$D0/remotion-template" ] || "$(command -v python3 || command -v python)" -c "import json,os,sys;d=sys.argv[1];[ (os.makedirs(os.path.dirname(os.path.join(d,'remotion-template',k)),exist_ok=True), open(os.path.join(d,'remotion-template',k),'w',encoding='utf-8').write(v)) for k,v in json.load(open(os.path.join(d,'remotion-template.bundle.json'),encoding='utf-8')).items()]" "$D0"
+TPL="$(cd "$D0/remotion-template" && pwd)"
 R="$W/remotion"
 
 sync_all(){
