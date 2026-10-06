@@ -13,6 +13,10 @@
 
 **البلقن = 6 سكلات بحزمة وحدة** (ريل · موشن · بودكاست · مونتاج · كفر وثمبنيل · دافنشي).
 
+> ☝️ **اختر طريقة وحدة بس** — لو رفعت الملف (الأولى) ثم أضفته من الطرفية (الثانية) يصير عندك نسختين من نفس السكلات. عندك الاثنتين؟ شيل النسخة المرفوعة من **Customize ← Plugins**.
+
+> 🏷️ **ثلاثة أسماء مختلفة، لا تتلخبط:** اسم المستودع `video-ad-editor` · اسم المتجر اللي يظهر لك `majed-video` · اسم البلقن `majed-video`. الأمر الأول ياخذ اسم **المستودع**، والثاني اسم **البلقن@المتجر**.
+
 ### الطريقة الأولى — الأسهل: حمّل وارفع
 
 1. [**حمّل البلقن**](https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin) (ملف `majed-video.plugin`)
@@ -22,7 +26,9 @@
 
 ### الطريقة الثانية — يتحدّث بروحه: من الطرفية
 
-**الطرفية** = برنامج **Terminal** بالماك (أو **PowerShell** بالويندوز) — الشاشة اللي تكتب فيها أوامر. افتحها، والصق الأوامر **واحد واحد** (الأمر ← Enter ← انتظر):
+**تحتاج Claude Code منصّب.** افتح الطرفية — **Terminal** بالماك أو **PowerShell** بالويندوز (مو تبويب Code بتطبيق الديسكتوب) — واكتب `claude --version`. طلع لك رقم نسخة؟ كمّل. طلع `command not found: claude`؟ Claude Code مو عندك — **استخدم الطريقة الأولى**، ما تحتاج شي ثاني.
+
+الصق الأوامر **واحد واحد** (الأمر ← Enter ← انتظر):
 
 <div dir="ltr">
 
@@ -31,16 +37,20 @@ claude plugin marketplace add majedphotos/video-ad-editor
 ```
 
 ```
+claude plugin marketplace list
+```
+
+```
 claude plugin install majed-video@majed-video
 ```
 
 </div>
 
-> ⚠️ طلع لك `command not found: claude`؟ معناها **Claude Code مو منصّب** عندك — الطريقة الثانية تحتاجه. استخدم **الطريقة الأولى** (حمّل وارفع)، ما تحتاج شي ثاني.
+- **تحقق بعد الأمر الأول:** الأمر الثاني (`marketplace list`) **لازم يظهر فيه `majed-video`**. ما ظهر؟ شغّل الأمر الأول مرة ثانية (لو الاتصال تقطّع)، وبعدها ارجع للقائمة.
+- **طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟** لا تكمّل على أساس إنه «مضاف من قبل». شغّل `claude plugin marketplace list` — لو `majed-video` ما يظهر، المتجر ناقص فعلاً: أعد الأمر الأول.
+- **أعد تشغيل `claude`** بعد التثبيت، وإلا ما تظهر السكلات بالجلسة.
 
-> 💡 طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟ معناها المتجر مضاف عندك من قبل (من تطبيق كلود) — عادي، كمّل الأمر الثاني.
-
-بعدها **شغّل التحديث التلقائي**: اكتب `claude` ← Enter، وبعدين:
+بعدها **شغّل التحديث التلقائي**: بالطرفية العادية اكتب `claude` ← Enter، وبعدين:
 
 <div dir="ltr">
 
@@ -49,6 +59,8 @@ claude plugin install majed-video@majed-video
 ```
 
 </div>
+
+> ℹ️ أمر `/plugin` تفاعلي ويشتغل **بالطرفية العادية بس** — ما يشتغل داخل تطبيق الديسكتوب (تبويب Code). وخطوة «Enable auto-update» تظهر فقط لو `marketplace list` فيه `majed-video`.
 
 <p align="center"><img src="_pkg/install.gif" alt="الخطوات داخل Claude Code بالطرفية" width="100%"></p>
 
