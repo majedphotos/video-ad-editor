@@ -160,6 +160,16 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 <p align="center"><img src="_pkg/remotion.jpg" width="80%"></p>
 
+### <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Capcut-icon.svg" width="40" align="absmiddle"> كاب كت — المونتاج كله مشروع تعدّله بيدك
+
+<p align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Capcut-icon.svg" width="140" alt="كاب كت"></p>
+
+قل **«سوّه بكاب كت»** — بدل ملف فيديو جاهز، كلود يكتب لك مشروع كاب كت كامل: لقطاتك بزوم، الكابشن نصوص كاب كت (تغيّر الكلمة واللون والخط)، صوتك منظّف، المؤثرات كل وحدة لحالها، الخلفية الصوتية، والموشن بألوانك طبقة شفافة فوق. تفتحه وتعدّل أي شي.
+
+<p align="center"><img src="_pkg/capcut-timeline.jpg" width="100%" alt="مشروع مفتوح بكاب كت: مسارات الكابشن والموشن واللقطات والفويس والمؤثرات"></p>
+
+<sub>كاب كت علامة تجارية لشركة بايت دانس — البلقن ما له علاقة رسمية فيها، ويحتاج تطبيق كاب كت ديسكتوب عندك.</sub>
+
 ## 🔌 استخدم اللي عندك
 عندك اشتراك بمنصة توليد (fal · Higgsfield · ElevenLabs · أو غيرها) وكونكتورها مركّب بكلود؟ قل له يستخدمها — يولّد منها البي-رول أو الصوت أو المشاهد ويركّبها بالمونتاج. ما عندك؟ يشتغل عادي بدونها.
 
