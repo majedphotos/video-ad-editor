@@ -1,5 +1,5 @@
 {
- "name": "one-take — مثال الونشوت: ضيف الماركت بليس",
+ "name": "one-take — مثال الونشوت: ضيف الماركت بليس (زوم إن للأسود ← زوم آوت)",
  "fps": 60,
  "width": 1080,
  "height": 1920,
@@ -9,5 +9,5 @@
  "palette": { "bg": "#F0EBE0", "ink": "#1B1A17", "acc": "#D97757", "clay": "#C15F3C", "hi": "#E8A283", "mut": "#8A847A" },
  "fonts": { "display": "Lalezar", "body": "IBM Plex Sans Arabic", "num": "Inter" },
  "post": { "grain": 0.04, "vignette": 0 },
- "scenes": [ { "id": "s1", "file": "scenes/s1.js", "minDur": 12 } ]
+ "scenes": [ { "id": "s1", "file": "scenes/s1.js", "minDur": 16 } ]
 }
