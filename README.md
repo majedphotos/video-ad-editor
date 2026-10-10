@@ -116,6 +116,18 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 <td width="25%" align="center" valign="top"><img src="_pkg/montage.gif" width="100%"><br><b>🎞️ مونتاج مقاطع</b><br><sub>مجلد مقاطع بلا كلام ← ريل على الإيقاع</sub><br><code>«مونتاج من هالمقاطع»</code></td>
 </tr></table>
 
+## 🎥 وضع الونشوت — فيديو كله لقطة وحدة بلا قص
+<table width="100%"><tr>
+<td width="32%" align="center"><img src="_pkg/add-marketplace.gif" width="100%"><br><sub>مثال شغّال من البلقن (12 ث، مشهد واحد، 60 فريم)</sub></td>
+<td width="68%">
+
+شكل واحد يتحوّل من حالة لحالة (زر ← لودر ← صح ← رابط ← …) والكاميرا ما تقطع أبداً. ينفع للواجهات وشرح الخطوات والأفكار القصيرة.
+- قل: `«سو فيديو ونشوت عن …»` أو `«اكتب فيديو بلا قص»`
+- المرجع: [`one-take.md`](video-ad-editor/references/one-take.md) · المثال: [`motion/examples/one-take/`](video-ad-editor/motion/examples/one-take/)
+- **مكتبة أمثلة الحركات:** [`examples.md`](video-ad-editor/references/examples.md) — 11 فكرة من أفضل محفّزات الناس، كل وحدة بتقنيتها ورابط صاحبها (إلهام، مو قوالب)
+
+</td></tr></table>
+
 ## 🖼️ كفر وثمبنيل ينقرون بالجوال
 <table width="100%"><tr>
 <td width="30%" align="center"><img src="_pkg/cover_reel.jpg" width="100%"><br><sub>كفر الريل = أول فريم</sub></td>
@@ -208,6 +220,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 <details><summary>الإصدارات السابقة</summary>
 
+- **4.4.1** كلمة الختام ← رابط الحلقة بالخاص (أوتوميشن) + كرت الختام من الثيم + طريقة العمل مع كل حلقة بودكاست + خصم زورجا بكود MAJED
 - **4.4.0** وضع «الونشوت» (فيديو كله لقطة وحدة بلا قص) + مثال شغّال `motion/examples/one-take/` + مكتبة أمثلة من الناس (`references/examples.md`) + التثبيت من claude.ai بإضافة الماركت بليس
 - **4.3.5** إصلاح «Zip cannot contain nested zip files» (كان بـ4.3.3 و4.3.4) · **4.3.4** يشتغل بالجوال والسحابة · **4.3.3** أقل من 200 ملف
 
