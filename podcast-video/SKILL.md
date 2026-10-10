@@ -25,6 +25,7 @@ description: يمنتج البودكاست والمقابلات — كاميرت
    `${CLAUDE_SKILL_DIR}/../video-ad-editor/SKILL.md`
 5. **كل لحمة بين قطعتين تنفحص** (`19_seam_check.py`) — إلزامي.
 6. إضافات البودكاست ← `references/podcast-upgrades.md`
+7. **كلمة الختام + رابط الحلقة بالخاص (أوتوميشن):** غيّر `theme.json ← outro` لكرت بكلمة الحلقة ← `references/keyword-automation.md`
 
 ## ⛔ أسلوبك مع المستخدم
 
