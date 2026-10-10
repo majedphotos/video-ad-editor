@@ -199,6 +199,10 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
   <a href="https://www.instagram.com/channel/Abb1FvYoeUSGuaVM/"><img alt="قروب كلود المجاني على انستقرام" src="_pkg/group-banner.png" width="49%"></a>
 </p>
 
+## 💬 كلمة بآخر الريل ← رابط بالخاص (اختياري)
+
+ريلات الحلقة تنتهي بـ«اكتب [كلمة] توصلك الحلقة كاملة». عشان الرد يصير تلقائي: [زورجا](https://zorcha.com) — الأوتوميشن مجاني، والتحكم فيه من كلود (MCP) باشتراك. كود **MAJED** (كود شراكة) يعطيك **15% على الخطة الربع سنوية و30% على السنوية**. التفاصيل: [`keyword-automation.md`](video-ad-editor/references/keyword-automation.md).
+
 ## 🛠️ للمطوّرين
 خريطة كل السكربتات والملفات: [`references/script-map.md`](video-ad-editor/references/script-map.md) · التعليمات: [`SKILL.md`](video-ad-editor/SKILL.md) · السكلات الثانية: [`motion-video`](motion-video/SKILL.md) · [`podcast-video`](podcast-video/SKILL.md) · [`montage-video`](montage-video/SKILL.md) · [`thumbnail-video`](thumbnail-video/SKILL.md) · [`davinci-video`](davinci-video/SKILL.md)
 
