@@ -14,6 +14,8 @@ description: فيلم موشن قرافيكس ثلاثي الأبعاد بلا �
 2. **الوضع:** اقرأ `references/motion-mode.md` ونفّذه — قواعده كلها إلزامية.
 3. **الأوامر:** `motion/README.md`، ودليل كاتب المشاهد `motion/ENGINE-API.md`.
 4. **شرح موقع أو تطبيق:** `references/web-app-explainer.md`
+5. **ونشوت (فيديو كله لقطة وحدة، بلا قص):** `references/one-take.md` + المثال الشغّال `motion/examples/one-take/`. لإعلان تطبيق أو أداة، أو خطوات، أو فكرة بمشاهد داخل بعض.
+6. **أمثلة من الناس (إلهام، مو نسخ):** `references/examples.md`
 
 ## ⛔ أسلوبك مع المستخدم
 
