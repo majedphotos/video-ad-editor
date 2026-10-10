@@ -19,6 +19,9 @@
 
 ### ⭐ الأحدث — من claude.ai: تتحدّث بروحها وتوصل الجوال والديسكتوب
 
+<p align="center"><img src="_pkg/add-marketplace.gif" width="300" alt="شلون تضيف الماركت بليس: زر ← لودر ← صح ← تلصق الرابط ← البلقنين ← تحديث تلقائي ← ديسكتوب وجوال"></p>
+<p align="center"><sub>الخطوات بثواني: Add marketplace ← الصق <code>majedphotos/majed-plugins</code> ← فعّل التحديث التلقائي ← يطلع بالديسكتوب والجوال</sub></p>
+
 1. افتح **claude.ai** (أو تطبيق الديسكتوب) ← **Customize** ← **Plugins** ← **Add** ← **Add marketplace**
 2. اكتب: `majedphotos/majed-plugins` (فيه بلقن الفيديو + بلقن مصنع المحتوى) — أو `majedphotos/video-ad-editor` لبلقن الفيديو بس
 3. فعّل **Sync automatically** وأضف البلقن. يطلع لك بالويب والديسكتوب والجوال، وClaude Code يسحبه عند بداية أول جلسة.
