@@ -35,4 +35,14 @@ V="$(cat "$P/VERSION")"; PV="$(python3 -c "import json;print(json.load(open('$T/
 [ "$V" = "$PV" ] || { echo "❌ VERSION ($V) ≠ plugin.json ($PV)"; exit 1; }
 ! grep -rIl "/Users/majedalzaabi" "$P" | grep -q . || { echo "❌ فيه مسار شخصي:"; grep -rIl "/Users/majedalzaabi" "$P"; exit 1; }
 ( cd "$T" && claude plugin validate . >/dev/null && claude plugin validate .claude-plugin/plugin.json >/dev/null ) || { echo "❌ فحص الـplugin فشل"; exit 1; }
+# تذكير المتجر: claude.ai يراقب ~/majed-plugins/.claude-plugin/marketplace.json بس — لازم version + source.ref = v$V
+MK="$HOME/majed-plugins/.claude-plugin/marketplace.json"
+if [ -f "$MK" ]; then python3 - "$MK" "$V" <<'PY' || true
+import json, sys
+m = json.load(open(sys.argv[1])); v = sys.argv[2]
+e = next((p for p in m.get("plugins", []) if p.get("name") == "majed-video"), {})
+if e.get("version") != v or (e.get("source") or {}).get("ref") != "v" + v:
+    print("⚠️  المتجر: majed-video بـmarketplace.json = %s @ %s — بعد الإصدار عدّلهم لـ%s @ v%s وادفع ~/majed-plugins (وإلا claude.ai ما يشوف التحديث)" % (e.get("version"), (e.get("source") or {}).get("ref"), v, v))
+PY
+fi
 echo "✅ v$V جاهز بـdist/ — .plugin $(du -h dist/majed-video.plugin | cut -f1) · .skill $(du -h dist/video-ad-editor.skill | cut -f1)"
