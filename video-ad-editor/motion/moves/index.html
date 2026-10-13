@@ -52,7 +52,7 @@ h3 small{font-family:'IBM Plex Sans Arabic';font-size:13px;color:var(--mut)}
 <h2>زيادة من المحرّك <small>حركات عربية خالصة</small></h2>
 <div class="g" id="bonus"></div>
 <div class="bar"><div class="sum" id="sum">ما اخترت شي للحين</div><button id="save">احفظ</button></div>
-<div class="done" id="done"><div><h1>انحفظ ✓</h1><p>ارجع للمحادثة، اختيارك صار عند كلود.</p></div></div>
+<div class="done" id="done"><div><h1>انحفظ ✓</h1><p id="doneP">ارجع للمحادثة، اختيارك صار عند كلود.</p></div></div>
 <script>
 const state = {}; let CAT = [];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -80,7 +80,7 @@ function paint() {
 document.getElementById('save').onclick = async () => {
   const pickIds = s => CAT.filter(m => state[m.id] === s).map(m => m.id);
   const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on: pickIds('on'), off: pickIds('off') }) });
-  if (r.ok) { document.getElementById('done').style.display = 'grid'; } else alert('ما انحفظ: ' + await r.text());
+  if (r.ok) { if (new URLSearchParams(location.search).get('from') === 'onboard') document.getElementById('doneP').textContent = 'ارجع لصفحة التعارف وكمّل. تقدر تسكّر هالصفحة.'; document.getElementById('done').style.display = 'grid'; } else alert('ما انحفظ: ' + await r.text());
 };
 (async () => {
   CAT = (await (await fetch('catalog.json')).json()).moves;

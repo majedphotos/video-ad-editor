@@ -253,6 +253,9 @@ class Handler(BaseHTTPRequestHandler):
             if ct and (base == f.parent or base in f.parents) and f.is_file():
                 return self._send(200, f.read_bytes(), ct)
             return self._send(404, {"ok": False})
+        if u.path == "/api/state":                 # لصفحة بنك الحركات (نفس شكل 35_moves.py)
+            p = load_profile() or {}
+            return self._send(200, {"moves": p.get("moves") or {"on": [], "off": []}, "colors": ((p.get("identity") or {}).get("colors")) or {}})
         if u.path == "/api/ping":
             return self._send(200, {"ok": True})
         if u.path == "/api/profile":
@@ -279,6 +282,23 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, {"ok": False})
 
     def do_POST(self):
+        if urlparse(self.path).path == "/api/save":          # اختيار الحركات من صفحة البنك — يدمج بالبروفايل وما يسكّر السيرفر
+            ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            origin, host = self.headers.get("Origin"), self.headers.get("Host") or ""
+            if ctype != "application/json" or (origin and origin != "http://" + host):
+                return self._send(403, {"ok": False, "error": "forbidden"})
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+                o = json.loads(self.rfile.read(min(n, 65536)).decode("utf-8"))
+                ids = {m["id"] for m in json.loads((SKILL / "motion" / "moves" / "catalog.json").read_text(encoding="utf-8"))["moves"]}
+                on = [i for i in dict.fromkeys(o.get("on") or []) if i in ids]
+                off = [i for i in dict.fromkeys(o.get("off") or []) if i in ids and i not in on]
+                p = load_profile() or {}
+                p["moves"] = {"on": on, "off": off}
+                atomic_write(PROFILE, json.dumps(p, ensure_ascii=False, indent=2))
+            except Exception as e:
+                return self._send(400, {"ok": False, "error": str(e)})
+            return self._send(200, {"ok": True})
         if urlparse(self.path).path != "/api/submit":
             return self._send(404, {"ok": False})
         # صفحة ثانية مفتوحة بالمتصفح ما تقدر ترسل لنا: لازم JSON (يجبر المتصفح على فحص مسبق)
