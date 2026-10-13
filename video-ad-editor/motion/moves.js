@@ -11,18 +11,21 @@
   const lerp = (a, b, k) => a + (b - a) * k;
   const ON = 0.01;                                      // ⚠ backOut(0) يرجع رقم موجب صغير — قارن بـON مو بـ0
   const pick = (o, k, d) => (o[k] === undefined ? d : o[k]);
+  // الأغمق من لونين (للحدّ حول الكابشن الأبيض: بثيم غامق ink أبيض، فالحدّ يصير bg)
+  const lum = h => { const c = String(h || '#000').replace('#', ''), f = c.length === 3 ? c.split('').map(x => x + x).join('') : c; return [0, 2, 4].reduce((a, j, n) => a + [0.2126, 0.7152, 0.0722][n] * parseInt(f.slice(j, j + 2), 16), 0); };
+  const darker = (a, b) => (lum(a) <= lum(b) ? a : b);
   // نص مقسّم كلمات: يرجّع التخطيط وصناديق الكلمات بلا رسم
   const boxesOf = (ctx, str, x, y, o) => {
     const L = ctx.text.layout(ctx.X, str, { family: o.family || 'display', weight: o.weight || 400, size: o.size, maxWidth: o.maxWidth || 900, lineHeight: o.lineHeight || 1.2 });
     return { L, B: ctx.text.drawLayout(ctx.X, L, x, y, { perWord: () => ({ skip: true }) }) };
   };
   // توقيت الكلمة i: من الصوت لو o.line، وإلا s + i*step
-  const wt = (ctx, o, i, step) => (o.line ? ctx.wordTime(o.line, i).s : o.s + i * step);
+  const wt = (ctx, o, i, step) => (o.line != null ? ctx.wordTime(o.line, i).s : o.s + i * step);
   const FX = {};
 
   /* ── أ) حركات الكلمات ─────────────────────────────────────────── */
 
-  /* 1 كلمة تولّع — كابشن: الكلمة الحالية داخل كبسولة تنزلق. o: {text|line, s, step=.55, x=540, y=1290, size=104, color='#fff', stroke, pill=P.acc} */
+  /* 1 كلمة تولّع — كابشن: الكلمة الحالية داخل كبسولة تنزلق. o: {text|line, s, step=.55, x=540, y=1290, size=104, color='#fff', stroke (لون، أو null بلا حدّ — الافتراضي الأغمق من ink/bg), pill=P.acc} */
   FX.caption = (ctx, t, o) => {
     const { X, P, E, at } = ctx, step = pick(o, 'step', 0.55), size = o.size || 104, x = pick(o, 'x', 540), y = pick(o, 'y', 1290);
     const text = o.text || ctx.lineSpan(o.line).text;
@@ -34,7 +37,7 @@
     }
     ctx.text.drawLayout(X, L, x, y, { perWord: (i) => {
       const t0 = wt(ctx, o, i, step), k = at(t, t0 - 0.05, t0 + 0.2, 'backOut');
-      return { alpha: k > ON ? 1 : 0, scale: 0.85 + 0.15 * k, color: o.color || '#FFFFFF', stroke: i === cur ? null : (o.stroke === null ? null : { width: size * 0.13, color: P.ink }) };
+      return { alpha: k > ON ? 1 : 0, scale: 0.85 + 0.15 * k, color: o.color || (i === cur && P.onAcc) || '#FFFFFF', stroke: i === cur ? null : (o.stroke === null ? null : { width: size * 0.13, color: typeof o.stroke === 'string' ? o.stroke : darker(P.ink, P.bg) }) };
     } });
   };
 

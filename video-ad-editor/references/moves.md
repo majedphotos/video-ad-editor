@@ -42,8 +42,27 @@ draw(t, lt, ctx) {
 - الانتقالات (`crossZoom softWipe iris whip zoomWipe dotZoom`) تاخذ `A` و`B` كدوال ترسم الإطار كامل. حطها داخل مشهد واحد مكان انتقال المحرّك.
 - `jcut` و`matchCut` قواعد توقيت، مو رسم: J-cut = صوت اللقطة الجاية يسبق صورتها بـ4–12 فريم. القطع المطابق = الشكل نفسه بنفس المكان والحجم على فريم القص.
 
-**بريل الكلام** (`compose.html`): هالمحرّك ما يقرا `moves.js` للحين. الاختيار يمشي هني **كقاعدة**:
-لا تستخدم حركة شبيهة بأي `off`، ولما تكتب حركة كلمات أو انتقال، قلّد حركات `on` بأدوات `motion-kit` (السلوك موصوف بالكتالوج وبالكود فوق كل دالة).
+**بريل الكلام** (`compose.html`): نفس الدوال، بس الـctx اسمه `MV` (من `scripts/moves-compose.js`: أدوات النص والتوقيت وألوان `theme.json` وخطه فوق كانفس المحرّك).
+`compose.REFERENCE.html` يحمّل `moves.js` و`moves-compose.js` من مجلد الشغل، و`04_render_frames.js`/`08_safe_check.js` ينسخونهم وحدهم لو ناقصين.
+مشاهدك بآخر `compose.html` (بعد سطر التحميل):
+```js
+MV.ready(() => {                                   // caps.json يوصل بـinit — أي wordTime/lineSpan برّا الرسم داخل ready
+  MV.hideCaption(MV.lineSpan(0).s, MV.lineSpan(2).e);                       // FX.caption بدال كابشن المحرّك
+  MV.scene('cap', t => { const n = [0,1,2].find(i => t >= MV.lineSpan(i).s && t < MV.lineSpan(i).e);
+    if (n !== undefined) FX.caption(MV, t, { line: n, y: 1280 }); });        // 1 متزامن كلمة كلمة
+  const s = MV.wordTime(3, 0).s;
+  MV.scene('push', t => { if (t >= s && t < MV.lineSpan(4).e)
+    FX.pushIn(MV, t, { s, to: 1.18, focus: [540, 560], blur: false, draw: Y => MV.video(Y) }); }, 'video');   // 12 طبقة الفيديو
+  const w = MV.wordTime(5, 0).s - 0.3;
+  MV.scene('whip', t => { if (t >= w && t < MV.lineSpan(5).e)
+    FX.whip(MV, t, { s: w, A: Y => MV.video(Y), B: Y => MV.panel(Y, () => FX.riseUp(MV, t, { text: 'الفكرة', s: w + 0.35 })) }); });   // 11
+});
+```
+- السطر = رقم الجملة بـ`caps.json` (`MV.wordTime(3, 0)` = أول كلمة بالجملة 3). `line: 0` يشتغل.
+- `MV.video(Y, R?)` يرسم فريم الفيديو الحالي (ملء الشاشة افتراضياً) — هو مشهد A/B للانتقالات و`draw` لحركات الكاميرا.
+- `MV.panel(Y, fn)` = خلفية الثيم + رسمك: شاشة كاملة بين لقطتين. كابشن المحرّك يبقى فوقها.
+- `MV.scene(name, fn, 'video')` لحركة تشتغل على الفيديو نفسه (pushIn/pullOut) فالكابشن يبقى فوقها؛ بدون طبقة = فوق الفيديو وتحت الكابشن.
+- ⚠ `FX.caption` بثيم غامق: الحدّ حول الكلمات يصير الأغمق من `ink`/`bg` تلقائياً، والكلمة الحالية بلون `onAcc` فوق الكبسولة.
 
 ## 4) إضافة حركة جديدة
 

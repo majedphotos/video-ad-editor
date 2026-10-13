@@ -11,6 +11,13 @@
    الحدود تتعدّل بملف <work>/safe.json إذا احتجت.                                             */
 const path=require('path'), fs=require('fs');
 const W=path.resolve(process.argv[2])+path.sep;
+/* 🎞️ معرض الحركات: compose.html يطلب moves.js + moves-compose.js من مجلد الشغل — لو ناقصين ننسخهم من السكل قبل الفتح
+   (بدونهم FX ما يتعرّف والمشهد يتخطّى). وcompose قديم بلا الوسمين: نركّبهم بعد الفتح عشان FX/MV يشتغلون وقت الرسم. */
+const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js')};
+function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
+  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); } }
+async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))) return;
+  for(const f of ['moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(src) await p.addScriptTag({path:src}); } }
 const SHOT=process.argv.includes('--shot');
 const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));
 const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.json','utf8')):{};
@@ -89,7 +96,9 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   p.on('console',m=>{ if(m.type()==='error') perr(m.text()); });
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
+  movesCopy();
   await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
+  await movesInject(p);
   /* 🪝 الهوك: نفس تركيب 04_render_frames.js — لو compose.html ما فيه hook-card.js والثيم فيه hook، نركّبه عشان نفحص اللي ينرسم فعلاً */
   if(THEME.hook&&!(await p.evaluate(()=>!!window.HookCard))){ const hc=[path.join(__dirname,'hook-card.js'),W+'hook-card.js'].find(f=>fs.existsSync(f)); if(hc) await p.addScriptTag({path:hc}); }
   const FF=THEME.font||'Cairo';

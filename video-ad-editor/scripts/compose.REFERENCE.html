@@ -1003,4 +1003,8 @@ window.draw=draw;window.init=init;window.vrect=vrect;
 window.setFrame=src=>{ /* decode() بعد إسناد المصدر = ضمان إن هذي الصورة بالذات جاهزة */
   VF.src=src; return (VF.decode?VF.decode():Promise.resolve()).catch(()=>{}); };
 window.shot=q=>document.getElementById('cv').toDataURL('image/jpeg',q);
-</script></body></html>
+</script>
+<!-- 🎞️ معرض الحركات (references/moves.md §3): FX.<id>(MV, t, o) داخل مشاهدك — FX من motion/moves.js، وMV (أدوات النص والتوقيت والثيم) من moves-compose.js.
+     04_render_frames.js و08_safe_check.js ينسخونهم للمجلد لو ناقصين. مشاهدك تحتهم (بعد هالسطر). -->
+<script src="moves.js"></script><script src="moves-compose.js"></script>
+</body></html>

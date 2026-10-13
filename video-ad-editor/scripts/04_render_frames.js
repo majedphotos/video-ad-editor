@@ -37,6 +37,13 @@ function findChrome(){
   throw new Error('ما لقيت كروم — حدّد CHROME_PATH');
 }
 const CHROME=findChrome();
+/* 🎞️ معرض الحركات: compose.html يطلب moves.js + moves-compose.js من مجلد الشغل — لو ناقصين ننسخهم من السكل قبل الفتح
+   (بدونهم FX ما يتعرّف والمشهد يتخطّى). وcompose قديم بلا الوسمين: نركّبهم بعد الفتح عشان FX/MV يشتغلون وقت الرسم. */
+const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js')};
+function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
+  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); } }
+async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))) return;
+  for(const f of ['moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(src) await p.addScriptTag({path:src}); } }
 (async()=>{
   const puppeteer=resolvePuppeteer();
   const mode=process.argv[3]||'all';
@@ -52,7 +59,9 @@ const CHROME=findChrome();
   p.on('console',m=>{ if(m.type()==='error') perr(m.text()); });
   await p.setViewport({width:1080,height:1920,deviceScaleFactor:1});
   await p.setCacheEnabled(false);   // لا تقرأ نسخة مخبّأة من compose.html
+  movesCopy();
   await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
+  await movesInject(p);
   const FF=THEME.font||'Cairo';
   await p.evaluate(()=>new Promise(r=>{const l=document.getElementById('LOGO');l.complete?r():l.onload=r;}));
   /* 🪝 v3.8.1: الهوك المكتوب (theme.json ← hook) — لو compose.html ما فيه hook-card.js (انسخ من المرجع من جديد / apply قبل وجوده)

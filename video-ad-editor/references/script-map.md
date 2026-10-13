@@ -51,6 +51,7 @@
 | `studio/studio.py` | الاستوديو — تايملاين باللمس فوق نفس الملفات والراسم (`references/studio.md`) | الخفيف |
 | `21_avatar_scene.py` | مشهد الأفاتار: صورة بمكان ثاني + يتكلم بصوته (`references/talking-avatar.md`) | fal |
 | `22_hook.py` + `hook-card.js` | 🪝 الهوك المكتوب أول كل ريل بودكاست/مقابلة: `suggest` أقوى السطور · `check` فاحص القواعد (3-8 كلمات، أداة شد، لهجة، الرقم من كلامه) · `apply` يكتب `theme.json ← hook` ويركّب الكرت · `preview` ورقة 4 لقطات · `overlay` طبقة شفافة `hook.mov` (أو محروقة فوق mp4) لريل مو من محرّكاتنا — خط المقابلة بدافنشي (`references/podcast-hook.md`) | مشترك |
+| `moves-compose.js` | 🎞️ يشغّل حركات المعرض (`motion/moves.js` → `FX`) داخل ريل الكلام: `MV` = أدوات النص والتوقيت (من `caps.json`) والثيم فوق كانفس compose · `MV.video` · `MV.panel` · `MV.hideCaption` · `MV.scene` · `MV.ready` (`references/moves.md` §3) | الخفيف |
 
 ## ملفات مجلد الشغل
 `src.mov` · `spec.json` (حلقة ← ريل) · `a.json` (وِسبر) · `fixes.json` · `cut.json` · `caps.json` · `theme.json` · `studio.json` · `sfx.json` · `behind.json` · `safe.json` (اختياري) · `hook-card.js` + `hook_sheet.jpg` (الهوك) · `vfr/` (فريمات المصدر) · `out/` (فريمات الرسم) · `prev/` (معاينة) · `ad-final.mp4` · `ad-master.mp4/.srt/.txt`.
