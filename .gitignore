@@ -3,3 +3,4 @@ node_modules/
 *.mp4
 .DS_Store
 majed-video.plugin
+!video-ad-editor/motion/moves/previews/*.mp4

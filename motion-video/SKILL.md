@@ -16,6 +16,7 @@ description: فيلم موشن قرافيكس ثلاثي الأبعاد بلا �
 4. **شرح موقع أو تطبيق:** `references/web-app-explainer.md`
 5. **ونشوت (فيديو كله لقطة وحدة، بلا قص):** `references/one-take.md` + المثال الشغّال `motion/examples/one-take/`. لإعلان تطبيق أو أداة، أو خطوات، أو فكرة بمشاهد داخل بعض.
 6. **أمثلة من الناس (إلهام، مو نسخ):** `references/examples.md`
+7. **معرض الحركات (اختيار المستخدم — إلزامي):** `references/moves.md`. قبل أول مشهد: `python3 scripts/35_moves.py show`. اللي بـ`off` ممنوع، واللي بـ`on` تناديه بـ`ctx.FX.<id>`.
 
 ## ⛔ أسلوبك مع المستخدم
 

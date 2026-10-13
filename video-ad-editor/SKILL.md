@@ -233,6 +233,7 @@ python3 scripts/23_headcrop.py <work> --from <بداية أول كرت>
 **قبل أي مشهد اقرأ:**
 1. `references/motion-rules.md` — الهوية، قائمة الحقائق `facts.md`، الممنوعات.
 2. `references/scenes.md` — شلون تكتب المشهد، حزمة الموشن، الأفكار، البي-رول.
+3. `references/moves.md` — **معرض الحركات:** `python3 scripts/35_moves.py show`. الحركات اللي رفضها (`off`) ممنوعة بأي شكل، واللي اختارها (`on`) هي أدواتك الأولى.
 
 **⛔ قاعدة التخطيط (معتمدة من المستخدم):**
 

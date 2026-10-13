@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>معرض الحركات</title>
+<!-- يُفتح عبر: python3 scripts/35_moves.py — الاختيار ينحفظ بـprofile.json تحت "moves" -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&family=Lalezar&family=Inter:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F2EE;--ink:#1B1A17;--mut:#7A766E;--card:#fff;--acc:#D97757;--yes:#2E9E6A;--no:#C8473B;--line:rgba(27,26,23,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--ink:#F2EFE9;--mut:#A39E95;--card:#22201D;--line:rgba(255,255,255,.08)}}
+:root[data-theme="dark"]{--bg:#151412;--ink:#F2EFE9;--mut:#A39E95;--card:#22201D;--line:rgba(255,255,255,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;padding:24px 16px 120px}
+header,.g,h2{max-width:1200px;margin-inline:auto}
+h1{font-family:Lalezar,sans-serif;font-weight:400;font-size:42px;margin:0;color:var(--acc)}
+header p{color:var(--mut);margin:6px 0 0;font-size:16px;line-height:1.7}
+h2{font-family:Lalezar,sans-serif;font-weight:400;font-size:28px;margin-top:34px;margin-bottom:12px}
+h2 small{font-family:'IBM Plex Sans Arabic';font-size:14px;color:var(--mut)}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.c{background:var(--card);border-radius:20px;padding:10px 10px 12px;box-shadow:0 8px 26px rgba(0,0,0,.07);border:3px solid transparent;transition:border-color .15s}
+.c.on{border-color:var(--yes)} .c.off{border-color:var(--no)} .c.off .v{opacity:.45}
+.v{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#000;cursor:pointer}
+video{width:100%;height:100%;display:block;object-fit:cover}
+.n{position:absolute;top:10px;right:10px;background:var(--acc);color:#fff;font:900 21px Inter,sans-serif;min-width:42px;height:42px;border-radius:21px;display:grid;place-items:center;padding:0 10px}
+.badge{position:absolute;top:10px;left:10px;font-weight:700;font-size:14px;border-radius:12px;padding:4px 10px;color:#fff;display:none}
+.on .badge{display:block;background:var(--yes)} .off .badge{display:block;background:var(--no)}
+h3{font-family:Lalezar,sans-serif;font-weight:400;font-size:24px;margin:10px 4px 0}
+h3 small{font-family:'IBM Plex Sans Arabic';font-size:13px;color:var(--mut)}
+.c p{margin:4px;font-size:14.5px;line-height:1.6}
+.c p.s{font-size:12px;color:var(--mut)} a{color:var(--acc)}
+.btns{display:flex;gap:8px;margin:10px 4px 0}
+.btns button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);font:700 15px 'IBM Plex Sans Arabic',sans-serif;border-radius:12px;padding:9px 0;cursor:pointer}
+.on .yes{background:var(--yes);color:#fff;border-color:var(--yes)} .off .no{background:var(--no);color:#fff;border-color:var(--no)}
+.bar{position:fixed;inset:auto 0 0 0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 -6px 24px rgba(0,0,0,.08)}
+.bar .sum{font-size:15px;line-height:1.5;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.bar .sum b{font-family:Inter,sans-serif}
+.bar button{flex:none;background:var(--acc);color:#fff;border:0;font:700 17px 'IBM Plex Sans Arabic',sans-serif;border-radius:14px;padding:12px 26px;cursor:pointer}
+.done{position:fixed;inset:0;background:var(--bg);display:none;place-items:center;text-align:center;padding:20px}
+.done h1{font-size:48px}
+</style>
+</head>
+<body>
+<header>
+  <h1>معرض الحركات</h1>
+  <p>اختر الحركات اللي تبيها بفيديوهاتك. «أبي» تخليها متاحة للمونتاج، و«لا» تمنعها نهائياً، واللي تتركها بلا اختيار تنستخدم بس إذا تناسب الجملة.<br>
+  المعاينات بألوان مثال. بفيديوك الحركة تطلع بألوان هويتك ونصك وتوقيت كلامك.</p>
+</header>
+<div class="g" id="main"></div>
+<h2>زيادة من المحرّك <small>حركات عربية خالصة</small></h2>
+<div class="g" id="bonus"></div>
+<div class="bar"><div class="sum" id="sum">ما اخترت شي للحين</div><button id="save">احفظ</button></div>
+<div class="done" id="done"><div><h1>انحفظ ✓</h1><p>ارجع للمحادثة، اختيارك صار عند كلود.</p></div></div>
+<script>
+const state = {}; let CAT = [];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function card(m) {
+  const src = m.source.url ? `المصدر: <a href="${esc(m.source.url)}" target="_blank" rel="noopener">${esc(m.source.label)}</a>` : `المصدر: ${esc(m.source.label)}`;
+  const el = document.createElement('article'); el.className = 'c'; el.dataset.id = m.id;
+  el.innerHTML = `<div class="v"><video src="${esc(m.preview)}" autoplay muted loop playsinline preload="metadata"></video><b class="n">${m.n}</b><span class="badge"></span></div>
+    <h3>${esc(m.name)} <small>${esc(m.sub)}</small></h3><p>${esc(m.desc)}</p><p class="s">${src}</p>
+    <div class="btns"><button class="yes">أبي ✓</button><button class="no">لا ✗</button></div>`;
+  el.querySelector('.yes').onclick = () => set(m.id, state[m.id] === 'on' ? null : 'on');
+  el.querySelector('.no').onclick = () => set(m.id, state[m.id] === 'off' ? null : 'off');
+  el.querySelector('.v').onclick = () => set(m.id, state[m.id] === 'on' ? 'off' : state[m.id] === 'off' ? null : 'on');
+  return el;
+}
+function set(id, v) { if (v) state[id] = v; else delete state[id]; paint(); }
+function paint() {
+  document.querySelectorAll('.c').forEach(el => { const v = state[el.dataset.id]; el.classList.toggle('on', v === 'on'); el.classList.toggle('off', v === 'off');
+    el.querySelector('.badge').textContent = v === 'on' ? 'أبي' : v === 'off' ? 'لا' : ''; });
+  const by = s => CAT.filter(m => state[m.id] === s).map(m => m.n);
+  const on = by('on'), off = by('off');
+  document.getElementById('sum').innerHTML = on.length || off.length
+    ? `${on.length ? 'أبي: <b>' + on.join('، ') + '</b>' : ''}${on.length && off.length ? ' · ' : ''}${off.length ? 'لا: <b>' + off.join('، ') + '</b>' : ''}`
+    : 'ما اخترت شي للحين';
+}
+document.getElementById('save').onclick = async () => {
+  const pickIds = s => CAT.filter(m => state[m.id] === s).map(m => m.id);
+  const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on: pickIds('on'), off: pickIds('off') }) });
+  if (r.ok) { document.getElementById('done').style.display = 'grid'; } else alert('ما انحفظ: ' + await r.text());
+};
+(async () => {
+  CAT = (await (await fetch('catalog.json')).json()).moves;
+  try { const st = await (await fetch('/api/state')).json();
+    (st.moves.on || []).forEach(id => state[id] = 'on'); (st.moves.off || []).forEach(id => state[id] = 'off');
+    if (st.colors && /^#[0-9a-f]{6}$/i.test(st.colors.acc || '')) document.documentElement.style.setProperty('--acc', st.colors.acc);
+  } catch (e) { }
+  CAT.forEach(m => document.getElementById(m.bonus ? 'bonus' : 'main').appendChild(card(m)));
+  paint();
+})();
+</script>
+</body>
+</html>

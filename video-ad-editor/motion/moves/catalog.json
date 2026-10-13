@@ -1,0 +1,328 @@
+{
+ "version": 1,
+ "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp).",
+ "moves": [
+  {
+   "n": 1,
+   "id": "caption",
+   "cat": "text",
+   "name": "كلمة تولّع",
+   "sub": "كابشن كاريوكي",
+   "desc": "الكلمة اللي تنقال الحين داخل كبسولة تنزلق من كلمة لكلمة. الكابشن ينقرا بلا صوت.",
+   "source": {
+    "label": "remotion-dev/template-tiktok · Page.tsx",
+    "url": "https://github.com/remotion-dev/template-tiktok"
+   },
+   "preview": "previews/01.mp4",
+   "bonus": false
+  },
+  {
+   "n": 2,
+   "id": "blurIn",
+   "cat": "text",
+   "name": "ضباب يصفى",
+   "sub": "دخول ضبابي",
+   "desc": "كل كلمة تطلع من غباش لحدّة وتستقر. للجمل الهادية.",
+   "source": {
+    "label": "react-bits · BlurText",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/02.mp4",
+   "bonus": false
+  },
+  {
+   "n": 3,
+   "id": "riseUp",
+   "cat": "text",
+   "name": "طلعة متتابعة",
+   "sub": "طلوع من القناع",
+   "desc": "الكلمات تطلع من خط مخفي وحدة ورا الثانية من اليمين، وتطلع لفوق بالنهاية.",
+   "source": {
+    "label": "react-bits · SplitText",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/03.mp4",
+   "bonus": false
+  },
+  {
+   "n": 4,
+   "id": "wordSwap",
+   "cat": "text",
+   "name": "كلمة تتبدّل",
+   "sub": "عجلة كلمات",
+   "desc": "الجملة ثابتة والكلمة الأخيرة تلف بسبرنق. حلوة للهوك.",
+   "source": {
+    "label": "react-bits · RotatingText",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/04.mp4",
+   "bonus": false
+  },
+  {
+   "n": 5,
+   "id": "focus",
+   "cat": "text",
+   "name": "عدسة التركيز",
+   "sub": "أقواس تتنقّل",
+   "desc": "الجملة مغبشة إلا كلمة، وأقواس زوايا تنتقل بين الكلمات المهمة.",
+   "source": {
+    "label": "react-bits · TrueFocus",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/05.mp4",
+   "bonus": false
+  },
+  {
+   "n": 6,
+   "id": "decrypt",
+   "cat": "text",
+   "name": "فك الشفرة",
+   "sub": "حروف تتقلب",
+   "desc": "حروف عربية عشوائية تتقلب وتستقر من اليمين، والوصلات سليمة.",
+   "source": {
+    "label": "react-bits · DecryptedText",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/06.mp4",
+   "bonus": false
+  },
+  {
+   "n": 7,
+   "id": "counter",
+   "cat": "text",
+   "name": "عدّاد",
+   "sub": "عجلات أرقام",
+   "desc": "كل خانة تلف لحالها وتوقف بالتتابع مع ارتداد. للأرقام القوية.",
+   "source": {
+    "label": "react-bits · CountUp",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/07.mp4",
+   "bonus": false
+  },
+  {
+   "n": 8,
+   "id": "crossZoom",
+   "cat": "transition",
+   "name": "زوم مدموج",
+   "sub": "انتقال زوم وغباش",
+   "desc": "المشهدين يندمجون بزوم وغباش يبلغ ذروته بالنص. يحس إنها لقطة وحدة.",
+   "source": {
+    "label": "gl-transitions · CrossZoom",
+    "url": "https://github.com/gl-transitions/gl-transitions"
+   },
+   "preview": "previews/08.mp4",
+   "bonus": false
+  },
+  {
+   "n": 9,
+   "id": "softWipe",
+   "cat": "transition",
+   "name": "مسحة",
+   "sub": "مسحة ناعمة لليسار",
+   "desc": "المشهد الجديد يمسح من اليمين لليسار بحافة مموّهة.",
+   "source": {
+    "label": "gl-transitions · directionalwipe",
+    "url": "https://github.com/gl-transitions/gl-transitions"
+   },
+   "preview": "previews/09.mp4",
+   "bonus": false
+  },
+  {
+   "n": 10,
+   "id": "iris",
+   "cat": "transition",
+   "name": "فتحة دائرية",
+   "sub": "دايرة من نقطة",
+   "desc": "نقطة تكبر وتبلع الشاشة وتكشف المشهد اللي بعده.",
+   "source": {
+    "label": "gl-transitions · circleopen",
+    "url": "https://github.com/gl-transitions/gl-transitions"
+   },
+   "preview": "previews/10.mp4",
+   "bonus": false
+  },
+  {
+   "n": 11,
+   "id": "whip",
+   "cat": "transition",
+   "name": "سحبة",
+   "sub": "ويب بان",
+   "desc": "سحبة سريعة لليسار بغباش حركة، بلا قص.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · camera-and-grids",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/11.mp4",
+   "bonus": false
+  },
+  {
+   "n": 12,
+   "id": "pushIn",
+   "cat": "camera",
+   "name": "دخلة",
+   "sub": "زوم بطيء لقدّام",
+   "desc": "زوم 1 إلى 1.12 خلال 1.6 ث على الجملة المهمة، والخلفية تغبش شوي.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · camera-and-grids",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/12.mp4",
+   "bonus": false
+  },
+  {
+   "n": 13,
+   "id": "pullOut",
+   "cat": "camera",
+   "name": "طلعة للخلف",
+   "sub": "الكاميرا ترجع",
+   "desc": "نبدأ لاصقين بالعنصر والكاميرا ترجع وتكشف اللي حوله.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · camera-and-grids",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/13.mp4",
+   "bonus": false
+  },
+  {
+   "n": 14,
+   "id": "zoomWipe",
+   "cat": "transition",
+   "name": "زوم ومسحة",
+   "sub": "زوم ثم مسحة",
+   "desc": "المقطع ينسحب لقدّام بسرعة، وبذروة الزوم المشهد الجاي يمسح من اليمين.",
+   "source": {
+    "label": "gl-transitions · ZoomLeftWipe",
+    "url": "https://github.com/gl-transitions/gl-transitions"
+   },
+   "preview": "previews/14.mp4",
+   "bonus": false
+  },
+  {
+   "n": 15,
+   "id": "notifs",
+   "cat": "card",
+   "name": "إشعارات",
+   "sub": "إشعارات تتكدّس",
+   "desc": "كل نقطة تنزل كإشعار جوال، واللي قبلها تنزاح لتحت.",
+   "source": {
+    "label": "magicui · AnimatedList",
+    "url": "https://github.com/magicuidesign/magicui"
+   },
+   "preview": "previews/15.mp4",
+   "bonus": false
+  },
+  {
+   "n": 16,
+   "id": "highlight",
+   "cat": "card",
+   "name": "قلم تحديد",
+   "sub": "ماركر باليد",
+   "desc": "ضربة ماركر ورا الكلمة من اليمين لليسار، وخط تحت كلمة ثانية.",
+   "source": {
+    "label": "magicui · Highlighter",
+    "url": "https://github.com/magicuidesign/magicui"
+   },
+   "preview": "previews/16.mp4",
+   "bonus": false
+  },
+  {
+   "n": 17,
+   "id": "shine",
+   "cat": "card",
+   "name": "لمعة",
+   "sub": "شريط ضوء",
+   "desc": "لمعة مايلة تعبر السعر والزر كل ثانيتين. للأسعار والطلب.",
+   "source": {
+    "label": "react-bits · ShinyText",
+    "url": "https://github.com/DavidHDev/react-bits"
+   },
+   "preview": "previews/17.mp4",
+   "bonus": false
+  },
+  {
+   "n": 18,
+   "id": "jcut",
+   "cat": "rule",
+   "name": "صوت يسبق",
+   "sub": "J-cut",
+   "desc": "قاعدة: صوت اللقطة الجاية يبدأ قبل صورتها بـ4–12 فريم فتختفي القصّة.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · editing-techniques",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/18.mp4",
+   "bonus": false
+  },
+  {
+   "n": 19,
+   "id": "matchCut",
+   "cat": "rule",
+   "name": "قطع مطابق",
+   "sub": "نفس الشكل",
+   "desc": "قاعدة: الشكل يكمل بنفس المكان والحجم باللقطة الثانية، والحركة مستمرة.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · editing-techniques",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/19.mp4",
+   "bonus": false
+  },
+  {
+   "n": 20,
+   "id": "ramp",
+   "cat": "rule",
+   "name": "تبطيء الضربة",
+   "sub": "سبيد رامب",
+   "desc": "سرعة عادية ثم 25% بلحظة الضربة ثم ترجع (FX.ramp).",
+   "source": {
+    "label": "iart-ai/motion-design-skills · editing-techniques",
+    "url": "https://github.com/iart-ai/motion-design-skills"
+   },
+   "preview": "previews/20.mp4",
+   "bonus": false
+  },
+  {
+   "n": 21,
+   "id": "typewriter",
+   "cat": "text",
+   "name": "آلة كاتبة",
+   "sub": "كتابة بمؤشر",
+   "desc": "النص ينكتب بمؤشر والحروف ما تنكسر.",
+   "source": {
+    "label": "محرّك البلقن · typeSub",
+    "url": ""
+   },
+   "preview": "previews/21.mp4",
+   "bonus": true
+  },
+  {
+   "n": 22,
+   "id": "kashida",
+   "cat": "text",
+   "name": "مطّ الكشيدة",
+   "sub": "كلمة تتمدد",
+   "desc": "الكلمة المهمة تتمدد بالعرض بالكشيدة ثم ترجع. حركة عربية خالصة.",
+   "source": {
+    "label": "محرّك البلقن · kashida",
+    "url": ""
+   },
+   "preview": "previews/22.mp4",
+   "bonus": true
+  },
+  {
+   "n": 23,
+   "id": "dotZoom",
+   "cat": "transition",
+   "name": "زوم داخل النقطة",
+   "sub": "دخول بالنقطة",
+   "desc": "نقطة آخر الكلمة، الكاميرا تدخلها لين تصير الشاشة كلها.",
+   "source": {
+    "label": "محرّك البلقن",
+    "url": ""
+   },
+   "preview": "previews/23.mp4",
+   "bonus": true
+  }
+ ]
+}

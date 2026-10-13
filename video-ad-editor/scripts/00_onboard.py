@@ -169,6 +169,9 @@ def clean(obj):
 
 
 def save(obj, work):
+    old = load_profile() or {}
+    if "moves" in old and "moves" not in obj:      # اختيار معرض الحركات (35_moves.py) ما ينمسح لو عاد صفحة التعارف
+        obj["moves"] = old["moves"]
     text = json.dumps(obj, ensure_ascii=False, indent=2)
     atomic_write(PROFILE, text)
     paths = [str(PROFILE)]
