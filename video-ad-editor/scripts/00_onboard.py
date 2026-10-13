@@ -93,6 +93,18 @@ def on_accent(acc, ink, bg):
     return max((ink, bg, "#FFFFFF", "#111111"), key=lambda c: contrast(c, acc))
 
 
+def ensure_previews(moves_dir):
+    """ملف البلقن (رفع تطبيق كلود، حد 200 ملف) يحمل المعاينات zip واحد — نفكّه أول مرة."""
+    import zipfile
+    d, z = moves_dir / "previews", moves_dir / "previews.zip"
+    if z.exists() and not any(d.glob("*.mp4")):
+        d.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(z) as f:
+            for n in f.namelist():
+                if n.endswith(".mp4") and "/" not in n.strip("/").replace("previews/", "", 1):
+                    (d / Path(n).name).write_bytes(f.read(n))
+
+
 def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
@@ -235,6 +247,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(204, b"", "image/x-icon")
         if u.path.startswith("/moves/"):            # بنك الحركات للفرجة (motion/moves) — قراءة بس
             base = (SKILL / "motion" / "moves").resolve()
+            ensure_previews(base)
             f = (base / (u.path[len("/moves/"):] or "index.html")).resolve()
             ct = {".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp4": "video/mp4"}.get(f.suffix)
             if ct and (base == f.parent or base in f.parents) and f.is_file():

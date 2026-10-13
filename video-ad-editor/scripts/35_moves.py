@@ -37,6 +37,18 @@ PROFILE = HOME / "profile.json"
 TYPES = {".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp4": "video/mp4", ".png": "image/png"}
 
 
+def ensure_previews(moves_dir):
+    """ملف البلقن (رفع تطبيق كلود، حد 200 ملف) يحمل المعاينات zip واحد — نفكّه أول مرة."""
+    import zipfile
+    d, z = moves_dir / "previews", moves_dir / "previews.zip"
+    if z.exists() and not any(d.glob("*.mp4")):
+        d.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(z) as f:
+            for n in f.namelist():
+                if n.endswith(".mp4") and "/" not in n.strip("/").replace("previews/", "", 1):
+                    (d / Path(n).name).write_bytes(f.read(n))
+
+
 def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
@@ -118,6 +130,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def serve(args):
+    ensure_previews(MOVES)
     port, do_open, timeout, i = 0, True, 1800, 0
     while i < len(args):
         a = args[i]
