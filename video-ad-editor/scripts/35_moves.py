@@ -11,6 +11,10 @@
   python3 scripts/35_moves.py set "3 7 12" [--off "5"]
       يحفظ اختياراً من الشات مباشرة (أرقام المعرض) — لما يرد المستخدم «أبي 3 و7، 5 لا» بدل الصفحة.
   python3 scripts/35_moves.py list             يطبع الكتالوج (رقم · id · الاسم · الحالة)
+  python3 scripts/35_moves.py plan --title "عنوان الفيديو" [--family calm|punch|onetake|editorial|auto] [--cues number,list,price,cta,contrast,emphasis,reveal,tech,hit] [--dry]
+      لوحة حركات الفيديو: 3 حركات أساسية (كلمات + انتقال + كاميرا/كرت) من عائلة وحدة يدور حولها الفيديو كله،
+      + لهجات (accents) للحظات الخاصة حسب cues، + القواعد اللي تمشي دايماً. يتجنب أساسيات آخر 3 فيديوهات و"off".
+      ينحفظ بسجل moves-history.json (إلا مع --dry) عشان الفيديو الجاي يطلع غير.
 
   VAE_HOME=<مجلد> يغيّر مكان الحفظ (للتجربة) بدل ~/.video-ad-editor — مكتبات بايثون القياسية بس.
 """
@@ -147,6 +151,57 @@ def serve(args):
     return 0
 
 
+HISTORY = HOME / "moves-history.json"
+SLOTS = [("text", ("text",)), ("transition", ("transition",)), ("camera", ("camera", "card"))]
+
+
+def history():
+    try:
+        return json.loads(HISTORY.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _h(*a):
+    import hashlib
+    return int(hashlib.sha1("|".join(map(str, a)).encode("utf-8")).hexdigest()[:8], 16) / 0xFFFFFFFF
+
+
+def plan(title, family="auto", cues=(), dry=False):
+    cat = catalog()
+    off = set((load_profile().get("moves") or {}).get("off", []))
+    pref = set((load_profile().get("moves") or {}).get("on", []))
+    hist = history()
+    fams = list(json.loads(CATALOG.read_text(encoding="utf-8")).get("families", {}))
+    if family == "auto":                                   # العائلة اللي ما انستخدمت من زمان (قرعة ثابتة بالعنوان عند التعادل)
+        last = {h.get("family"): i for i, h in enumerate(hist)}
+        family = min(fams, key=lambda f: (last.get(f, -1), _h(title, f)))
+    recent = [i for h in hist[-3:] for i in h.get("core", [])]
+    used = [i for h in hist for i in h.get("core", []) + h.get("accents", [])]
+    def score(m):                                          # الأقل = الأحسن
+        return (recent.count(m["id"]) * 10 + used.count(m["id"]) - (3 if m["id"] in pref else 0) + _h(title, m["id"]))
+    pool = [m for m in cat if family in m.get("families", []) and m["id"] not in off]
+    core, why = [], []
+    for slot, roles in SLOTS:
+        cands = sorted([m for m in pool if m["role"] in roles], key=score)
+        if cands:
+            core.append(cands[0]["id"]); why.append("%s: %d %s" % (slot, cands[0]["n"], cands[0]["name"]))
+    accents = []
+    for cue in cues:                                       # لهجة لكل لحظة خاصة — من أي عائلة، بلا تكرار الأساسيات
+        cands = sorted([m for m in cat if cue in m.get("cues", []) and m["id"] not in off and m["id"] not in core + accents], key=score)
+        if cands:
+            accents.append(cands[0]["id"]); why.append("لهجة %s: %d %s" % (cue, cands[0]["n"], cands[0]["name"]))
+    rules = [m["id"] for m in cat if m["role"] == "rule" and family in m.get("families", []) and m["id"] not in off and m["id"] not in accents]
+    caption = [m["id"] for m in cat if m["role"] == "caption" and m["id"] not in off]
+    out = {"title": title, "family": family, "core": core, "accents": accents[:2], "rules": rules, "caption": caption, "why": why}
+    if not dry:
+        import datetime
+        hist.append({"date": datetime.date.today().isoformat(), "title": title, "family": family, "core": core, "accents": accents[:2]})
+        HISTORY.parent.mkdir(parents=True, exist_ok=True)
+        HISTORY.write_text(json.dumps(hist[-50:], ensure_ascii=False, indent=1), encoding="utf-8")
+    return out
+
+
 def nums(s):
     by = {m["n"]: m["id"] for m in catalog()}
     return [by[int(x)] for x in re.findall(r"\d+", s or "") if int(x) in by]
@@ -170,6 +225,11 @@ def main(argv):
         for m in catalog():
             st = "✓" if m["id"] in mv.get("on", []) else "✗" if m["id"] in mv.get("off", []) else "·"
             print("%s %2d  %-11s %s" % (st, m["n"], m["id"], m["name"]))
+        return 0
+    if cmd == "plan":
+        opt = lambda k, d=None: rest[rest.index(k) + 1] if k in rest else d
+        cues = [c.strip() for c in (opt("--cues", "") or "").split(",") if c.strip()]
+        print(json.dumps(plan(opt("--title", "بلا عنوان"), opt("--family", "auto"), cues, "--dry" in rest), ensure_ascii=False, indent=2))
         return 0
     log(__doc__)
     return 1

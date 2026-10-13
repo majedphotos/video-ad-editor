@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp).",
+ "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent).",
  "moves": [
   {
    "n": 1,
@@ -14,7 +14,11 @@
     "url": "https://github.com/remotion-dev/template-tiktok"
    },
    "preview": "previews/01.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "caption",
+   "energy": 3,
+   "families": [],
+   "cues": []
   },
   {
    "n": 2,
@@ -28,7 +32,13 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/02.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm"
+   ],
+   "cues": []
   },
   {
    "n": 3,
@@ -42,7 +52,15 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/03.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch",
+    "onetake"
+   ],
+   "cues": []
   },
   {
    "n": 4,
@@ -56,7 +74,15 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/04.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "contrast"
+   ]
   },
   {
    "n": 5,
@@ -70,7 +96,14 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/05.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": []
   },
   {
    "n": 6,
@@ -84,7 +117,16 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/06.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "tech"
+   ]
   },
   {
    "n": 7,
@@ -98,7 +140,16 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/07.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "number"
+   ]
   },
   {
    "n": 8,
@@ -112,7 +163,14 @@
     "url": "https://github.com/gl-transitions/gl-transitions"
    },
    "preview": "previews/08.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "punch"
+   ],
+   "cues": []
   },
   {
    "n": 9,
@@ -126,7 +184,14 @@
     "url": "https://github.com/gl-transitions/gl-transitions"
    },
    "preview": "previews/09.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": []
   },
   {
    "n": 10,
@@ -140,7 +205,13 @@
     "url": "https://github.com/gl-transitions/gl-transitions"
    },
    "preview": "previews/10.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "onetake"
+   ],
+   "cues": []
   },
   {
    "n": 11,
@@ -154,7 +225,13 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/11.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "transition",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": []
   },
   {
    "n": 12,
@@ -168,7 +245,15 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/12.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "camera",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake",
+    "editorial"
+   ],
+   "cues": []
   },
   {
    "n": 13,
@@ -182,7 +267,15 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/13.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "onetake"
+   ],
+   "cues": [
+    "reveal"
+   ]
   },
   {
    "n": 14,
@@ -196,7 +289,13 @@
     "url": "https://github.com/gl-transitions/gl-transitions"
    },
    "preview": "previews/14.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "transition",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": []
   },
   {
    "n": 15,
@@ -210,7 +309,16 @@
     "url": "https://github.com/magicuidesign/magicui"
    },
    "preview": "previews/15.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "list"
+   ]
   },
   {
    "n": 16,
@@ -224,7 +332,16 @@
     "url": "https://github.com/magicuidesign/magicui"
    },
    "preview": "previews/16.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": [
+    "emphasis"
+   ]
   },
   {
    "n": 17,
@@ -238,7 +355,17 @@
     "url": "https://github.com/DavidHDev/react-bits"
    },
    "preview": "previews/17.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "price",
+    "cta"
+   ]
   },
   {
    "n": 18,
@@ -252,7 +379,16 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/18.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "rule",
+   "energy": 0,
+   "families": [
+    "calm",
+    "punch",
+    "onetake",
+    "editorial"
+   ],
+   "cues": []
   },
   {
    "n": 19,
@@ -266,7 +402,13 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/19.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "rule",
+   "energy": 0,
+   "families": [
+    "onetake"
+   ],
+   "cues": []
   },
   {
    "n": 20,
@@ -280,7 +422,15 @@
     "url": "https://github.com/iart-ai/motion-design-skills"
    },
    "preview": "previews/20.mp4",
-   "bonus": false
+   "bonus": false,
+   "role": "rule",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hit"
+   ]
   },
   {
    "n": 21,
@@ -294,7 +444,17 @@
     "url": ""
    },
    "preview": "previews/21.mp4",
-   "bonus": true
+   "bonus": true,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "tech"
+   ]
   },
   {
    "n": 22,
@@ -308,7 +468,16 @@
     "url": ""
    },
    "preview": "previews/22.mp4",
-   "bonus": true
+   "bonus": true,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "emphasis"
+   ]
   },
   {
    "n": 23,
@@ -322,7 +491,19 @@
     "url": ""
    },
    "preview": "previews/23.mp4",
-   "bonus": true
+   "bonus": true,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "onetake"
+   ],
+   "cues": []
   }
- ]
+ ],
+ "families": {
+  "calm": "هادي — جمل تأمل ونصايح",
+  "punch": "طاقة — هوك قوي، أرقام، مقارنات",
+  "onetake": "ونشوت — كاميرا مستمرة بلا قص",
+  "editorial": "تحريري — شرح وقوائم ومعلومة"
+ }
 }
