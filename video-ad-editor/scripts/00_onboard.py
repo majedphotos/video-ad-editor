@@ -233,6 +233,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
         if u.path == "/favicon.ico":
             return self._send(204, b"", "image/x-icon")
+        if u.path.startswith("/moves/"):            # بنك الحركات للفرجة (motion/moves) — قراءة بس
+            base = (SKILL / "motion" / "moves").resolve()
+            f = (base / (u.path[len("/moves/"):] or "index.html")).resolve()
+            ct = {".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp4": "video/mp4"}.get(f.suffix)
+            if ct and (base == f.parent or base in f.parents) and f.is_file():
+                return self._send(200, f.read_bytes(), ct)
+            return self._send(404, {"ok": False})
         if u.path == "/api/ping":
             return self._send(200, {"ok": True})
         if u.path == "/api/profile":

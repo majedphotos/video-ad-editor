@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>معرض الحركات</title>
+<title>بنك الحركات</title>
 <!-- يُفتح عبر: python3 scripts/35_moves.py — الاختيار ينحفظ بـprofile.json تحت "moves" -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&family=Lalezar&family=Inter:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -36,15 +36,17 @@ h3 small{font-family:'IBM Plex Sans Arabic';font-size:13px;color:var(--mut)}
 .bar .sum{font-size:15px;line-height:1.5;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .bar .sum b{font-family:Inter,sans-serif}
 .bar button{flex:none;background:var(--acc);color:#fff;border:0;font:700 17px 'IBM Plex Sans Arabic',sans-serif;border-radius:14px;padding:12px 26px;cursor:pointer}
+.ro .bar,.ro .btns,.ro .rw{display:none} .ro{padding-bottom:40px}
 .done{position:fixed;inset:0;background:var(--bg);display:none;place-items:center;text-align:center;padding:20px}
 .done h1{font-size:48px}
 </style>
 </head>
 <body>
 <header>
-  <h1>معرض الحركات</h1>
-  <p>اختر الحركات اللي تبيها بفيديوهاتك. «أبي» تخليها متاحة للمونتاج، و«لا» تمنعها نهائياً، واللي تتركها بلا اختيار تنستخدم بس إذا تناسب الجملة.<br>
+  <h1>بنك الحركات</h1>
+  <p>كل فيديو يطلع بلوحة حركات خاصة فيه: عائلة وحدة و3 حركات أساسية يدور حولها الفيديو، ولهجة للحظات الخاصة. وما تتكرر من فيديو لفيديو.<br>
   المعاينات بألوان مثال. بفيديوك الحركة تطلع بألوان هويتك ونصك وتوقيت كلامك.</p>
+  <p class="rw">ما يحتاج تختار شي. بس لو فيه حركة ما تبيها أبد اضغط «لا»، ولو فيه وحدة تحبها اضغط «أبي» وتنقدّم بالاختيار.</p>
 </header>
 <div class="g" id="main"></div>
 <h2>زيادة من المحرّك <small>حركات عربية خالصة</small></h2>
@@ -82,10 +84,10 @@ document.getElementById('save').onclick = async () => {
 };
 (async () => {
   CAT = (await (await fetch('catalog.json')).json()).moves;
-  try { const st = await (await fetch('/api/state')).json();
+  try { const r = await fetch('/api/state'); if (!r.ok) throw 0; const st = await r.json();
     (st.moves.on || []).forEach(id => state[id] = 'on'); (st.moves.off || []).forEach(id => state[id] = 'off');
     if (st.colors && /^#[0-9a-f]{6}$/i.test(st.colors.acc || '')) document.documentElement.style.setProperty('--acc', st.colors.acc);
-  } catch (e) { }
+  } catch (e) { document.body.classList.add('ro'); }       // مفتوحة من صفحة التعارف: فرجة بس، بلا اختيار
   CAT.forEach(m => document.getElementById(m.bonus ? 'bonus' : 'main').appendChild(card(m)));
   paint();
 })();
