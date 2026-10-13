@@ -17,6 +17,7 @@ _bi.open = _utf8_open
 import subprocess, re, json, sys, os
 W = os.path.abspath(sys.argv[1]); SRC = os.path.join(W, "src.mov")
 NOISE, MIND, PAD, MERGE = "-32dB", 0.35, 0.13, 0.20
+TAIL = 0.7   # سكتة بآخر الفيديو بعد آخر كلمة (الصوت ما ينقص فجأة) — يمسك آخر فريم ويسكت
 
 dur = float(subprocess.run(["ffprobe","-v","error","-show_entries","format=duration",
     "-of","csv=p=0", SRC], capture_output=True, text=True).stdout.strip())
@@ -43,6 +44,6 @@ for seg in keep:
     else: m.append(seg)
 m=[x for x in m if x[1]-x[0]>=0.30]
 tot=sum(b-a for a,b in m)
-json.dump({"keep":m,"total":tot,"src_dur":dur}, open(os.path.join(W,"cut.json"),"w"), indent=1)
+json.dump({"keep":m,"total":tot,"src_dur":dur,"tail":TAIL}, open(os.path.join(W,"cut.json"),"w"), indent=1)
 print(f"مقاطع={len(m)}  الباقي={tot:.2f}s  انشال={dur-tot:.2f}s ({(dur-tot)/dur*100:.0f}%)")
 for a,b in m: print(f"  {a:7.2f} -> {b:7.2f}  ({b-a:5.2f}s)")

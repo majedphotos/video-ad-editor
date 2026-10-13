@@ -15,7 +15,7 @@
 
 > ☝️ **اختر طريقة وحدة بس** — لو ثبّتّه بأكثر من طريقة يصير عندك نسخ مكررة من نفس السكلات. عندك أكثر من وحدة؟ شيل النسخ الزايدة من **Customize ← Plugins**.
 
-> 🏷️ **ثلاثة أسماء مختلفة، لا تتلخبط:** اسم المستودع `video-ad-editor` · اسم المتجر اللي يظهر لك `majed-video` · اسم البلقن `majed-video`. الأمر الأول ياخذ اسم **المستودع**، والثاني اسم **البلقن@المتجر**.
+> 🏷️ **اسمين لا تتلخبط فيهم:** المتجر الموحد `majedphotos/majed-plugins` (نفسه بـclaude.ai والتيرمنال) · اسم البلقن `majed-video`. أمر الإضافة ياخذ اسم **المستودع** (`majedphotos/majed-plugins`)، وأمر التنصيب ياخذ **البلقن@المتجر** (`majed-video@majed-plugins`).
 
 ### ⭐ الأحدث — من claude.ai: تتحدّث بروحها وتوصل الجوال والديسكتوب
 
@@ -44,7 +44,7 @@
 <div dir="ltr">
 
 ```
-claude plugin marketplace add majedphotos/video-ad-editor
+claude plugin marketplace add majedphotos/majed-plugins
 ```
 
 ```
@@ -52,30 +52,31 @@ claude plugin marketplace list
 ```
 
 ```
-claude plugin install majed-video@majed-video
+claude plugin install majed-video@majed-plugins
 ```
 
 </div>
 
-- **تحقق بعد الأمر الأول:** الأمر الثاني (`marketplace list`) **لازم يظهر فيه `majed-video`**. ما ظهر؟ شغّل الأمر الأول مرة ثانية (لو الاتصال تقطّع)، وبعدها ارجع للقائمة.
-- **طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟** لا تكمّل على أساس إنه «مضاف من قبل». شغّل `claude plugin marketplace list` — لو `majed-video` ما يظهر، المتجر ناقص فعلاً: أعد الأمر الأول.
+- **تحقق بعد الأمر الأول:** الأمر الثاني (`marketplace list`) **لازم يظهر فيه `majed-plugins`**. ما ظهر؟ شغّل الأمر الأول مرة ثانية (لو الاتصال تقطّع)، وبعدها ارجع للقائمة.
+- **طلع لك `Failed to add marketplace … extraKnownMarketplaces`؟** لا تكمّل على أساس إنه «مضاف من قبل». شغّل `claude plugin marketplace list` — لو `majed-plugins` ما يظهر، المتجر ناقص فعلاً: أعد الأمر الأول.
 - **أعد تشغيل `claude`** بعد التثبيت، وإلا ما تظهر السكلات بالجلسة.
+- **ركّبته قبل من المتجر القديم (`majedphotos/video-ad-editor`)؟** شيله حتى ما يتكرر البلقن: `claude plugin marketplace remove majed-video` — المتجر الموحد `majed-plugins` فيه نفس البلقن + مصنع المحتوى، ونفس المتجر اللي بـclaude.ai.
 
 بعدها **شغّل التحديث التلقائي**: بالطرفية (تيرمنال) العادية اكتب `claude` ← Enter، وبعدين:
 
 <div dir="ltr">
 
 ```
-/plugin  →  Marketplaces  →  majed-video  →  Enable auto-update
+/plugin  →  Marketplaces  →  majed-plugins  →  Enable auto-update
 ```
 
 </div>
 
-> ℹ️ أمر `/plugin` تفاعلي ويشتغل **بالطرفية (تيرمنال) العادية بس** — ما يشتغل داخل تطبيق الديسكتوب (تبويب Code). وخطوة «Enable auto-update» تظهر فقط لو `marketplace list` فيه `majed-video`.
+> ℹ️ أمر `/plugin` تفاعلي ويشتغل **بالطرفية (تيرمنال) العادية بس** — ما يشتغل داخل تطبيق الديسكتوب (تبويب Code). وخطوة «Enable auto-update» تظهر فقط لو `marketplace list` فيه `majed-plugins`.
 
 <p align="center"><img src="_pkg/install.gif" alt="الخطوات داخل Claude Code بالطرفية (تيرمنال)" width="100%"></p>
 
-> 🔁 **تبي آخر نسخة الحين؟** بالطرفية (تيرمنال): `claude plugin update majed-video@majed-video`
+> 🔁 **تبي آخر نسخة الحين؟** بالطرفية (تيرمنال): `claude plugin update majed-video@majed-plugins`
 >
 > 🧹 **منصّب النسخة القديمة كسكل (ملف `.skill`)؟** شيلها حتى ما تتكرر — البلقن فيه كل شي.
 >
@@ -237,6 +238,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 
 <details><summary>الإصدارات السابقة</summary>
 
+- **4.4.4** صوتك الحقيقي ما ينقص أبداً (القطع تغطي التسجيل كامل والحدود بأهدأ نقطة، ‎-20 LUFS تلقائياً) + سكتة نهاية 0.7 ث بالريل + طريقة التيرمنال صارت على المتجر الموحد `majed-plugins`
 - **4.4.3** مثال الونشوت الجديد: زوم إن للأسود ← زوم آوت لجوال ولابتوب، بموشن بلير حقيقي
 - **4.4.2** وضع «مونتاج داخل كاب كت»: بدل MP4 يكتب مشروع كاب كت تعدّله بيدك (لقطات بزوم، كابشن ونصوص كاب كت، فويس، مؤثرات، خلفية صوتية، موشن شفاف بألوانك) ← `references/capcut.md`
 - **4.4.1** كلمة الختام ← رابط الحلقة بالخاص (أوتوميشن) + كرت الختام من الثيم + طريقة العمل مع كل حلقة بودكاست + خصم زورجا بكود MAJED

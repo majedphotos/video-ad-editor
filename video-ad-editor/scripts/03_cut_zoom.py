@@ -16,7 +16,7 @@ _bi.open = _utf8_open
 # ──────────────────────────────────────────────────────────────────
 import json, subprocess, sys, os
 W=os.path.abspath(sys.argv[1]); SRC=os.path.join(W,"src.mov")
-k=json.load(open(os.path.join(W,"cut.json")))["keep"]
+_cj=json.load(open(os.path.join(W,"cut.json"))); k=_cj["keep"]; TAIL=float(_cj.get("tail",0) or 0)
 _tp=os.path.join(W,"theme.json")
 _th=json.load(open(_tp)) if os.path.exists(_tp) else {}
 GRADE=_th.get("grade",False)
@@ -57,8 +57,11 @@ for i,(s,e,crop) in enumerate(PIECES):
               f"scale=1080:1920:flags=lanczos,setsar=1[v{i}]")
     fc.append(f"[0:a]atrim=start={s:.4f}:end={e:.4f},asetpts=PTS-STARTPTS[a{i}]")
     v.append(f"[v{i}]"); a.append(f"[a{i}]")
-fc.append("".join(v)+f"concat=n={len(PIECES)}:v=1:a=0[vc]")
-fc.append("".join(a)+f"concat=n={len(PIECES)}:v=0:a=1[ac]")
+fc.append("".join(v)+f"concat=n={len(PIECES)}:v=1:a=0[vc0]")
+fc.append("".join(a)+f"concat=n={len(PIECES)}:v=0:a=1[ac0]")
+# سكتة النهاية: آخر فريم يثبت والصوت يسكت (cut.json ← tail)
+fc.append(f"[vc0]tpad=stop_mode=clone:stop_duration={TAIL:.3f}[vc]" if TAIL>0 else "[vc0]null[vc]")
+fc.append(f"[ac0]apad=pad_dur={TAIL:.3f}[ac]" if TAIL>0 else "[ac0]anull[ac]")
 # التدرّج اللوني اختياري تماماً — الافتراضي مطفي (الفيديو يطلع بألوانه الأصلية)
 _g = ("eq=brightness=0.015:saturation=0.96:contrast=1.05,"
       "colorbalance=rs=0.02:gs=0.005:bs=-0.02,") if GRADE is True else ""

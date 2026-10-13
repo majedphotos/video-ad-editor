@@ -144,7 +144,7 @@ MOTION.scene({ id: 'faster',
 ```bash
 cd video-ad-editor/motion
 python3 voice.py <proj>                      # TTS per line (cache: only changed lines regenerate)
-python3 voice.py <proj> --own me.wav         # your own recording: whisper word timing, split by script lines
+python3 voice.py <proj> --own me.wav         # your own recording: the whole take is kept (lines tile it, cut at the quietest point), long pauses ≥0.45s → 0.30s (--keep-silence keeps them). Then set timing {keepOriginal:true, snap:'none'}
 python3 timeline.py <proj>                   # beat-snapped timeline + vo/vo_full.wav
 node render.js <proj> preview 0.5 1.2 2.8 --safe       # stills + contact.png (look at them!)
 node render.js <proj> serve                  # live scrub/play player in your browser (preview only)
@@ -164,6 +164,7 @@ python3 audio.py <proj> --audition           # every sfx as its own wav in rende
 - Determinism: repeated renders are bit-identical except for rare ±1/255 GPU rounding on a pixel or so.
 
 ## 8. Audio notes
+- ⛔ **The person's own voice is never cut inside speech** (8 Oct 2026: whisper-edge cuts clipped first words and sentence ends). `voice.py --own` keeps every sample: the line wavs concatenated equal `vo/_own_clean_full.wav` exactly. Don't trim own-voice lines by word times anywhere else, and don't add a limiter. `audio.py` auto-picks ‎-20 LUFS for own voice (‎-14 for TTS); louder than ‎-20 needs a limiter that changes the voice — ask the user first.
 - `sfx.json` `at` accepts seconds, `scene:id`, `scene-end:id`, `line:id`, `line-end:id`, `word:line:i` (-1 is the last word), `beat:n` or `bar:n`, each with an optional offset such as `scene:s2-0.1`. Anchors: `riser` and `reverse-whoosh` end at `at`, `whoosh` and `swoosh-pass` peak at `at`, and everything else starts there.
 - The bed follows `sections`. `intro` gives pad, hats and downbeat kick. `build` adds a filter sweep, 8th bass and a snare roll into the next section. `drop` is full: 4-on-floor kick, claps, bass, 16th arp and a crash at its start. `break` keeps the energy at roughly drop loudness with a different texture: brighter pad, softer arp, a half-bar sub pulse on the root, the 4-on-floor kick (under a low-pass that opens across the break), off-beat hats and a quiet 16th shaker. It drops the claps and the drop bass. A break never mutes the pulse; only `stop` goes silent. `stop` is a true hard silence of the whole bed that restarts hard at the next section; use at most one per film and keep it to 1 bar or less. `outro` is pad, kick and bass. The bed is sidechain-pumped by the kick and ducked under the VO with 40 ms look-ahead.
 - `music.top` is the phone layer: 93% of the kick/bass/pad energy sits below 150 Hz and a phone speaker drops it, so without `top` the bed plays as silence on a phone. `top` adds hats/snap at 5-10 kHz and a pluck at 0.4-3 kHz. Pass one dB trim for both, or `{hat, pluck}`. Keep the pluck lower, because it shares its band with speech. Check the result with a 200 Hz high-pass: in speech the bed should sit 10-12 dB under the VO. The VO enters the mix through `st(vo)`, which puts it 3 dB lower per channel, so the real bed-to-VO gap is about 3 dB smaller than `level` says. Reference: opus55-motion with level -7, duck -4 and top {hat 17, pluck 4} measured 12.7 dB for the whole film and 10.2 dB in the densest drop.

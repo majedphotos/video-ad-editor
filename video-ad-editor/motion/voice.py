@@ -131,6 +131,7 @@ def main():
     ap.add_argument('--only'); ap.add_argument('--force', action='store_true')
     ap.add_argument('--align', choices=['boundary', 'whisper'], default='boundary')
     ap.add_argument('--own'); ap.add_argument('--whisper-model', default='small')
+    ap.add_argument('--keep-silence', action='store_true')   # مع --own: لا تقصّر السكتات الطويلة
     a = ap.parse_args()
     P = os.path.abspath(a.proj); VO = os.path.join(P, 'vo'); os.makedirs(VO, exist_ok=True)
     script = json.load(open(os.path.join(P, 'script.json'), encoding='utf-8'))
@@ -148,7 +149,10 @@ def main():
     lines = []
 
     if a.own:                                                   # ── person's own voiceover
-        src = os.path.abspath(a.own); x = decode(src)
+        # ⚠️ صوت الشخص ما يُقص عند حدود كلمات وِسبر (كان يقص أول الكلام وأواخر الجمل — بلاغ 8 أكتوبر 2026).
+        #    القطع تغطي التسجيل كامل بلا فراغ، الحدود عند أهدأ نقطة بين الأسطر، والقص الوحيد =
+        #    تقصير السكتات الطويلة (≥0.45 ث ← 0.30 ث) بتلاشي 8 مللي (إلا مع --keep-silence).
+        src = os.path.abspath(a.own); x = decode(src); x = x if x.ndim == 1 else x.mean(1)
         print(f'🎙  صوتك: {os.path.basename(src)} ({len(x)/SR:.1f}s) → وِسبر {a.whisper_model} …', flush=True)
         tmpw = os.path.join(VO, '_own_48k.wav'); write_wav(tmpw, x)
         heard = whisper_words(tmpw, a.whisper_model, prompt=' '.join(L['text'] for L in script)[:600])
@@ -156,25 +160,74 @@ def main():
         for li, L in enumerate(script):
             for w in split_words(L['text']): allw.append(w); owner.append(li)
         T = align(allw, heard)
-        spans = {}
-        for li, L in enumerate(script):
-            idx = [i for i, o in enumerate(owner) if o == li]
-            if idx: spans[li] = [max(0.0, T[idx[0]][0] - 0.06), min(len(x) / SR, T[idx[-1]][1] + 0.1), idx]
-        keys = sorted(spans)
-        for a_, b_ in zip(keys, keys[1:]):                     # padded spans must not overlap → split at the midpoint of the gap
-            if spans[a_][1] > spans[b_][0]:
-                mid = (T[spans[a_][2][-1]][1] + T[spans[b_][2][0]][0]) / 2; spans[a_][1] = mid; spans[b_][0] = mid
-        for li, L in enumerate(script):
-            if li not in spans: continue
-            s0, e0, idx = spans[li]
-            seg = x[int(s0 * SR):int(e0 * SR)].copy(); f = int(0.004 * SR); seg[:f] *= np.linspace(0, 1, f); seg[-f:] *= np.linspace(1, 0, f)
+        HOP = 480                                               # 10 مللي
+        def frames(sig):
+            n = len(sig) // HOP; return 20 * np.log10(np.sqrt(np.mean(sig[:n * HOP].reshape(n, HOP) ** 2, axis=1)) + 1e-9)
+        r = frames(x); spm = r > -42; spi = np.where(spm)[0]
+        if not len(spi): sys.exit('⛔ ما لقيت كلام بالتسجيل')
+        first, last = int(spi[0]), int(spi[-1])               # بداية/نهاية الكلام بالطاقة — مو بوِسبر (يفوّت أول كلمة أحياناً)
+        # كلمات البداية اللي وِسبر ما سمعها تنحط قبل الكلام (أو تتكدس عند 0) → نوزّعها من بداية الكلام الفعلية لأول كلمة مسموعة
+        onset = first * HOP / SR; k = 0
+        while k < len(T) and T[k][0] < onset - 0.02: k += 1
+        if k:
+            stop = T[k][0] if k < len(T) else onset + 0.3 * k
+            step = (stop - onset) / k if stop - onset > 0.12 * k else 0.25
+            for q in range(k): T[q] = (onset + step * q, onset + step * (q + 1))
+            print(f'  ↪ {k} كلمة بالبداية ما انسمعت — توزّعت من بداية الكلام ({onset:.2f}s)')
+        runs, i = [], first
+        while i <= last:
+            if spm[i]: i += 1; continue
+            j = i
+            while j <= last and not spm[j]: j += 1
+            if not a.keep_silence and j - i >= 45: runs.append((i, j))
+            i = j
+        keep, seg0 = [], max(0, (first - 12) * HOP)            # 0.12 ث قبل أول كلمة
+        for ra, rb in runs:
+            keep.append((seg0, (ra + 15) * HOP)); seg0 = (rb - 15) * HOP   # نخلي 0.15 ث بكل طرف من السكتة
+        keep.append((seg0, min(len(x), (last + 50) * HOP)))  # 0.5 ث بعد آخر كلمة
+        F = int(0.008 * SR); pieces, emap, pos = [], [], 0
+        for k, (p0, p1) in enumerate(keep):
+            sg = x[p0:p1].copy()
+            if k > 0: sg[:F] *= np.linspace(0, 1, F)
+            if k < len(keep) - 1: sg[-F:] *= np.linspace(1, 0, F)
+            pieces.append(sg); emap.append((p0 / SR, p1 / SR, pos / SR)); pos += len(sg)
+        y = np.concatenate(pieces)
+        def newt(t):
+            for p0, p1, p in emap:
+                if p0 <= t <= p1: return p + (t - p0)
+            for p0, p1, p in emap:
+                if t < p0: return p
+            return emap[-1][2] + (emap[-1][1] - emap[-1][0])
+        Tn = [(newt(s_), newt(e_)) for s_, e_ in T]
+        ry = frames(y)
+        def valley(t0, t1):                                    # أهدأ 10 مللي بالنافذة = مكان الحد
+            fa = max(0, int(t0 * SR / HOP)); fb = min(len(ry) - 1, int(t1 * SR / HOP))
+            if fb <= fa: return int((t0 + t1) / 2 * SR)
+            k = fa + int(np.argmin(ry[fa:fb + 1])); return int((k + .5) * HOP)
+        lis = [li for li in range(len(script)) if li in owner]
+        bounds = [0]
+        for lp, li in zip(lis, lis[1:]):
+            ip = [q for q, o in enumerate(owner) if o == lp][-1]; inx = [q for q, o in enumerate(owner) if o == li][0]
+            t0 = max(Tn[ip][1] - 0.12, Tn[ip][0] + 0.05); t1 = min(Tn[inx][0] + 0.12, Tn[inx][1] - 0.02)
+            bounds.append(max(valley(t0, max(t1, t0 + 0.02)), bounds[-1] + HOP))
+        bounds.append(len(y))
+        bad = 0
+        for n_, li in enumerate(lis):
+            L = script[li]; p0, p1 = bounds[n_], bounds[n_ + 1]; seg = y[p0:p1].copy(); s0 = p0 / SR
             fn = os.path.join(VO, L['id'] + '.wav'); write_wav(fn, seg)
-            words = [{'w': allw[i], 's': round(T[i][0] - s0, 4), 'e': round(T[i][1] - s0, 4)} for i in idx]
+            idx = [q for q, o in enumerate(owner) if o == li]
+            words = [{'w': allw[q], 's': round(max(0.0, Tn[q][0] - s0), 4), 'e': round(max(0.0, Tn[q][1] - s0), 4)} for q in idx]
             lines.append({'id': L['id'], 'text': L['text'], 'file': 'vo/' + L['id'] + '.wav', 'dur': round(len(seg) / SR, 4), 'words': words,
-                          'gap_after': L.get('gap_after'), 'source': 'own+whisper', 'orig_start': round(s0, 4), 'orig_end': round(e0, 4)})
-            print(f'  ✓ {L["id"]}  {s0:6.2f}→{e0:6.2f}s  {len(words)} كلمة')
-        os.unlink(tmpw)
+                          'gap_after': 0, 'source': 'own-clean', 'orig_start': round(s0, 4), 'orig_end': round(p1 / SR, 4)})
+            if n_ > 0:                                         # فحص: الحد لازم يكون سكتة، مو داخل كلام
+                near = float(20 * np.log10(np.sqrt(np.mean(y[max(0, p0 - 240):p0 + 240] ** 2)) + 1e-9))
+                loc = float(20 * np.log10(np.sqrt(np.mean(y[max(0, p0 - 14400):p0 + 14400] ** 2)) + 1e-9))
+                if near > loc - 14: bad += 1; print(f'  ⚠ حد {L["id"]} عند {s0:.2f}s قريب من كلام ({near:.0f} dB)')
+            print(f'  ✓ {L["id"]}  {s0:6.2f}→{p1/SR:6.2f}s  {len(words)} كلمة')
+        os.unlink(tmpw); write_wav(os.path.join(VO, '_own_clean_full.wav'), y)
+        print(f'  التسجيل {len(x)/SR:.1f}s ← النظيف {len(y)/SR:.1f}s · سكتات مقصّرة {len(runs)} · حدود داخل كلام: {bad}')
         json.dump({'voice': 'own:' + os.path.basename(src), 'source': 'own', 'lines': lines}, open(wj, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+        print('  👉 حط بـproject.json: "timing": {"keepOriginal": true, "snap": "none"} — وaudio.py يعاير صوتك على ‎-20 LUFS تلقائياً (بلا ليمتر يغيّر صوتك)')
         print('✅ ' + wj); return
 
     for L in script:                                            # ── edge-tts per line

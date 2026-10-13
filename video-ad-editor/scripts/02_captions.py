@@ -71,6 +71,7 @@ for i,seg in enumerate(tr["segments"]):
 cards.sort(key=lambda c:c["s"])
 for i in range(len(cards)-1):
     if cards[i]["e"]>cards[i+1]["s"]: cards[i]["e"]=round(cards[i+1]["s"]-0.02,3)
-json.dump({"total":round(acc,3),"cards":cards},open(os.path.join(W,"caps.json"),"w"),ensure_ascii=False,indent=1)
+_tail=float(json.load(open(os.path.join(W,"cut.json"))).get("tail",0) or 0)
+json.dump({"total":round(acc+_tail,3),"cards":cards},open(os.path.join(W,"caps.json"),"w"),ensure_ascii=False,indent=1)
 print("كروت:",len(cards)," المدة:",round(acc,2))
 for c in cards: print(f"{c['s']:6.2f}-{c['e']:6.2f}  "+" ".join(x['t'] for x in c['w']))

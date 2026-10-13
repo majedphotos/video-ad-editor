@@ -4,7 +4,7 @@
 
   python3 audio.py <proj>            → renders/final.mp4        (صوت + خلفية + مؤثرات)
   python3 audio.py <proj> --no-bed   → renders/final-nobed.mp4  (صوت + مؤثرات بس)
-  خيارات: --video <mp4> (افتراضي renders/video.mp4) · --lufs -14 · --tp -1.5 · --seed 7 · --audition (يطلع كل مؤثر بملف لحاله)
+  خيارات: --video <mp4> (افتراضي renders/video.mp4) · --lufs (افتراضي ‎-14، وصوتك الحقيقي ‎-20) · --tp -1.5 · --seed 7 · --audition (يطلع كل مؤثر بملف لحاله)
 
 كل شي مركّب رياضياً (numpy/scipy) — بلا عينات خارجية = بلا حقوق.
 project.json → music: { key:'A', scale:'minor'|'major'|'dorian', progression:[0,5,2,6], level:-10 (dB تحت الصوت),
@@ -495,10 +495,15 @@ def measure(path):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('proj'); ap.add_argument('--no-bed', action='store_true'); ap.add_argument('--video')
-    ap.add_argument('--lufs', type=float, default=-14.0); ap.add_argument('--tp', type=float, default=-1.5); ap.add_argument('--seed', type=int, default=7)
+    ap.add_argument('--lufs', type=float, default=None); ap.add_argument('--tp', type=float, default=-1.5); ap.add_argument('--seed', type=int, default=7)
     ap.add_argument('--audition', action='store_true')
     a = ap.parse_args()
     P = os.path.abspath(a.proj); proj = json.load(open(os.path.join(P, 'project.json'), encoding='utf-8'))
+    if a.lufs is None:   # صوت الشخص الحقيقي: ‎-20 (رفع خفيف، الليمتر شبه ما يشتغل) · الصوت المولّد: ‎-14 (بلاغ 8 أكتوبر 2026)
+        try: _src = json.load(open(os.path.join(P, 'vo', 'words.json'), encoding='utf-8')).get('source', '')
+        except Exception: _src = ''
+        a.lufs = -20.0 if str(_src).startswith('own') else -14.0
+        print(f'🔊 المعايرة: {a.lufs:.0f} LUFS' + (' (صوتك الحقيقي — أعلى من كذا يحتاج ليمتر يغيّر صوتك)' if a.lufs == -20.0 else ''))
     tl = json.load(open(os.path.join(P, 'timeline.json'), encoding='utf-8')); dur = float(tl['duration']); N = int(math.ceil(dur * SR))
     music = proj.get('music', {}) or {}
     A = os.path.join(P, 'renders', 'audio'); os.makedirs(A, exist_ok=True)

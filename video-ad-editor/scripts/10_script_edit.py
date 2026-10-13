@@ -193,7 +193,7 @@ for i in range(len(new_cards) - 1):              # لا تتداخل الكرو�
     if new_cards[i]["e"] > new_cards[i + 1]["s"]:
         new_cards[i]["e"] = round(new_cards[i + 1]["s"] - 0.02, 3)
 # المدة النهائية = طول الفيديو الفعلي بعد القص (لا الحساب النظري) حتى ما يطلع فريم زايد
-new_total = round(min(caps["total"] - gone, cut["total"]), 3)
+new_total = round(min(caps["total"] - gone, cut["total"] + float(cut.get("tail",0) or 0)), 3)
 save("caps.json", {"total": new_total, "cards": new_cards})
 
 # ── 3) sfx.json: أوقات المؤثرات ──────────────────────────────────────────
