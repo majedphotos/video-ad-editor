@@ -498,6 +498,612 @@
     "onetake"
    ],
    "cues": []
+  },
+  {
+   "n": 24,
+   "id": "dipFade",
+   "cat": "transition",
+   "name": "غمضة لون",
+   "sub": "غيبة وطلعة",
+   "desc": "المشهد يغيب بلون الخلفية لحظة ويطلع اللي بعده، مع نفَس زوم خفيف. فاصل هادي بين فكرتين.",
+   "source": {
+    "label": "gl-transitions · fadecolor",
+    "url": "https://github.com/gl-transitions/gl-transitions/blob/master/transitions/fadecolor.glsl"
+   },
+   "preview": "previews/24.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 25,
+   "id": "slideOver",
+   "cat": "transition",
+   "name": "كرت يغطي",
+   "sub": "كرت من تحت",
+   "desc": "المشهد الجديد يطلع من تحت ككرت بزوايا دائرية ويغطي القديم، والقديم يرجع لورا ويغمق.",
+   "source": {
+    "label": "remotion · slide",
+    "url": "https://github.com/remotion-dev/remotion/blob/main/packages/transitions/src/presentations/slide.tsx"
+   },
+   "preview": "previews/25.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial",
+    "onetake"
+   ],
+   "cues": []
+  },
+  {
+   "n": 26,
+   "id": "clockWipe",
+   "cat": "transition",
+   "name": "عقرب الساعة",
+   "sub": "مسحة دائرية",
+   "desc": "المشهد الجاي ينكشف بدورة عقرب من فوق. للوقت والمراحل («بعد ساعة»).",
+   "source": {
+    "label": "remotion · clock-wipe",
+    "url": "https://github.com/remotion-dev/remotion/blob/main/packages/transitions/src/presentations/clock-wipe.tsx"
+   },
+   "preview": "previews/26.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": []
+  },
+  {
+   "n": 27,
+   "id": "slices",
+   "cat": "transition",
+   "name": "شرائح",
+   "sub": "شرائح تعرض",
+   "desc": "المشهد الجديد يطلع من شرائح طولية تعرض من اليمين لليسار، بحافة بلون الهوية.",
+   "source": {
+    "label": "gl-transitions · windowslice",
+    "url": "https://github.com/gl-transitions/gl-transitions/blob/master/transitions/windowslice.glsl"
+   },
+   "preview": "previews/27.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 28,
+   "id": "glitch",
+   "cat": "transition",
+   "name": "قلتش",
+   "sub": "كتل تنزاح",
+   "desc": "كتل من الصورة تنزاح وتومض لنص ثانية ويقلب المشهد. للتقنية والتحديثات والضربة.",
+   "source": {
+    "label": "gl-transitions · GlitchDisplace",
+    "url": "https://github.com/gl-transitions/gl-transitions/blob/master/transitions/GlitchDisplace.glsl"
+   },
+   "preview": "previews/28.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "tech",
+    "hit"
+   ]
+  },
+  {
+   "n": 29,
+   "id": "flip",
+   "cat": "transition",
+   "name": "قلبة",
+   "sub": "كرت ينقلب",
+   "desc": "الإطار ينقلب ككرت بمنظور والمشهد الثاني على ظهره. للمقارنة: الوجه والقفا.",
+   "source": {
+    "label": "remotion · flip",
+    "url": "https://github.com/remotion-dev/remotion/blob/main/packages/transitions/src/presentations/flip.tsx"
+   },
+   "preview": "previews/29.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "contrast"
+   ]
+  },
+  {
+   "n": 30,
+   "id": "lightLeak",
+   "cat": "transition",
+   "name": "تسريب ضوء",
+   "sub": "ضوء دافي يعبر",
+   "desc": "بقع ضوء دافية من ألوانك تعبر الشاشة والمشهد يتبدل تحتها. ناعمة وسينمائية.",
+   "source": {
+    "label": "gl-transitions · FilmBurn",
+    "url": "https://github.com/gl-transitions/gl-transitions/blob/master/transitions/FilmBurn.glsl"
+   },
+   "preview": "previews/30.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": []
+  },
+  {
+   "n": 31,
+   "id": "handheld",
+   "cat": "camera",
+   "name": "كاميرا باليد",
+   "sub": "اهتزاز ناعم",
+   "desc": "حركة صغيرة مستمرة كأن أحد ماسك الكاميرا. تعطي اللقطة الثابتة حياة.",
+   "source": {
+    "label": "iart-ai · AE wiggle expression",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/after-effects/references/expression-library.md"
+   },
+   "preview": "previews/31.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 32,
+   "id": "kenBurns",
+   "cat": "camera",
+   "name": "كين بيرنز",
+   "sub": "زوم وتحريك بطيء",
+   "desc": "زوم وتحريك بطيء من نقطة لنقطة على لقطة ثابتة أو صورة، بلا ما يبين طرف فاضي.",
+   "source": {
+    "label": "flavioarfaria/KenBurnsView",
+    "url": "https://github.com/flavioarfaria/KenBurnsView"
+   },
+   "preview": "previews/32.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 33,
+   "id": "snapZoom",
+   "cat": "camera",
+   "name": "زوم الضربة",
+   "sub": "قفزة زوم",
+   "desc": "قفزة زوم سريعة بلحظة الكلمة المهمة ترتد وتثبت، وترجع بعدين.",
+   "source": {
+    "label": "iart-ai · inertial bounce",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/after-effects/references/expression-library.md"
+   },
+   "preview": "previews/33.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hit",
+    "emphasis"
+   ]
+  },
+  {
+   "n": 34,
+   "id": "shake",
+   "cat": "camera",
+   "name": "رجّة",
+   "sub": "رجّة تخف",
+   "desc": "رجّة كاميرا قوية بلحظة الضربة تخف وتختفي بأقل من ثانية.",
+   "source": {
+    "label": "EZ-Camera-Shake-Unity",
+    "url": "https://github.com/andersonaddo/EZ-Camera-Shake-Unity"
+   },
+   "preview": "previews/34.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hit"
+   ]
+  },
+  {
+   "n": 35,
+   "id": "rackFocus",
+   "cat": "camera",
+   "name": "تحويل الفوكس",
+   "sub": "الحدّة تنتقل",
+   "desc": "الحدّة تنتقل من اللي قدّام للي ورا (أو العكس). تكشف الصورة الكبيرة.",
+   "source": {
+    "label": "gl-transitions · DefocusBlur",
+    "url": "https://github.com/gl-transitions/gl-transitions/blob/master/transitions/DefocusBlur.glsl"
+   },
+   "preview": "previews/35.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake",
+    "editorial"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 36,
+   "id": "parallax",
+   "cat": "camera",
+   "name": "بارالاكس",
+   "sub": "طبقات بعمق",
+   "desc": "طبقات تتحرك بسرعات مختلفة، القريبة أسرع، فيبين عمق بلقطة وحدة.",
+   "source": {
+    "label": "iart-ai · parallax layering",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md"
+   },
+   "preview": "previews/36.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 37,
+   "id": "dollyZoom",
+   "cat": "camera",
+   "name": "دولي زوم",
+   "sub": "فيرتيقو",
+   "desc": "الشخص ثابت بحجمه والخلفية تنفتح وراه. للحظة الصدمة أو الإدراك.",
+   "source": {
+    "label": "iart-ai · dolly-zoom",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md"
+   },
+   "preview": "previews/37.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "punch"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 38,
+   "id": "scrollReveal",
+   "cat": "text",
+   "name": "كشف بالقراءة",
+   "sub": "كلمات تصحى",
+   "desc": "الجملة باهتة وكل كلمة تصحى (من غباش وميلة) لما تنقال.",
+   "source": {
+    "label": "react-bits · ScrollReveal",
+    "url": "https://github.com/DavidHDev/react-bits/tree/main/src/content/TextAnimations/ScrollReveal"
+   },
+   "preview": "previews/38.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 39,
+   "id": "wordDrop",
+   "cat": "text",
+   "name": "كلمات تطيح",
+   "sub": "طيحة ونطة",
+   "desc": "كل كلمة تطيح من فوق وتنط وتستقر، وبالنهاية تطيح لتحت.",
+   "source": {
+    "label": "animate.css · bounceInDown",
+    "url": "https://github.com/animate-css/animate.css/blob/main/source/bouncing_entrances/bounceInDown.css"
+   },
+   "preview": "previews/39.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "punch",
+    "onetake"
+   ],
+   "cues": []
+  },
+  {
+   "n": 40,
+   "id": "rubberPop",
+   "cat": "text",
+   "name": "فرقعة مطاطية",
+   "sub": "كلمة تتمطط",
+   "desc": "كلمة وحدة تفرقع وتتمطط مثل المطاط مع خطوط ضربة. للضربة والكلمة المفتاح.",
+   "source": {
+    "label": "animate.css · rubberBand",
+    "url": "https://github.com/animate-css/animate.css/blob/main/source/attention_seekers/rubberBand.css"
+   },
+   "preview": "previews/40.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hit",
+    "emphasis"
+   ]
+  },
+  {
+   "n": 41,
+   "id": "strokeFill",
+   "cat": "text",
+   "name": "خط يرتسم ويتعبّى",
+   "sub": "حدود ثم تعبئة",
+   "desc": "حدود الكلمة ترتسم ثم تتعبّى من تحت لفوق بموجة. الكلمة كاملة، الحروف ما تنفك.",
+   "source": {
+    "label": "react-bits · StrokeText",
+    "url": "https://github.com/DavidHDev/react-bits/tree/main/src/content/TextAnimations/StrokeText"
+   },
+   "preview": "previews/41.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": [
+    "emphasis",
+    "reveal"
+   ]
+  },
+  {
+   "n": 42,
+   "id": "versus",
+   "cat": "text",
+   "name": "ضد",
+   "sub": "كلمتين يتواجهون",
+   "desc": "كلمتين يدخلون من الجهتين ويتواجهون وعلامة × بالنص، وبعدين وحدة تفوز.",
+   "source": {
+    "label": "animate.css · backInLeft/backInRight",
+    "url": "https://github.com/animate-css/animate.css/blob/main/source/back_entrances/backInRight.css"
+   },
+   "preview": "previews/42.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "contrast"
+   ]
+  },
+  {
+   "n": 43,
+   "id": "wordPath",
+   "cat": "text",
+   "name": "مسار الكلمات",
+   "sub": "كاميرا تمشي",
+   "desc": "الكلمات على مسار والكاميرا تمشي من كلمة لكلمة بلقطة وحدة، والخط يتلوّن ورا.",
+   "source": {
+    "label": "iart-ai · pan / move",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md"
+   },
+   "preview": "previews/43.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "onetake"
+   ],
+   "cues": [
+    "list"
+   ]
+  },
+  {
+   "n": 44,
+   "id": "lowerThird",
+   "cat": "card",
+   "name": "اسم وتعريف",
+   "sub": "لوور ثيرد",
+   "desc": "شريط بلون الهوية ينمو ويطلع منه الاسم ثم التعريف، تحت يمين داخل المنطقة الآمنة.",
+   "source": {
+    "label": "noeal-dac/Animated-Lower-Thirds",
+    "url": "https://github.com/noeal-dac/Animated-Lower-Thirds"
+   },
+   "preview": "previews/44.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": []
+  },
+  {
+   "n": 45,
+   "id": "checklist",
+   "cat": "card",
+   "name": "قائمة صح",
+   "sub": "صح يرتسم",
+   "desc": "كل نقطة دايرة تتعبّى وصح يرتسم، والخط بين النقاط يتقدم.",
+   "source": {
+    "label": "react-bits · Stepper",
+    "url": "https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/Stepper"
+   },
+   "preview": "previews/45.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "list"
+   ]
+  },
+  {
+   "n": 46,
+   "id": "priceTag",
+   "cat": "card",
+   "name": "بطاقة سعر",
+   "sub": "السعر ينزل",
+   "desc": "بطاقة تتأرجح، السعر القديم ينشطب والجديد يعد لتحت لين يوقف.",
+   "source": {
+    "label": "magicui · number-ticker",
+    "url": "https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/number-ticker.tsx"
+   },
+   "preview": "previews/46.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "price"
+   ]
+  },
+  {
+   "n": 47,
+   "id": "ctaPulse",
+   "cat": "card",
+   "name": "زر ينبض",
+   "sub": "زر ونقرة",
+   "desc": "زر بلون الهوية بحلقات نبض، وإصبع ينقره. لآخر الفيديو: سجّل، اكتب، تابع.",
+   "source": {
+    "label": "magicui · pulsating-button",
+    "url": "https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/pulsating-button.tsx"
+   },
+   "preview": "previews/47.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "cta"
+   ]
+  },
+  {
+   "n": 48,
+   "id": "compare",
+   "cat": "card",
+   "name": "قبل وبعد",
+   "sub": "سلايدر مقارنة",
+   "desc": "خط فاصل يمشي من اليمين ويكشف «بعد»، ويتمرجح مثل سلايدر المقارنة.",
+   "source": {
+    "label": "sneas/img-comparison-slider",
+    "url": "https://github.com/sneas/img-comparison-slider"
+   },
+   "preview": "previews/48.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "contrast",
+    "reveal"
+   ]
+  },
+  {
+   "n": 49,
+   "id": "ringStat",
+   "cat": "card",
+   "name": "حلقة نسبة",
+   "sub": "نسبة تتعبّى",
+   "desc": "حلقة تتعبّى للنسبة والرقم يعد بنصها، وتحتها شنو تعني.",
+   "source": {
+    "label": "magicui · animated-circular-progress-bar",
+    "url": "https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/animated-circular-progress-bar.tsx"
+   },
+   "preview": "previews/49.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "editorial",
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "number"
+   ]
+  },
+  {
+   "n": 50,
+   "id": "barChart",
+   "cat": "card",
+   "name": "أعمدة تكبر",
+   "sub": "رسم أعمدة",
+   "desc": "أعمدة تطلع بالتتابع وأرقامها تعد، والعمود المهم بلون الهوية والباقي يبهت.",
+   "source": {
+    "label": "chartjs/Chart.js · animations",
+    "url": "https://github.com/chartjs/Chart.js"
+   },
+   "preview": "previews/50.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "number",
+    "contrast"
+   ]
   }
  ],
  "families": {

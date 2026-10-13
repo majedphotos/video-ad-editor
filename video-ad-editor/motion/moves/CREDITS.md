@@ -11,3 +11,20 @@
 | 11–13، 18–20 | سحبة · دخلة · طلعة للخلف · صوت يسبق · قطع مطابق · تبطيء الضربة | [iart-ai/motion-design-skills](https://github.com/iart-ai/motion-design-skills) | MIT |
 | 15، 16 | إشعارات · قلم تحديد | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) | MIT |
 | 21–23 | آلة كاتبة · مطّ الكشيدة · زوم داخل النقطة | من محرّك البلقن | MIT (البلقن) |
+
+### توسعة 24–50 (13 أكتوبر 2026) — كل رابط مفتوح وملفه مقروي بنفس اليوم
+
+| # | الحركة | المصدر (الملف اللي انقرا) | الرخصة |
+|---|---|---|---|
+| 24، 27، 28، 30، 35 | غمضة لون · شرائح · قلتش · تسريب ضوء · تحويل الفوكس | [gl-transitions](https://github.com/gl-transitions/gl-transitions): `fadecolor` · `windowslice` · `GlitchDisplace` · `FilmBurn` · `DefocusBlur` | MIT (مكتوبة براس كل ملف) |
+| 25، 26، 29 | كرت يغطي · عقرب الساعة · قلبة | [remotion · packages/transitions](https://github.com/remotion-dev/remotion/tree/main/packages/transitions/src/presentations): `slide` · `clock-wipe` · `flip` | Remotion License (خاصة) — الفكرة بس، الكود من عندنا |
+| 31، 33 | كاميرا باليد · زوم الضربة | [iart-ai · expression-library.md](https://github.com/iart-ai/motion-design-skills/blob/main/skills/after-effects/references/expression-library.md): wiggle · inertial bounce | MIT |
+| 36، 37، 43 | بارالاكس · دولي زوم · مسار الكلمات | [iart-ai · camera-and-grids.md](https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md): parallax layering · dolly-zoom · pan/move | MIT |
+| 32 | كين بيرنز | [flavioarfaria/KenBurnsView](https://github.com/flavioarfaria/KenBurnsView) | Apache-2.0 |
+| 34 | رجّة | [andersonaddo/EZ-Camera-Shake-Unity](https://github.com/andersonaddo/EZ-Camera-Shake-Unity) (magnitude · roughness · fade) | MIT |
+| 38، 41، 45 | كشف بالقراءة · خط يرتسم ويتعبّى · قائمة صح | [react-bits](https://github.com/DavidHDev/react-bits): `ScrollReveal` · `StrokeText` · `Stepper` | غير محددة بصفحة المستودع |
+| 39، 40، 42 | كلمات تطيح · فرقعة مطاطية · ضد | [animate.css](https://github.com/animate-css/animate.css): `bounceInDown` · `rubberBand` · `backInLeft/Right` (نسب الكيفريمات) | Hippocratic 2.1 |
+| 44 | اسم وتعريف | [noeal-dac/Animated-Lower-Thirds](https://github.com/noeal-dac/Animated-Lower-Thirds) | MIT |
+| 46، 47، 49 | بطاقة سعر · زر ينبض · حلقة نسبة | [magicui](https://github.com/magicuidesign/magicui): `number-ticker` · `pulsating-button` · `animated-circular-progress-bar` | MIT |
+| 48 | قبل وبعد | [sneas/img-comparison-slider](https://github.com/sneas/img-comparison-slider) | MIT |
+| 50 | أعمدة تكبر | [chartjs/Chart.js](https://github.com/chartjs/Chart.js) (أنيميشن الأعمدة الافتراضي: easeOutQuart) | MIT |

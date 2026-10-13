@@ -1,6 +1,6 @@
 # بنك الحركات — كل فيديو له لوحة حركات، وأنت تختار بوعي
 
-بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json`). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
+بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json` — 50 حركة من 13 أكتوبر). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
 **قرار المستخدم (13 أكتوبر):** «ابيك تكون غني بالحركات… وتكون واعي». هو ما يختار حركة حركة. أنت تختار لكل فيديو.
 
 | الملف | شنو فيه |
@@ -50,7 +50,10 @@ draw(t, lt, ctx) {
 ```
 - الألوان من `ctx.P` (ثيم المستخدم) تلقائياً. لا تمرر ألوان ثابتة.
 - `o.s` لازم يكون توقيت كلمة حقيقية (`ctx.wordTime`). `FX.caption` ياخذ `line: 'l2'` ويتزامن مع الصوت كلمة كلمة.
-- الانتقالات (`crossZoom softWipe iris whip zoomWipe dotZoom`) تاخذ `A` و`B` كدوال ترسم الإطار كامل. حطها داخل مشهد واحد مكان انتقال المحرّك.
+- الانتقالات (`crossZoom softWipe iris whip zoomWipe dotZoom dipFade slideOver clockWipe slices glitch flip lightLeak` و`compare`) تاخذ `A` و`B` كدوال ترسم الإطار كامل. حطها داخل مشهد واحد مكان انتقال المحرّك.
+  `glitch` و`flip` يرسمون A/B على الإطار نفسه وياخذون لقطة منه، فأي FX داخل A/B (مثلاً `MV.panel(Y, () => FX.ringStat(MV, t, …))`) يطلع صح.
+- الكاميرا (`pushIn pullOut handheld kenBurns snapZoom shake`) تلف `draw`؛ `rackFocus` و`dollyZoom` ياخذون `back` و`front`؛ `parallax` ياخذ `layers:[{draw, depth}]`. بريل الكلام حطها بطبقة `'video'`.
+- `lowerThird` تحت يمين داخل المنطقة الآمنة (y ≤ 1500 و x ≤ 920) — لا تحرّكه لزاوية الأزرار.
 - `jcut` و`matchCut` قواعد توقيت، مو رسم: J-cut = صوت اللقطة الجاية يسبق صورتها بـ4–12 فريم. القطع المطابق = الشكل نفسه بنفس المكان والحجم على فريم القص.
 
 **بريل الكلام** (`compose.html`): نفس الدوال، بس الـctx اسمه `MV` (من `scripts/moves-compose.js`: أدوات النص والتوقيت وألوان `theme.json` وخطه فوق كانفس المحرّك).
