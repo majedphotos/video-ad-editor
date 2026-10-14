@@ -1,0 +1,208 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* صفحة مراجعة الحلقة — يبنيها scripts/41_review.py من review.json. الألوان من theme.json (bg/ink/acc) تنحقن بـ--bg/--ink/--acc */
+:root{
+  --bg:#F0EEE6; --card:#FAF8F3; --ink:#1F1F1D; --mut:#6F6D66; --line:#DEDAD0; --field:#FFFFFF;
+  --acc:#D97757; --clay:#BD5D3A; --ok:#3F7D5A; --okbg:#E3EFE7; --info:#3D5A80; --infobg:#E4EAF2;
+  --disp:"Cairo","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;
+  /*__THEME__*/
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#191815; --card:#23211D; --ink:#EDEBE4; --mut:#A09D94; --line:#34312B; --field:#1C1B18;
+  --clay:#D07252; --ok:#7CC49A; --okbg:#1F3228; --info:#9DB7DA; --infobg:#1F2733; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#191815; --card:#23211D; --ink:#EDEBE4; --mut:#A09D94; --line:#34312B; --field:#1C1B18;
+  --clay:#D07252; --ok:#7CC49A; --okbg:#1F3228; --info:#9DB7DA; --infobg:#1F2733; color-scheme:dark; }
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; line-height:1.7; direction:rtl}
+.wrap{max-width:1120px; margin:0 auto; padding-inline:16px; padding-block:28px 60px}
+header{display:grid; gap:10px; padding-bottom:22px; border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--disp); font-weight:800; font-size:13px; color:var(--acc)}
+h1{font-family:var(--disp); font-weight:900; font-size:clamp(26px,5vw,40px); line-height:1.25; margin:0; text-wrap:balance}
+.meta{display:flex; flex-wrap:wrap; gap:8px 18px; color:var(--mut); font-size:14px}
+.meta a{color:var(--ink)}
+.note{background:var(--infobg); color:var(--info); border-radius:10px; padding:10px 14px; font-size:13.5px; max-width:78ch; margin:0}
+.tally{display:flex; gap:8px; flex-wrap:wrap}
+section{margin-top:34px; display:grid; gap:18px}
+h2{font-family:var(--disp); font-weight:900; font-size:22px; margin:0}
+.item{display:grid; grid-template-columns:minmax(0,260px) minmax(0,1fr); gap:22px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px}
+.item.ok{border-color:var(--ok)}
+@media (max-width:720px){ .item{grid-template-columns:1fr} }
+.media video{width:100%; aspect-ratio:9/16; border-radius:12px; background:#000; display:block; max-width:100%}
+.strip{display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:8px}
+.strip img{flex:0 0 auto; width:min(220px,60vw); height:auto; border-radius:10px; scroll-snap-align:start; border:1px solid var(--line); max-width:100%}
+.item.wide{grid-template-columns:1fr}
+.body{display:grid; gap:12px; align-content:start; min-width:0}
+.body h3{font-family:var(--disp); font-weight:900; font-size:19px; line-height:1.35; margin:0; text-wrap:balance}
+.row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--mut); font-variant-numeric:tabular-nums}
+label{font-family:var(--disp); font-weight:800; font-size:13px; display:block; margin-bottom:4px}
+textarea{width:100%; font-family:var(--body); font-size:14px; line-height:1.6; color:var(--ink); background:var(--field); border:1px solid var(--line); border-radius:10px; padding:10px 12px; direction:rtl; resize:vertical}
+textarea.capt{min-height:150px}
+.btns{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+button{font-family:var(--disp); font-weight:800; font-size:13px; padding:7px 16px; border-radius:99px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer}
+button.main{background:var(--ink); color:var(--bg)}
+button.go{background:var(--acc); border-color:var(--acc); color:#fff}
+button:disabled{opacity:.45; cursor:not-allowed}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--acc); outline-offset:2px}
+.flash{font-size:12.5px; color:var(--ok)}
+.reqs{display:grid; gap:6px; margin:0; padding:0; list-style:none}
+.reqs li{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; font-size:13.5px; border-top:1px dashed var(--line); padding-top:6px}
+.st{font-family:var(--disp); font-weight:800; font-size:11.5px; padding:1px 9px; border-radius:99px; white-space:nowrap}
+.st.new{color:var(--clay); border:1px solid var(--clay)}
+.st.work{background:var(--infobg); color:var(--info)}
+.st.done{background:var(--okbg); color:var(--ok)}
+.reqs .txt{white-space:pre-line; overflow-wrap:anywhere}
+.reqs .rep{display:block; color:var(--mut); font-size:12.5px}
+.ideas{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:0 28px; margin:0; padding:0; list-style:none}
+.ideas li{display:grid; grid-template-columns:34px 1fr; gap:6px; padding:10px 0; border-bottom:1px solid var(--line)}
+.ideas .n{font-family:var(--disp); font-weight:900; color:var(--acc); font-variant-numeric:tabular-nums}
+.ideas b{font-family:var(--disp); font-weight:800; display:block; font-size:14.5px}
+.ideas span{color:var(--mut); font-size:13px}
+#local{display:none; gap:8px}
+footer{margin-top:40px; color:var(--mut); font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1 id="title"></h1>
+    <div class="meta" id="meta"></div>
+    <p class="note" id="how"></p>
+    <div class="tally" id="tally"></div>
+    <div id="local"><p class="note">الصفحة مفتوحة من جهازك — طلباتك محفوظة هني بس. اضغط وألصقها بالمحادثة:</p>
+      <div class="btns"><button class="main" type="button" id="copyAll">انسخ طلباتي</button><span class="flash" id="fl-local" hidden></span></div></div>
+  </header>
+  <section id="sec-reels" hidden><h2>الريلات</h2><div id="reels" style="display:grid;gap:18px"></div></section>
+  <section id="sec-cars" hidden><h2>الكاروسيل</h2><div id="cars" style="display:grid;gap:18px"></div></section>
+  <section id="sec-ideas" hidden><h2>الباقي من الحلقة</h2><ul class="ideas" id="ideas"></ul></section>
+  <footer>ما ينشر شي من هنا لحاله — «اعتمد» يجهّز المنشور، والنشر قرارك.</footer>
+</div>
+
+<script type="application/json" id="data">/*__DATA__*/</script>
+<script>
+const D=JSON.parse(document.getElementById("data").textContent);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KIND={note:"ملاحظة",approve:"اعتماد"};
+const ST={new:["new","وصلت"],work:["work","أشتغل عليها"],done:["done","تم"]};
+const APPROVE=D.approve_label||"اعتمد";
+
+$("eyebrow").textContent=D.eyebrow||"";
+$("title").textContent=D.title||"";
+document.title=D.title||document.title;
+$("meta").innerHTML=(D.meta||[]).map(m=>`<span>${esc(m)}</span>`).join("")+(D.link?`<a href="${esc(D.link.url)}" target="_blank" rel="noopener">${esc(D.link.label||"الحلقة")} ↗</a>`:"");
+$("how").textContent=D.how||`شوف كل ريل وكاروسيل: اكتب ملاحظتك واضغط «أرسل»، أو «${APPROVE}» لو جاهز. «تحميل» ينزّل الملف لجهازك.`;
+
+function card(it){
+  const media = it.kind==="reel"
+    ? `<div class="media"><video controls playsinline preload="none" poster="${esc(it.poster)}" src="${esc(it.video)}" aria-label="${esc(it.title)}"></video></div>`
+    : `<div class="strip">${(it.slides||[]).map((s,i)=>`<img src="${esc(s)}" alt="شريحة ${i+1}" loading="lazy">`).join("")}</div>`;
+  return `<article class="item${it.kind==="carousel"?" wide":""}" id="it-${esc(it.id)}">${media}
+  <div class="body">
+    <h3>${esc(it.title)}</h3><div class="row"><span>${esc(it.id)}</span><span>${esc(it.dur||"")}</span></div>
+    <div><label for="cap-${esc(it.id)}">الكابشن (عدّله هني لو تبي — ينحفظ مع طلبك)</label><textarea class="capt" id="cap-${esc(it.id)}">${esc(it.cap)}</textarea></div>
+    <div><label for="note-${esc(it.id)}">ملاحظة للتعديل</label>
+      <textarea id="note-${esc(it.id)}" rows="3" placeholder="مثال: عند 0:23 قص كلمة… أو غيّر عنوان الشريحة 3"></textarea></div>
+    <div class="btns">
+      <button class="main" type="button" data-send="note" data-id="${esc(it.id)}">أرسل الملاحظة</button>
+      <button class="go" type="button" data-send="approve" data-id="${esc(it.id)}">${esc(APPROVE)}</button>
+      ${it.download?`<button type="button" data-dl="${esc(it.id)}">تحميل</button>`:""}
+    </div>
+    <span class="flash" id="fl-${esc(it.id)}" hidden></span>
+    <ul class="reqs" id="rq-${esc(it.id)}"></ul>
+  </div></article>`;
+}
+const ITEMS=D.items||[];
+const reels=ITEMS.filter(i=>i.kind==="reel"), cars=ITEMS.filter(i=>i.kind==="carousel");
+if(reels.length){ $("sec-reels").hidden=false; $("reels").innerHTML=reels.map(card).join(""); }
+if(cars.length){ $("sec-cars").hidden=false; $("cars").innerHTML=cars.map(card).join(""); }
+if((D.ideas||[]).length){ $("sec-ideas").hidden=false; $("ideas").innerHTML=D.ideas.map(([n,t,d])=>`<li><span class="n">${esc(n)}</span><div><b>${esc(t)}</b><span>${esc(d)}</span></div></li>`).join(""); }
+
+function flash(id,msg,bad){ const f=$("fl-"+id); f.textContent=msg; f.style.color=bad?"var(--clay)":"var(--ok)"; f.hidden=false; setTimeout(()=>f.hidden=true,3500); }
+function render(by){
+  let ok=0;
+  ITEMS.forEach(it=>{
+    const L=by[it.id]||[]; const approved=L.some(r=>r.kind==="approve"); if(approved) ok++;
+    $("it-"+it.id).classList.toggle("ok",approved);
+    $("rq-"+it.id).innerHTML=L.map(r=>{ const s=ST[r.status]||ST.new;
+      const what=r.kind==="note"?esc(r.text||""):esc(APPROVE);
+      return `<li><span class="st ${s[0]}">${s[1]}</span><div class="txt"><b>${KIND[r.kind]||""}</b> — ${what}${r.reply?`<span class="rep">↩︎ ${esc(r.reply)}</span>`:""}</div></li>`; }).join("");
+  });
+  $("tally").innerHTML=ITEMS.length?`<span class="st ${ok===ITEMS.length?"done":"work"}">معتمد ${ok} من ${ITEMS.length}</span>`:"";
+}
+function makeDoc(id,kind){
+  const doc={item:id, kind, status:"new", at:Date.now(), caption:$("cap-"+id).value.trim()};
+  if(kind==="note"){ const t=$("note-"+id).value.trim(); if(!t){ flash(id,"اكتب الملاحظة أول",true); return null; } doc.text=t; }
+  return doc;
+}
+function done(id,kind){ if(kind==="note") $("note-"+id).value=""; flash(id, kind==="note"?"وصلت الملاحظة ✓":"انعتمد ✓"); }
+
+/* تحميل: داخل claude.ai عبر downloads (تأكيد من المشاهد) — وبالجهاز رابط عادي */
+let downloads=null;
+const loadZip=()=>window.JSZip?Promise.resolve():new Promise((ok,bad)=>{ const s=document.createElement("script");
+  s.src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"; s.onload=ok; s.onerror=()=>bad({code:"zip"}); document.head.appendChild(s); });
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-dl]"); if(!b) return;
+  const it=ITEMS.find(x=>x.id===b.dataset.dl); if(!it||!it.download) return;
+  const name=it.download.split("/").pop();
+  b.disabled=true;
+  try{
+    let blob;
+    if(it.download_files){                 // كاروسيل: الشرائح الأصلية بملف zip واحد
+      flash(it.id,"أجهّز الشرائح…");
+      await loadZip(); const z=new JSZip();
+      await Promise.all(it.download_files.map(async(f,i)=>z.file(it.id+"_"+String(i+1).padStart(2,"0")+"."+f.split(".").pop(), await (await fetch(f)).blob())));
+      blob=await z.generateAsync({type:"blob"});
+    } else if(downloads) blob=await (await fetch(it.download)).blob();
+    if(downloads){ await downloads.save({filename:name, data:blob}); }
+    else{ const a=document.createElement("a"); a.href=blob?URL.createObjectURL(blob):it.download; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+    flash(it.id,"تم التحميل ✓");
+  }
+  catch(err){ const c=err&&err.code; if(c!=="declined") flash(it.id, c==="too_large"?"الملف كبير على التحميل من هني":"ما قدرت أحمّله — جرّب مرة ثانية", true); }
+  finally{ b.disabled=false; }
+});
+
+/* محلي (بلا claude.ai): الطلبات بالمتصفح + زر نسخ للمحادثة */
+const LKEY="review:"+(D.key||D.title||"page");
+function localLoad(){ try{ return JSON.parse(localStorage.getItem(LKEY)||"[]"); }catch(_){ return []; } }
+function localSave(L){ try{ localStorage.setItem(LKEY,JSON.stringify(L)); }catch(_){} }
+function localRender(){ const by={}; localLoad().forEach(r=>(by[r.item]=by[r.item]||[]).push(r)); render(by); }
+let mode="pending";
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-send]"); if(!b||mode!=="local") return;
+  const doc=makeDoc(b.dataset.id,b.dataset.send); if(!doc) return;
+  const L=localLoad(); L.unshift(doc); localSave(L); localRender(); done(b.dataset.id,b.dataset.send);
+});
+$("copyAll").addEventListener("click",()=>{
+  const txt="طلباتي على صفحة المراجعة «"+(D.title||"")+"»:\n"+JSON.stringify(localLoad().map(({item,kind,text,caption})=>({item,kind,text,caption})),null,1);
+  const ok=()=>{ const f=$("fl-local"); f.textContent="انسخت ✓ ألصقها بالمحادثة"; f.hidden=false; setTimeout(()=>f.hidden=true,3000); };
+  try{ navigator.clipboard.writeText(txt).then(ok,()=>prompt("انسخ:",txt)); }catch(_){ prompt("انسخ:",txt); }
+});
+
+(async()=>{
+  const use=window.claude&&window.claude.use;
+  const db=use?await window.claude.use("db"):null;
+  downloads=use?await window.claude.use("downloads"):null;
+  if(!db){ mode="local"; $("local").style.display="grid"; localRender(); return; }
+  mode="db";
+  const col=db.collection("requests");
+  render({});
+  col.orderBy("at","desc").limit(500).onSnapshot(snap=>{
+    const by={}; snap.docs.forEach(d=>{ const r=d.data(); if(r&&r.item) (by[r.item]=by[r.item]||[]).push(r); });
+    render(by);
+  }, ()=>{});
+  document.addEventListener("click",async e=>{
+    const b=e.target.closest("[data-send]"); if(!b) return;
+    const id=b.dataset.id, kind=b.dataset.send, doc=makeDoc(id,kind); if(!doc) return;
+    b.disabled=true;
+    try{ await col.add(doc); done(id,kind); }
+    catch(err){ flash(id,"ما وصل — "+((err&&err.code)==="not_granted"?"ما عندك صلاحية كتابة":"جرّب مرة ثانية"),true); }
+    finally{ b.disabled=false; }
+  });
+})();
+</script>
