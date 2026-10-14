@@ -5,6 +5,7 @@
 //   "title":[{"s":0,"e":2,"text":"…"}], "bg":["#0B0A12","#3B2A6B"], "acc":"#D97757", "ink":"#F0EBE0", "metal":"#8f9196", "fit":"contain"|"cover", "reflect":0.25 }   // reflect: 0 = بلا انعكاس · 1 = لمعة كاملة
 // (rx,ry,rz بالدرجات = لفّة الجهاز · s = قرب الكاميرا · fx,fy = النقطة اللي تقرّب عليها من الشاشة 0-1)
 const puppeteer = require('puppeteer-core');
+require('../motion/vendor.js')();
 const fs = require('fs'), path = require('path'), http = require('http'), { spawn, execFileSync } = require('child_process');
 const CHROME = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/chromium', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));

@@ -9,6 +9,7 @@
            --fps N (تجاوز) · --crf 16 · --no-encode · --q 0.95 · --fresh (يمسح الفريمات القديمة — لازم بعد أي تعديل بالمشاهد)
    ⚠ الاستئناف يتخطّى أي فريم موجود: عدّلت مشهد؟ استخدم --fresh أو range على المقطع المعدّل بعد حذف فريماته. */
 const fs = require('fs'), path = require('path'), http = require('http'), { spawnSync } = require('child_process');
+require('./vendor.js')();
 const ROOT = path.resolve(__dirname, '..');                        // video-ad-editor (serves /motion, /scripts)
 const LOGOS = path.resolve(__dirname, '../../hook-assets/logos');
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
