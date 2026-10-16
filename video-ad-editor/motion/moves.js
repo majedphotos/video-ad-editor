@@ -654,5 +654,395 @@
     });
   };
 
+
+  /* ═══ 51–61: توسعة المتحدث المقصوص (16 أكتوبر) — نفس العقد ═══
+     o.person(Y) يرسم المتحدث مقصوص بخلفية شفافة (الإطار كامل 1080×1920، بنفس مكانه بالفيديو).
+       بريل الكلام: person: MV.person (ماك بس — القصّ من 11_behind_text.js <work> person <من-إلى>). مرّره كما هو (لا تلفّه بدالة): FX يسأل MV.person.ok().
+     o.video(Y) يرسم الفيديو كامل (MV.video). بلا قصّ كل حركة ترجع لبديل: الفيديو داخل كرت/صورة، والحركة تمشي. */
+  const hasP = o => typeof o.person === 'function' && (typeof o.person.ok === 'function' ? !!o.person.ok() : true);
+  const offC = (X, slot) => {
+    const me = FX['_' + slot] || (FX['_' + slot] = { c: document.createElement('canvas') }), c = me.c;
+    if (c.width !== X.canvas.width || c.height !== X.canvas.height) { c.width = X.canvas.width; c.height = X.canvas.height; }
+    const Y = c.getContext('2d'); Y.setTransform(1, 0, 0, 1, 0, 0); Y.globalAlpha = 1; Y.globalCompositeOperation = 'source-over'; Y.filter = 'none';
+    Y.clearRect(0, 0, c.width, c.height); Y.setTransform(X.getTransform()); return { c, Y };
+  };
+  const putC = (X, c, a) => { X.save(); X.setTransform(1, 0, 0, 1, 0, 0); if (a != null) X.globalAlpha *= a; X.drawImage(c, 0, 0); X.restore(); };
+  // حدود جسم المتحدث (بإحداثيات التصميم) من نسخة مصغّرة 108×192
+  const pbox = (o, pl) => {
+    const me = FX._pb || (FX._pb = { c: document.createElement('canvas') }), c = me.c; c.width = 108; c.height = 192;
+    const Y = me.Y || (me.Y = c.getContext('2d', { willReadFrequently: true })); Y.setTransform(0.1, 0, 0, 0.1, 0, 0);
+    if (pl) placeP(Y, pl); o.person(Y); const d = Y.getImageData(0, 0, 108, 192).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+    for (let y = 0; y < 192; y++) for (let x = 0; x < 108; x++) if (d[(y * 108 + x) * 4 + 3] > 110) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    return x1 < 0 ? null : { x0: x0 * 10, y0: y0 * 10, x1: x1 * 10 + 10, y1: y1 * 10 + 10, cx: (x0 + x1 + 1) * 5 };
+  };
+  // مكان المتحدث الجديد: يكبر/يصغر حول أسفل الشاشة (540,1920) ثم يتزحزح. pl: {x, y, s, r}
+  const placeP = (Y, pl) => { Y.translate(540 + (pl.x || 0), 1920 + (pl.y || 0)); if (pl.r) Y.rotate(pl.r); const s = pl.s == null ? 1 : pl.s; Y.scale(s, s); Y.translate(-540, -1920); };
+  const lerpPl = (b, k) => ({ x: (b.x || 0) * k, y: (b.y || 0) * k, s: lerp(1, b.s == null ? 1 : b.s, k), r: (b.r || 0) * k });
+  // الفيديو داخل مستطيل R (قصّ cover، الوجه على ثلث الطول فوق)
+  const vidIn = (X, o, R, rad) => {
+    X.save(); X.beginPath(); X.roundRect(R.x, R.y, R.w, R.h, rad || 0); X.clip();
+    const sc = Math.max(R.w / 1080, R.h / 1920); X.translate(R.x + R.w / 2, R.y + R.h * 0.34); X.scale(sc, sc); X.translate(-540, -1920 * 0.34);
+    if (o.video) o.video(X); X.restore();
+  };
+  const lerpR = (a, b, k) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), w: lerp(a.w, b.w, k), h: lerp(a.h, b.h, k) });
+  const FULL = { x: 0, y: 0, w: 1080, h: 1920 };
+  // حبيبات ورق (ثابتة، تنبني مرة)
+  const h2 = (a, b) => { let h = Math.imul(a | 0, 374761393) ^ Math.imul(b | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const grain = () => FX._grain || (FX._grain = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const Y = c.getContext('2d'), im = Y.createImageData(256, 256);
+    for (let i = 0; i < 65536; i++) { const v = 150 + 105 * (0.6 * h2(i, 7) + 0.4 * h2(i >> 2, 9)); im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; }
+    Y.putImageData(im, 0, 0); return c; })());
+  const paperFill = (X, x, y, w, h, a) => { X.save(); X.globalAlpha *= a == null ? 0.14 : a; X.globalCompositeOperation = 'multiply'; const g = grain();
+    for (let yy = y; yy < y + h; yy += 256) for (let xx = x; xx < x + w; xx += 256) X.drawImage(g, xx, yy); X.restore(); };
+  const tornRect = (X, x, y, w, h, seed, amp) => { const a = amp || 12, st = 20; X.beginPath(); X.moveTo(x, y);
+    for (let i = 0; i <= w; i += st) X.lineTo(x + i, y + (h2(seed, i) - 0.5) * a);
+    for (let j = 0; j <= h; j += st) X.lineTo(x + w + (h2(seed + 1, j) - 0.5) * a, y + j);
+    for (let i = w; i >= 0; i -= st) X.lineTo(x + i, y + h + (h2(seed + 2, i) - 0.5) * a);
+    for (let j = h; j >= 0; j -= st) X.lineTo(x + (h2(seed + 3, j) - 0.5) * a, y + j); X.closePath(); };
+  const shd = (X, b, y, a) => { X.shadowColor = 'rgba(0,0,0,' + (a == null ? 0.25 : a) + ')'; X.shadowBlur = b; X.shadowOffsetY = y; };
+  const noShd = X => { X.shadowColor = 'transparent'; X.shadowBlur = 0; X.shadowOffsetY = 0; X.shadowOffsetX = 0; };
+  /* المسرح المشترك: k 0←1. بالقصّ: الخلفية الجديدة تنفتح دايرة من ورا المتحدث، وهو نفسه يمشي لمكانه (pl). بلا قصّ: الفيديو يصغر لكرت R.
+     bg(Y) الخلفية الجديدة · mid(Y) طبقة بين الخلفية والمتحدث (اختياري) · يرجّع true لو بالقصّ */
+  const stage = (ctx, t, o, k, bg, pl, R, mid, rad) => {
+    const { X } = ctx, P = hasP(o);
+    if (P) {
+      if (k < 0.999 && o.video) o.video(X);
+      if (k > 0.001) { X.save(); if (k < 0.999) { X.beginPath(); X.arc(540, 820, 2300 * ctx.E.cubicIn(k) + 40 * k, 0, 6.2832); X.clip(); } bg(X); if (mid) mid(X); X.restore(); }
+      X.save(); placeP(X, lerpPl(pl || {}, k)); if (k > 0.05 && o.shadow !== false) shd(X, 50 * k, 16 * k, 0.28 * k); o.person(X); X.restore(); noShd(X);
+      return true;
+    }
+    bg(X); if (mid) mid(X);
+    const r = lerpR(FULL, R, k);
+    X.save(); if (k > 0.02) { shd(X, 60 * k, 24 * k, 0.3 * k); X.fillStyle = ctx.P.ink; X.beginPath(); X.roundRect(r.x, r.y, r.w, r.h, (rad || 48) * k); X.fill(); noShd(X); }
+    vidIn(X, o, r, (rad || 48) * k); X.restore();
+    return false;
+  };
+  const kIO = (ctx, t, o, d) => ctx.at(t, o.s, o.s + (d || 0.8), 'expoInOut') * (o.out != null ? 1 - ctx.at(t, o.out, o.out + 0.6, 'expoInOut') : 1);
+
+  /* 51 مدار — الكاميرا تلف حول المتحدث: حلقة كلمات وأرضية تدور بعمق؛ اللي ورا يمر خلفه واللي قدام يمر قدامه. يحتاج قصّ (ماك) — بلاه: الحلقة تلف حول كرت الفيديو.
+     o: {s, out, person, video, words:[...] (كلمات كاملة), turn=1.6 (راديان), ringY=1240, R=520, hi (رقم الكلمة المميزة)} */
+  FX.orbit = (ctx, t, o) => {
+    const { X, P, at } = ctx, k = kIO(ctx, t, o, 0.9), W = o.words || ['فكرة', 'صوت', 'تصوير', 'مونتاج', 'نشر', 'جمهور'], n = W.length;
+    const az = (o.turn == null ? 1.6 : o.turn) * ctx.E.sineInOut(ctx.prog(t, o.s, o.s + (o.dur || 3.6))) - 0.5, ry = pick(o, 'ringY', 1160), Rr = o.R || 560, D = 1500;
+    const items = W.map((w, i) => { const th = i * 6.2832 / n + az, x3 = Rr * Math.sin(th), z3 = Rr * Math.cos(th), f = D / (D - z3 * 0.9);
+      return { w, i, th, z3, f, x: 540 + x3 * f, y: ry - 260 + z3 * 0.28 * f }; });
+    const dk = darker(P.ink, P.bg);
+    const bg = Y => { const g = Y.createRadialGradient(540, 900, 80, 540, 900, 1250); g.addColorStop(0, P.bg); g.addColorStop(1, dk === P.ink ? '#00000022' : P.bg); Y.fillStyle = P.bg; Y.fillRect(0, 0, 1080, 1920); Y.fillStyle = g; Y.fillRect(0, 0, 1080, 1920);
+      // ستارة اسطوانية ورا: أعمدة تلف مع الكاميرا (النص البعيد بس)
+      for (let j = 0; j < 28; j++) { const th = j * 6.2832 / 28 - az * 0.8, zc = Math.cos(th); if (zc > -0.05) continue; const xa = 540 + 1500 * Math.sin(th) * 0.62, xb = 540 + 1500 * Math.sin(th + 0.112) * 0.62;
+        Y.globalAlpha = 0.05 + 0.07 * (-zc); Y.fillStyle = j % 2 ? P.ink : P.acc; Y.fillRect(Math.min(xa, xb), 0, Math.abs(xb - xa), 1920); }
+      Y.globalAlpha = 1;
+      // أرضية: دواير وخطوط شعاعية تلف مع الكاميرا
+      Y.save(); Y.translate(540, ry + 330); Y.scale(1, 0.24); Y.strokeStyle = P.ink; Y.lineWidth = 3;
+      for (let j = 1; j <= 6; j++) { Y.globalAlpha = 0.16 - j * 0.018; Y.beginPath(); Y.arc(0, 0, 180 * j, 0, 6.2832); Y.stroke(); }
+      for (let j = 0; j < 24; j++) { const a = j * 0.2618 + az; Y.globalAlpha = 0.07; Y.beginPath(); Y.moveTo(Math.cos(a) * 160, Math.sin(a) * 160); Y.lineTo(Math.cos(a) * 1150, Math.sin(a) * 1150); Y.stroke(); }
+      Y.restore();
+      // نجوم بعيدة: بارالاكس أبطأ من الحلقة
+      for (let j = 0; j < 40; j++) { const xx = ((h2(j, 3) * 1600 - az * 260 * (0.4 + h2(j, 4))) % 1600 + 1600) % 1600 - 260, yy = 160 + h2(j, 5) * 980;
+        Y.globalAlpha = 0.18 + 0.3 * h2(j, 6); Y.fillStyle = j % 5 ? P.mut : P.acc; Y.beginPath(); Y.arc(xx, yy, 2 + 5 * h2(j, 8), 0, 6.2832); Y.fill(); }
+      Y.globalAlpha = 1;
+      // المدار نفسه (بيضاوي)
+      Y.save(); Y.translate(540, ry - 260); Y.scale(1, 0.3); Y.strokeStyle = P.acc; Y.lineWidth = 5; Y.globalAlpha = 0.45; Y.setLineDash([2, 22]); Y.lineCap = 'round'; Y.beginPath(); Y.arc(0, 0, Rr * 1.02, 0, 6.2832); Y.stroke(); Y.restore();
+    };
+    const card = (Y, it, ka) => { const face = Math.cos(it.th), sx = Math.max(0.18, Math.abs(face)), sz = 92 * it.f, a = ka * cl(0.6 + 0.4 * (it.z3 / Rr + 1) / 2);
+      Y.save(); Y.translate(it.x, it.y); Y.globalAlpha = a; Y.scale(sx, 1); Y.font = ctx.font('display', 400, sz); const w = Y.measureText(it.w).width + sz * 1.0, h = sz * 1.55;
+      shd(Y, 30 * it.f, 12 * it.f, 0.22); Y.fillStyle = face < 0 ? P.mut : (it.i === (o.hi == null ? 0 : o.hi) ? P.acc : P.ink); Y.beginPath(); Y.roundRect(-w / 2, -h / 2, w, h, h / 2); Y.fill(); noShd(Y);
+      if (face > 0.7) ctx.text(Y, it.w, 0, sz * 0.36, { alpha: cl((face - 0.7) / 0.2), family: 'display', size: sz, color: it.i === (o.hi == null ? 0 : o.hi) ? (P.onAcc || '#fff') : P.bg });
+      Y.restore(); };
+    const ka = at(t, o.s + 0.35, o.s + 1.0, 'expoOut') * (o.out != null ? 1 - at(t, o.out - 0.2, o.out + 0.3) : 1);
+    const back = items.filter(i => i.z3 < 0).sort((a, b) => a.z3 - b.z3), front = items.filter(i => i.z3 >= 0).sort((a, b) => a.z3 - b.z3);
+    const sway = Math.sin(az) * 70;
+    stage(ctx, t, o, k, bg, { s: 0.92 + 0.04 * Math.cos(az), x: -sway, y: 10, r: -0.03 * Math.sin(az) }, { x: 290, y: 560, w: 500, h: 760 }, Y => { if (ka > 0.001) back.forEach(it => card(Y, it, ka));
+      // ظل على الأرضية
+      Y.save(); Y.globalAlpha = 0.25 * k; Y.fillStyle = P.ink; Y.translate(540, ry + 330); Y.scale(1, 0.2); Y.beginPath(); Y.arc(0, 0, 360, 0, 6.2832); Y.filter = 'blur(20px)'; Y.fill(); Y.restore(); }, 60);
+    if (ka > 0.001) front.forEach(it => card(X, it, ka));
+  };
+
+  /* 52 جدار الكنبة — المتحدث ينقل لمشهد جديد: قاعد على كنبة وراه جدار بوستاته. يحتاج قصّ (ماك) — بلاه: الفيديو كرت على الكنبة.
+     o: {s, out, person, video, posts:[[عنوان, رقم]], handle} */
+  FX.couchWall = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 0.9), posts = o.posts || [['أول ريل', '12K'], ['السر', '48K'], ['قبل وبعد', '9K'], ['شلون بديت', '31K'], ['الأداة', '22K'], ['غلطتي', '64K'], ['السؤال', '7K'], ['الخطة', '18K'], ['النتيجة', '120K']];
+    const drift = at(t, o.s, o.s + 4.5, 'sineInOut'), cols = [P.ink, P.acc, P.clay || P.acc, P.mut];
+    const bg = Y => { Y.fillStyle = P.bg; Y.fillRect(0, 0, 1080, 1920);
+      Y.save(); Y.globalAlpha = 0.06; Y.fillStyle = P.ink; for (let x = 0; x < 1080; x += 120) Y.fillRect(x, 0, 3, 1920); Y.restore();
+      Y.save(); Y.translate(0, -70 * drift); const tw = 292, gap = 22, x0 = 540 - (tw * 3 + gap * 2) / 2;
+      posts.forEach((p, i) => { const c = i % 3, r = Math.floor(i / 3), x = x0 + (2 - c) * (tw + gap), y = 250 + r * (tw + gap), ki = at(t, o.s + 0.45 + i * 0.07, o.s + 0.95 + i * 0.07, 'backOut');
+        if (ki <= ON) return; Y.save(); Y.translate(x + tw / 2, y + tw / 2); Y.scale(ki, ki); Y.rotate((h2(i, 2) - 0.5) * 0.05);
+        shd(Y, 26, 10, 0.18); const col = cols[(i * 7) % 4]; Y.fillStyle = col; Y.beginPath(); Y.roundRect(-tw / 2, -tw / 2, tw, tw, 22); Y.fill(); noShd(Y);
+        Y.globalAlpha = 0.16; Y.fillStyle = P.bg; Y.beginPath(); Y.arc(tw * 0.22, -tw * 0.2, tw * 0.22, 0, 6.2832); Y.fill(); Y.globalAlpha = 1;
+        const fg = col === P.mut ? P.ink : (lum(col) > 150 ? P.ink : '#FFFFFF');
+        ctx.text(Y, p[0], 0, 18, { family: 'display', size: 54, color: fg, maxWidth: tw - 40 });
+        ctx.text(Y, '♥ ' + p[1], 0, tw / 2 - 30, { family: 'num', weight: 800, size: 30, color: fg, dir: 'ltr', alpha: 0.85 });
+        Y.restore(); }); Y.restore(); };
+    const couch = Y => { const kc = at(t, o.s + 0.3, o.s + 0.9, 'expoOut'), yy = 1430 + 400 * (1 - kc);
+      Y.save(); Y.translate(0, yy); shd(Y, 50, -6, 0.25); Y.fillStyle = P.clay || P.acc; Y.beginPath(); Y.roundRect(40, 0, 1000, 330, 70); Y.fill(); noShd(Y);
+      Y.fillStyle = 'rgba(0,0,0,.12)'; Y.beginPath(); Y.roundRect(40, 210, 1000, 300, 50); Y.fill();
+      Y.fillStyle = P.clay || P.acc; [[0, 140], [930, 140]].forEach(([x, y]) => { Y.beginPath(); Y.roundRect(x, y, 150, 300, 60); Y.fill(); });
+      Y.strokeStyle = 'rgba(0,0,0,.14)'; Y.lineWidth = 6; Y.beginPath(); Y.moveTo(540, 30); Y.lineTo(540, 200); Y.stroke(); Y.restore(); };
+    const R = { x: 250, y: 900, w: 580, h: 700 };
+    stage(ctx, t, o, k, bg, { s: 0.78, y: -60 }, R, couch, 44);
+    if (o.handle) { const a = at(t, o.s + 1.1, o.s + 1.5, 'expoOut'); ctx.text(X, o.handle, 540, 205, { family: 'num', weight: 800, size: 40, color: P.mut, dir: 'ltr', alpha: a * k }); }
+  };
+
+  /* 53 عالم الواجهات — شاشات وكروت واجهة تطفو حول المتحدث بأعماق مختلفة (اللي ورا مغبشة خلفه، واللي قدام أكبر). بلاه قصّ: الكروت قدام الفيديو بس.
+     o: {s, out, person, video, panels:[{type:'chat'|'stat'|'toggle'|'search'|'notif'|'spark', text, x, y, z}], dim=.55} */
+  FX.uiWorld = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 0.7), PM = hasP(o);
+    const PN = o.panels || [{ type: 'search', text: 'شلون أبدأ؟', x: 540, y: 330, z: 0.55 }, { type: 'stat', text: '+38%', x: 230, y: 640, z: 0.7 }, { type: 'toggle', text: 'النشر التلقائي', x: 820, y: 760, z: 0.8 },
+      { type: 'chat', text: 'جاهز الريل؟', x: 820, y: 1180, z: 1.35 }, { type: 'spark', text: 'المشاهدات', x: 250, y: 1320, z: 1.5 }, { type: 'notif', text: 'متابع جديد', x: 300, y: 470, z: 1.25 }];
+    const push = at(t, o.s, o.s + 4.5, 'sineInOut');
+    const panel = (Y, p, i) => { const ki = at(t, o.s + 0.3 + i * 0.11, o.s + 0.95 + i * 0.11, 'backOut') * (o.out != null ? 1 - at(t, o.out - 0.1, o.out + 0.4) : 1); if (ki <= ON) return;
+      const z = p.z, par = (z - 1), zz = 1 + (z - 1) * 0.6 + 0.08 * push * z, bob = 14 * ctx.noise1(t * 0.6 + i * 3, i + 40);
+      const px = 540 + (p.x - 540) * zz - par * 90 * Math.sin(t * 0.45), py = 960 + (p.y - 960) * zz + bob;
+      const bl = Math.abs(z - 1) > 0.2 ? Math.abs(z - 1) * 7 : 0;
+      Y.save(); Y.translate(px, py); Y.scale(zz * ki, zz * ki); Y.rotate((h2(i, 9) - 0.5) * 0.06); if (bl > 0.4) Y.filter = `blur(${bl.toFixed(1)}px)`; Y.globalAlpha = cl(0.55 + 0.45 * z);
+      const card = (w, h, r) => { shd(Y, 40, 18, 0.22); Y.fillStyle = '#FFFFFF'; Y.beginPath(); Y.roundRect(-w / 2, -h / 2, w, h, r); Y.fill(); noShd(Y); };
+      if (p.type === 'search') { card(560, 110, 55); Y.strokeStyle = P.mut; Y.lineWidth = 6; Y.beginPath(); Y.arc(220, -6, 20, 0, 6.2832); Y.moveTo(234, 8); Y.lineTo(250, 24); Y.stroke(); ctx.text(Y, p.text, 160, 14, { family: 'body', weight: 700, size: 40, align: 'right', color: P.ink, maxWidth: 400 }); }
+      else if (p.type === 'stat') { card(300, 200, 36); ctx.text(Y, p.text, 0, 20, { family: 'num', weight: 900, size: 92, color: P.acc, dir: 'ltr' }); ctx.text(Y, 'هالأسبوع', 0, 74, { family: 'body', weight: 700, size: 28, color: P.mut }); }
+      else if (p.type === 'toggle') { card(420, 120, 36); const on = at(t, o.s + 1.4, o.s + 1.7, 'cubicInOut'); Y.fillStyle = on > 0.5 ? P.acc : P.mut; Y.beginPath(); Y.roundRect(-180, -30, 110, 60, 30); Y.fill(); Y.fillStyle = '#fff'; Y.beginPath(); Y.arc(-150 + 50 * on, 0, 24, 0, 6.2832); Y.fill(); ctx.text(Y, p.text, 170, 12, { family: 'body', weight: 700, size: 36, align: 'right', color: P.ink, maxWidth: 300 }); }
+      else if (p.type === 'chat') { shd(Y, 40, 18, 0.22); Y.fillStyle = P.acc; Y.beginPath(); Y.roundRect(-210, -60, 420, 120, [60, 60, 60, 12]); Y.fill(); noShd(Y); ctx.text(Y, p.text, 0, 14, { family: 'body', weight: 700, size: 42, color: P.onAcc || '#fff', maxWidth: 360 }); }
+      else if (p.type === 'spark') { card(380, 210, 36); ctx.text(Y, p.text, 150, -50, { family: 'body', weight: 700, size: 30, align: 'right', color: P.mut }); const pts = [0, .2, .15, .45, .38, .7, 1].map((v, j) => [-150 + j * 50, 70 - v * 100]); ctx.drawPath(Y, pts, at(t, o.s + 0.9 + i * 0.1, o.s + 1.8 + i * 0.1, 'cubicInOut'), { width: 9, color: P.acc, cap: 'round' }); }
+      else { card(470, 130, 36); Y.fillStyle = P.acc; Y.beginPath(); Y.arc(170, 0, 36, 0, 6.2832); Y.fill(); ctx.text(Y, p.text, 110, 0, { family: 'body', weight: 700, size: 38, align: 'right', color: P.ink, maxWidth: 300 }); ctx.text(Y, 'الحين', 110, 42, { family: 'body', weight: 400, size: 26, align: 'right', color: P.mut }); }
+      Y.restore(); };
+    const ord = PN.map((p, i) => [p, i]).sort((a, b) => a[0].z - b[0].z), backs = ord.filter(([p]) => p.z < 1), fronts = ord.filter(([p]) => p.z >= 1);
+    if (PM) {
+      X.save(); zoomAt(X, [540, 900], 1 + 0.05 * push * k); if (k > 0.01) X.filter = `blur(${(14 * k).toFixed(1)}px)`; if (o.video) o.video(X); X.restore();
+      X.fillStyle = darker(P.ink, P.bg); X.globalAlpha = pick(o, 'dim', 0.55) * k; X.fillRect(0, 0, 1080, 1920); X.globalAlpha = 1;
+      backs.forEach(([p, i]) => panel(X, p, i));
+      X.save(); zoomAt(X, [540, 1200], 1 + 0.03 * push * k); shd(X, 60 * k, 0, 0.35 * k); o.person(X); X.restore(); noShd(X);
+    } else { if (o.video) o.video(X); backs.forEach(([p, i]) => panel(X, Object.assign({}, p, { z: 1 + (1 - p.z) * 0.3 }), i)); }
+    fronts.forEach(([p, i]) => panel(X, p, i));
+  };
+
+  /* 54 كسر الإطار — المتحدث داخل كرت، وراسه يطلع برّا حافته (والكلمة ورا راسه). يحتاج قصّ (ماك) — بلاه: كرت عادي بلا طلعة.
+     o: {s, out, person, video, text (كلمة كبيرة ورا الراس، اختياري), R={x,y,w,h}} */
+  FX.frameBreak = (ctx, t, o) => {
+    const { X, P, at } = ctx, k = kIO(ctx, t, o, 0.8), PM = hasP(o), R0 = o.R || { x: 140, y: 420, w: 800, h: 1240 };
+    const pop = PM ? at(t, o.s + 0.75, o.s + 1.55, 'expoOut') * (o.out != null ? 1 - at(t, o.out - 0.45, o.out) : 1) : 0;
+    const sc0 = Math.max(R0.w / 1080, R0.h / 1920), my = y => R0.y + R0.h * 0.34 + (y - 1920 * 0.34) * sc0;   // من إحداثيات الفيديو لداخل الكرت
+    const bb = PM ? pbox(o) : null, top = bb ? cl(my(bb.y0 + 0.37 * (bb.y1 - bb.y0)), R0.y, R0.y + R0.h - 380) : R0.y;
+    const ct = lerp(R0.y, top, pop), M = lerpR(FULL, R0, k), C = lerpR(FULL, { x: R0.x, y: ct, w: R0.w, h: R0.y + R0.h - ct }, k), rad = 44 * k, bw = 16 * k;
+    X.fillStyle = P.bg; X.fillRect(0, 0, 1080, 1920); paperFill(X, 0, 0, 1080, 1920, 0.1 * k);
+    if (o.text !== null) { const a = at(t, o.s + 0.9, o.s + 1.4, 'expoOut'); ctx.text(X, o.text || 'برّا الصندوق', 540, (bb ? my(bb.y0) - 10 : 330) + 60 * (1 - a), { family: 'display', size: 210, color: P.acc, alpha: a * k, maxWidth: 1000 }); }
+    X.save(); shd(X, 70 * k, 30 * k, 0.32 * k); X.fillStyle = '#FFFFFF'; X.beginPath(); X.roundRect(C.x - bw, C.y - bw, C.w + 2 * bw, C.h + 2 * bw, rad + bw); X.fill(); X.restore(); noShd(X);
+    const map = Y => { const sc = Math.max(M.w / 1080, M.h / 1920); Y.translate(M.x + M.w / 2, M.y + M.h * 0.34); Y.scale(sc, sc); Y.translate(-540, -1920 * 0.34); };
+    X.save(); X.beginPath(); X.roundRect(C.x, C.y, C.w, C.h, rad); X.clip(); map(X); if (o.video) o.video(X); X.restore();
+    if (PM && pop > ON && k > 0.98) {   // الراس برّا: نفس تأطير الكرت بالضبط (المتحدث وحده)، يكبر 5% لقدّام — الحافة البيضا تغطي اللحمة
+      X.save(); X.beginPath(); X.rect(C.x - 160, 0, C.w + 320, C.y + 2); X.clip(); shd(X, 40, 16, 0.3 * pop);
+      const cx = 540, cy = C.y + 10, z = 1 + 0.05 * pop; X.translate(cx, cy); X.scale(z, z); X.translate(-cx, -cy); map(X); X.globalAlpha = cl(pop * 1.6); o.person(X); X.restore(); noShd(X);
+    }
+  };
+
+  /* 55 جدار العناوين — ورا المتحدث لوحة، والعناوين ورق ينلزق وحدة وحدة (دبوس وخيط بينهم). يحتاج قصّ (ماك) — بلاه: الفيديو صورة ملزوقة تحت.
+     o: {s, out, person, video, items:[...عناوين], every=.42} */
+  FX.headlineWall = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 0.7), N = o.items || ['الذكاء الاصطناعي يغيّر كل شي', 'وظايف بتختفي', 'أداة جديدة كل يوم', 'المحتوى صار أسهل', 'بس الفكرة؟', 'لسا عندك'], ev = o.every || 0.42;
+    const POS = [[380, 300, -4], [740, 440, 3], [330, 620, 2.5], [770, 780, -3], [560, 200, 1.5], [300, 940, -2], [800, 1080, 4], [520, 1200, -3]];
+    const land = i => o.s + 0.55 + i * ev;
+    let shake = 0; N.forEach((_, i) => { const d = t - land(i) - 0.22; if (d > 0 && d < 0.3) shake += (1 - d / 0.3) * 6; });
+    const bg = Y => { Y.fillStyle = P.bg; Y.fillRect(0, 0, 1080, 1920); Y.fillStyle = darker(P.ink, P.bg); Y.globalAlpha = 0.06; Y.fillRect(0, 0, 1080, 1920); Y.globalAlpha = 1; paperFill(Y, 0, 0, 1080, 1920, 0.22); };
+    const notes = Y => {
+      const pins = [];
+      N.forEach((s, i) => { const p = POS[i % POS.length], d = t - land(i); if (d < -0.25) return; const kk = E.cubicIn(cl((d + 0.25) / 0.25)), settle = d > 0 ? 1 + 0.04 * Math.sin(d * 30) * Math.exp(-d * 9) : 1;
+        const sc = lerp(1.6, 1, kk) * settle, al = cl(kk * 1.5);
+        Y.save(); Y.translate(p[0], p[1]); Y.rotate((p[2] + (1 - kk) * 8) * Math.PI / 180); Y.scale(sc, sc); Y.globalAlpha = al;
+        Y.font = ctx.font('display', 400, 58); const w = Math.min(500, Y.measureText(s).width) + 70, h = 120;
+        shd(Y, lerp(60, 14, kk), lerp(40, 8, kk), 0.3); Y.fillStyle = i % 4 === 3 ? P.acc : '#FBF7EE'; tornRect(Y, -w / 2, -h / 2, w, h, i * 13 + 5, 9); Y.fill(); noShd(Y);
+        Y.save(); Y.clip(); paperFill(Y, -w / 2, -h / 2, w, h, 0.25); Y.restore();
+        ctx.text(Y, s, 0, 20, { family: 'display', size: 58, color: i % 4 === 3 ? (P.onAcc || '#fff') : '#1B1A17', maxWidth: 500 });
+        Y.restore(); if (d > 0) pins.push([p[0], p[1] - 52 * sc, i]); });
+      if (pins.length > 1) { Y.save(); Y.strokeStyle = P.acc; Y.lineWidth = 4; Y.globalAlpha = 0.8; for (let j = 1; j < pins.length; j++) { const a = pins[j - 1], b = pins[j], kq = at(t, land(b[2]) + 0.05, land(b[2]) + 0.35, 'cubicOut');
+        if (kq <= 0) continue; Y.beginPath(); Y.moveTo(a[0], a[1]); const mx = lerp(a[0], b[0], 0.5), my = Math.max(a[1], b[1]) + 60; Y.quadraticCurveTo(mx, my, lerp(a[0], b[0], kq), lerp(a[1], b[1], kq)); Y.stroke(); } Y.restore(); }
+      pins.forEach(([x, y]) => { Y.fillStyle = P.ink; Y.beginPath(); Y.arc(x, y, 13, 0, 6.2832); Y.fill(); Y.fillStyle = 'rgba(255,255,255,.5)'; Y.beginPath(); Y.arc(x - 4, y - 4, 4, 0, 6.2832); Y.fill(); });
+    };
+    X.save(); X.translate(shake * ctx.noise1(t * 40, 1), shake * ctx.noise1(t * 40, 2));
+    stage(ctx, t, o, k, bg, { s: 0.82, y: 0 }, { x: 250, y: 1060, w: 580, h: 640 }, notes, 18);
+    X.restore();
+  };
+
+  /* 56 رسومات ترجف — دايرة وسهم ونجوم بخط اليد حول المتحدث، الخط «يغلي» (يترسم من جديد كل 5 فريمات). بالقصّ: الدايرة تلف ورا راسه. بلاه: كلها فوق.
+     o: {s, out, person, video, text='شوف!', head:[x,y] (مركز الراس، تلقائي من القصّ), color=P.acc, fps=12} */
+  FX.doodleBoil = (ctx, t, o) => {
+    const { X, P, at } = ctx, PM = hasP(o), hold = Math.floor(t * (o.fps || 12)), col = o.color || '#FFFFFF', ink = o.ink || P.acc;
+    const fade = o.out != null ? 1 - at(t, o.out, o.out + 0.3) : 1; if (o.video) o.video(X);
+    let hx = 540, hy = 760, hr = 230;
+    if (o.head) [hx, hy] = o.head; else if (PM) { const bb = pbox(o); if (bb) { hr = cl((bb.y1 - bb.y0) * 0.135, 150, 250); hy = bb.y0 + hr * 1.0; hx = bb.cx; } }
+    const J = (i, a) => (h2(hold, i) - 0.5) * 2 * (a || 4.5);
+    const ring = (from, to, seg) => { const pts = []; for (let i = 0; i <= 26; i++) { const a = lerp(from, to, i / 26), rr = hr * (1 + 0.06 * Math.sin(i * 1.7)); pts.push([hx + Math.cos(a) * rr * 1.08 + J(i + seg), hy + Math.sin(a) * rr * 1.18 + J(i + seg + 50)]); } return pts; };
+    const kr = at(t, o.s, o.s + 0.7, 'cubicInOut'), ka = at(t, o.s + 0.6, o.s + 1.1, 'cubicOut'), kt = at(t, o.s + 1.0, o.s + 1.3, 'backOut');
+    const st = (pts, k, w, c) => { if (k > 0) ctx.drawPath(X, pts, k, { width: (w || 14) + J(99, 1.5), color: c || col, cap: 'round' }); };
+    X.save(); X.globalAlpha = fade;
+    // الدايرة: النص اللي فوق الراس ورا الجسم (لو فيه قصّ)
+    const A0 = -2.3, A1 = A0 + 6.2832 * 1.06, split = 3.6;   // 0..split خلف (تحت الذقن والجوانب)، الباقي قدام
+    if (PM) { st(ring(A0, A1, 0), kr, 15); X.restore(); X.save(); X.globalAlpha = fade; o.person(X);
+      X.save(); X.beginPath(); X.rect(0, 0, 1080, hy - hr * 0.35); X.clip(); st(ring(A0, A1, 0), kr, 15); X.restore(); }
+    else st(ring(A0, A1, 0), kr, 15);
+    // سهم من الكلمة للراس
+    const ax0 = Math.min(hx + hr * 1.75, 800), ay0 = Math.max(hy - hr * 1.5, 330), ax1 = hx + hr * 1.15, ay1 = hy - hr * 0.55, mx = (ax0 + ax1) / 2 + 60, my = (ay0 + ay1) / 2 + 10;
+    const arrow = []; for (let i = 0; i <= 10; i++) { const u = i / 10; arrow.push([(1 - u) * (1 - u) * ax0 + 2 * u * (1 - u) * mx + u * u * ax1 + J(i + 200, 3), (1 - u) * (1 - u) * ay0 + 2 * u * (1 - u) * my + u * u * ay1 + J(i + 230, 3)]); }
+    st(arrow, ka, 13, ink); if (ka > 0.98) { const ang = Math.atan2(ay1 - my, ax1 - mx); [0.55, -0.55].forEach((d, j) => ctx.drawPath(X, [[ax1 + J(300 + j), ay1 + J(310 + j)], [ax1 - Math.cos(ang + d) * 52 + J(320 + j), ay1 - Math.sin(ang + d) * 52 + J(330 + j)]], 1, { width: 13, color: ink, cap: 'round', smooth: false })); }
+    // نجوم وخطوط تعجب
+    [[hx - hr * 1.5, hy - hr * 1.1, 1.0], [hx + hr * 1.55, hy + hr * 0.45, 0.8], [hx - hr * 1.25, hy + hr * 0.9, 0.6]].forEach(([sx, sy, s], j) => {
+      const kk = at(t, o.s + 0.8 + j * 0.15, o.s + 1.15 + j * 0.15, 'cubicOut'); if (kk <= 0) return; const pts = [];
+      for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI * 0.8, rr = 46 * s; pts.push([sx + Math.cos(a) * rr + J(400 + j * 20 + i, 2.5), sy + Math.sin(a) * rr + J(450 + j * 20 + i, 2.5)]); }
+      ctx.drawPath(X, pts, kk, { width: 8, color: j === 1 ? ink : col, cap: 'round', smooth: false }); });
+    for (let j = 0; j < 3; j++) { const kk = at(t, o.s + 1.2 + j * 0.06, o.s + 1.4 + j * 0.06); if (kk <= 0) continue; const a = -2.4 + j * 0.42, r0 = hr * 1.35, r1 = hr * 1.6;
+      ctx.drawPath(X, [[hx + Math.cos(a) * r0 + J(500 + j), hy + Math.sin(a) * r0 * 1.15 + J(510 + j)], [hx + Math.cos(a) * r1 + J(520 + j), hy + Math.sin(a) * r1 * 1.15 + J(530 + j)]], kk, { width: 9, color: col, cap: 'round', smooth: false }); }
+    // الكلمة: بخط عريض وترجف معها (الكلمة كاملة بنداء واحد)
+    if (kt > ON) { X.save(); X.translate(Math.min(ax0, 760) + J(600, 2), ay0 - 40 + J(601, 2)); X.rotate(-0.12 + J(602, 0.02)); X.scale(kt, kt);
+      ctx.text(X, o.text || 'شوف!', 0, 0, { family: 'display', size: 130, color: col, stroke: { width: 18, color: ink }, maxWidth: 420 }); ctx.text(X, o.text || 'شوف!', 0, 0, { family: 'display', size: 130, color: col, maxWidth: 420 }); X.restore(); }
+    X.restore();
+  };
+
+  /* 57 غلاف مجلة — المتحدث يصير غلاف مجلة: اسم المجلة ورا راسه، سطر العدد، عناوين الغلاف وباركود. بالقصّ: الراس يغطي الاسم. بلاه: الاسم فوق الفيديو.
+     o: {s, out, person, video, title='مكينة', issue='العدد 61 · أكتوبر 2026', lines:[[رقم/كلمة كبيرة, سطر]], big='السر بالبداية', bg=P.acc} */
+  FX.coverStory = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 0.45), PM = hasP(o), title = o.title || 'مكينة', zoom = 1 + 0.05 * at(t, o.s, o.s + 5, 'sineInOut');
+    const L = o.lines || [['5', 'أدوات تختصر شغل أسبوع'], ['حصري', 'شلون أصوّر بالجوال'], ['ليش', 'أول 3 ثواني أهم شي']];
+    const ka = i => at(t, o.s + 0.35 + i * 0.12, o.s + 0.85 + i * 0.12, 'expoOut') * (o.out != null ? 1 - at(t, o.out - 0.3, o.out) : 1);
+    const bgc = o.bg || P.bg, fg = lum(bgc) > 150 ? '#1B1A17' : '#FFFFFF', tc = o.titleColor || (lum(bgc) > 150 ? P.acc : '#FFFFFF');
+    const flash = Math.max(0, 1 - Math.abs(t - o.s - 0.22) / 0.12);
+    if (k < 0.999 && o.video) o.video(X);
+    if (k > 0.001) {
+      X.save(); X.globalAlpha = k; zoomAt(X, [540, 960], zoom);
+      if (PM) { X.fillStyle = bgc; X.fillRect(-60, -60, 1200, 2040); const g = X.createRadialGradient(540, 760, 100, 540, 900, 1100); g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(0,0,0,.18)'); X.fillStyle = g; X.fillRect(-60, -60, 1200, 2040); }
+      else if (o.video) o.video(X);
+      const sh = PM ? { blur: 18, y: 0, color: bgc } : { blur: 18, y: 4, color: 'rgba(0,0,0,.45)' }, cf = PM ? fg : '#FFFFFF';
+      const km = ka(0); X.save(); X.translate(0, -120 * (1 - km)); X.globalAlpha *= cl(km * 1.3);
+      X.font = ctx.font('display', 400, 300); const tw = X.measureText(title).width, sx = Math.min(1.25, 940 / tw);
+      ctx.text(X, title, 540, 410, { family: 'display', size: 300, color: PM ? tc : '#FFFFFF', scaleX: sx, shadow: PM ? null : { blur: 30, y: 8, color: 'rgba(0,0,0,.35)' } }); X.restore();
+      const ki = ka(1); X.save(); X.globalAlpha *= ki; X.fillStyle = cf; X.fillRect(140, 452, 800 * ki, 4);
+      ctx.text(X, o.issue || 'العدد 61 · أكتوبر 2026', 940, 500, { family: 'body', weight: 700, size: 32, align: 'right', color: cf, shadow: sh }); X.restore();
+      X.restore();
+      if (PM) { X.save(); X.globalAlpha = k; zoomAt(X, [540, 960], zoom); placeP(X, { s: 1.06, y: -40 }); shd(X, 40, 10, 0.3); o.person(X); X.restore(); noShd(X); }
+      L.forEach((ln, i) => { const kk = ka(2 + i); if (kk <= 0) return; const right = i % 2 === 0, x = right ? 940 : 140, y = 680 + i * 210;
+        X.save(); X.globalAlpha = k * kk; X.translate((right ? 1 : -1) * 80 * (1 - kk), 0);
+        ctx.text(X, ln[0], x, y, { family: 'display', size: 120, align: right ? 'right' : 'left', color: i === 0 ? P.acc : cf, shadow: sh, dir: 'rtl' });
+        ctx.text(X, ln[1], x, y + 62, { family: 'body', weight: 700, size: 36, align: right ? 'right' : 'left', color: cf, shadow: sh, maxWidth: 330, dir: 'rtl' }); X.restore(); });
+      const kb = ka(2 + L.length); if (kb > 0) { X.save(); X.globalAlpha = k * kb; X.fillStyle = P.acc; X.fillRect(120, 1330, 840, 150); ctx.text(X, o.big || 'السر بالبداية', 540, 1432, { family: 'display', size: 96, color: P.onAcc || '#fff', maxWidth: 800 }); X.restore();
+        X.save(); X.globalAlpha = k * kb; X.fillStyle = '#FFFFFF'; X.fillRect(150, 1500, 150, 90); X.fillStyle = '#111'; for (let i = 0; i < 26; i++) if (h2(i, 61) > 0.35) X.fillRect(160 + i * 5, 1508, h2(i, 62) > 0.6 ? 4 : 2, 62); X.restore(); }
+      // لمعة ورق
+      const sp = pr(t, o.s + 1.6, o.s + 2.4); if (sp > 0 && sp < 1) { X.save(); const sx2 = 1300 - 1800 * sp, g = X.createLinearGradient(sx2 - 200, 0, sx2 + 200, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = g; X.fillRect(0, 0, 1080, 1920); X.restore(); }
+    }
+    if (flash > 0) { X.fillStyle = '#FFFFFF'; X.globalAlpha = 0.85 * flash; X.fillRect(0, 0, 1080, 1920); X.globalAlpha = 1; }
+  };
+
+  /* 58 كلام زجاجي — كلمة كبيرة من زجاج مثلّج تكسر اللي وراها (غباش + انكسار + حافة ضوء)، ولوحة زجاج تحتها بسطر. ما يحتاج قصّ.
+     o: {s, out, draw (اللي ورا الزجاج — MV.video), text='الفكرة', sub, y=820, size=300, panel=true} */
+  FX.glassType = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, y = pick(o, 'y', 1180), size = o.size || 300, txt = o.text || 'الفكرة';
+    const out = o.out != null ? at(t, o.out, o.out + 0.5, 'expoIn') : 0, kw = at(t, o.s, o.s + 0.9, 'expoOut') * (1 - out), kp = at(t, o.s + 0.45, o.s + 1.2, 'expoOut') * (1 - out);
+    const base = snap(X, 'glass0', Y => o.draw(Y));   // يرسم الخلفية على X ويلقطها
+    if (kw <= 0.001 && kp <= 0.001) return;
+    const frosted = (Y, blur, z, cx, cy, br) => { Y.save(); Y.filter = `blur(${blur.toFixed(1)}px) brightness(${br || 1.18}) saturate(1.35)`; Y.translate(cx, cy); Y.scale(z, z); Y.translate(-cx, -cy); blit(Y, base, 0, 0, 1080, 1920, 0, 0, 1080, 1920); Y.restore(); };
+    const sweep = pr(t, o.s + 1.0, o.s + 2.0), sx = 1300 - 1700 * E.cubicInOut(sweep);
+    if (kw > 0.001) {
+      const { c, Y } = offC(X, 'glassT'), yy = y + 60 * (1 - kw), sc = lerp(0.92, 1, kw);
+      Y.save(); Y.translate(540, yy - size * 0.35); Y.scale(sc, sc); Y.translate(-540, -(yy - size * 0.35)); ctx.text(Y, txt, 540, yy, { family: 'display', size, color: '#FFFFFF', maxWidth: 980 }); Y.restore();
+      Y.save(); Y.globalCompositeOperation = 'source-in'; frosted(Y, lerp(26, 7, kw), 1.08, 540, yy - size * 0.35, 1.3); Y.restore();
+      Y.save(); Y.globalCompositeOperation = 'source-atop'; Y.fillStyle = 'rgba(255,255,255,.16)'; Y.fillRect(0, 0, 1080, 1920);
+      const g = Y.createLinearGradient(sx - 140, 0, sx + 140, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); Y.fillStyle = g; Y.fillRect(0, 0, 1080, 1920); Y.restore();
+      X.save(); shd(X, 40, 18, 0.3 * kw); X.globalAlpha = cl(kw * 1.4); putC(X, c); X.restore(); noShd(X);
+      X.save(); X.globalAlpha = 0.7 * kw; X.translate(540, yy - size * 0.35); X.scale(sc, sc); X.translate(-540, -(yy - size * 0.35));
+      const eg = X.createLinearGradient(0, yy - size, 0, yy + size * 0.2); eg.addColorStop(0, 'rgba(255,255,255,.95)'); eg.addColorStop(1, 'rgba(255,255,255,.15)');
+      ctx.text(X, txt, 540, yy, { family: 'display', size, color: null, stroke: { width: 4, color: eg }, maxWidth: 980 }); X.restore();
+    }
+    if (o.panel !== false && kp > 0.001) {
+      const pw = 900, ph = 200, px = 90, py = y + 120 + 120 * (1 - kp);
+      X.save(); X.globalAlpha = cl(kp * 1.3); shd(X, 50, 20, 0.25); X.fillStyle = 'rgba(255,255,255,.08)'; X.beginPath(); X.roundRect(px, py, pw, ph, 46); X.fill(); noShd(X);
+      X.save(); X.beginPath(); X.roundRect(px, py, pw, ph, 46); X.clip(); frosted(X, 22, 1.12, 540, py + ph / 2, 1.12); X.fillStyle = 'rgba(255,255,255,.16)'; X.fillRect(px, py, pw, ph); paperFill(X, px, py, pw, ph, 0.06);
+      const g = X.createLinearGradient(sx - 160, 0, sx + 160, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = g; X.fillRect(px, py, pw, ph); X.restore();
+      const bg2 = X.createLinearGradient(0, py, 0, py + ph); bg2.addColorStop(0, 'rgba(255,255,255,.75)'); bg2.addColorStop(1, 'rgba(255,255,255,.12)'); X.strokeStyle = bg2; X.lineWidth = 2.5; X.beginPath(); X.roundRect(px + 1, py + 1, pw - 2, ph - 2, 45); X.stroke();
+      ctx.text(X, o.sub || 'تشوف من خلالها كل شي', 540, py + ph / 2 + 24, { family: 'body', weight: 700, size: 62, color: '#FFFFFF', maxWidth: pw - 100, shadow: { blur: 14, y: 3, color: 'rgba(0,0,0,.35)' } });
+      X.restore();
+    }
+  };
+
+  /* 59 الفيديو داخل الجوال — فيديو المتحدث يصغر لين يصير شاشة جوال، والجوال يتمايل بمنظور ثلاثي. ما يحتاج قصّ.
+     o: {s, out, video, title (كلمة ورا الجوال), handle, tilt=.32 (راديان), ui=true} */
+  FX.phoneMockup = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 1.0), dk = darker(P.ink, P.bg);
+    const S = { x: 540 - 250, y: 300, w: 500, h: 1080 }, bez = 26, body = { x: S.x - bez, y: S.y - bez, w: S.w + 2 * bez, h: S.h + 2 * bez };
+    const r = lerpR(FULL, S, k), rad = 64 * k;
+    X.fillStyle = P.bg; X.fillRect(0, 0, 1080, 1920);
+    const g = X.createRadialGradient(540, 860, 50, 540, 860, 900); g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); X.fillStyle = g; X.fillRect(0, 0, 1080, 1920);
+    const kt = at(t, o.s + 0.7, o.s + 1.3, 'expoOut');
+    if (o.title !== null) ctx.text(X, o.title || 'من جوالك', 540, 1620 - 40 * (1 - kt), { family: 'display', size: 120, color: P.ink, alpha: kt * k, maxWidth: 900 });
+    const drawPhone = (Y, rr, kb) => {
+      if (kb > 0.001) { Y.save(); Y.globalAlpha = kb; const b = { x: rr.x - bez * kb, y: rr.y - bez * kb, w: rr.w + 2 * bez * kb, h: rr.h + 2 * bez * kb };
+        const bg = Y.createLinearGradient(b.x, 0, b.x + b.w, 0); bg.addColorStop(0, '#2A2A2C'); bg.addColorStop(0.5, '#111113'); bg.addColorStop(1, '#2A2A2C'); Y.fillStyle = bg; Y.beginPath(); Y.roundRect(b.x, b.y, b.w, b.h, rad + bez * kb); Y.fill();
+        Y.strokeStyle = 'rgba(255,255,255,.18)'; Y.lineWidth = 3; Y.stroke(); Y.restore(); }
+      vidIn(Y, o, rr, rad);
+      if (o.ui !== false && kb > 0.5) { const a = cl((kb - 0.5) * 2); Y.save(); Y.globalAlpha = a; Y.fillStyle = '#000'; Y.beginPath(); Y.roundRect(rr.x + rr.w / 2 - 70, rr.y + 18, 140, 40, 20); Y.fill();
+        ['♥', '✉', '➤'].forEach((ic, i) => ctx.text(Y, ic, rr.x + rr.w - 46, rr.y + rr.h - 360 + i * 100, { family: 'num', weight: 700, size: 46, color: '#fff', dir: 'ltr', shadow: { blur: 8, y: 2, color: 'rgba(0,0,0,.4)' } }));
+        ctx.text(Y, o.handle || '@you', rr.x + 36, rr.y + rr.h - 70, { family: 'num', weight: 800, size: 30, color: '#fff', dir: 'ltr', align: 'left', shadow: { blur: 8, y: 2, color: 'rgba(0,0,0,.5)' } });
+        Y.fillStyle = 'rgba(255,255,255,.85)'; Y.fillRect(rr.x + rr.w / 2 - 70, rr.y + rr.h - 22, 140, 6); Y.restore(); }
+    };
+    const kb = at(t, o.s + 0.55, o.s + 1.0, 'cubicOut'), tilt = (o.tilt == null ? 0.32 : o.tilt) * at(t, o.s + 0.9, o.s + 1.6, 'sineInOut');
+    const ang = tilt * Math.sin((t - o.s - 0.9) * 1.1) - tilt * 0.25, float = 14 * Math.sin((t - o.s) * 1.6) * kb;
+    // ظل تحت
+    if (k > 0.3) { X.save(); X.globalAlpha = 0.3 * k; X.fillStyle = dk; X.filter = 'blur(28px)'; X.beginPath(); X.ellipse(540, body.y + body.h + 70, 260 * (1 - 0.3 * Math.abs(Math.sin(ang))), 30, 0, 0, 6.2832); X.fill(); X.restore(); }
+    if (Math.abs(ang) < 0.003 || k < 0.999) { X.save(); X.translate(0, float); drawPhone(X, r, kb); X.restore(); return; }
+    // منظور: نرسم الجوال مسطّح بكانفس جانبي ونقسمه شرايح طولية بعمق
+    const { c: Sc, Y: PY } = offC(X, 'phone'); drawPhone(PY, r, kb);
+    const D = 1800, N = 70, x0 = body.x - 10, w0 = body.w + 20, cy0 = body.y + body.h / 2;
+    for (let i = 0; i < N; i++) { const pp = u => { const xl = (x0 + u * w0) - 540, z = xl * Math.sin(ang), f = D / (D + z); return [540 + xl * Math.cos(ang) * f, f]; };
+      const [a0, f0] = pp(i / N), [a1, f1] = pp((i + 1) / N), f = (f0 + f1) / 2, h = 1920 * f;
+      blit(X, Sc, x0 + i * w0 / N, 0, w0 / N, 1920, Math.min(a0, a1), cy0 + float - cy0 * f, Math.abs(a1 - a0) + 0.7, h); }
+  };
+
+  /* 60 قرين سكرين بالنص — مصدر كامل الشاشة (مقال، تغريدة، لقطة) يطلع كصفحة، يمشي ببطء، وقلم يحدد سطر، والمتحدث مقصوص قدامه تحت.
+     يحتاج قصّ (ماك) — بلاه: وجه المتحدث بفقاعة دائرية تحت. o: {s, out, person, video, source:(Y)=>{} (يرسم المصدر 1080×1920), mark:[x,y,w] (سطر يتحدد), scroll=140} */
+  FX.greenScreen = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, PM = hasP(o), kin = at(t, o.s, o.s + 0.75, 'expoOut'), kout = o.out != null ? at(t, o.out, o.out + 0.6, 'expoIn') : 0;
+    const scr = (o.scroll == null ? 140 : o.scroll) * at(t, o.s + 0.4, o.s + 4.5, 'sineInOut');
+    if (o.video) o.video(X);
+    const off = (1 - kin + kout) * 1920; if (off >= 1919) return;
+    X.save(); X.translate(0, off); shd(X, 70, -10, 0.35); X.fillStyle = '#FFFFFF'; X.beginPath(); X.roundRect(0, 0, 1080, 1920 + 80, 50 * (1 - kin)); X.fill(); noShd(X);
+    X.beginPath(); X.roundRect(0, 0, 1080, 1920 + 80, 50 * (1 - kin)); X.clip(); X.save(); X.translate(0, -scr); const z = 1 + 0.04 * at(t, o.s, o.s + 5, 'sineInOut'); zoomAt(X, [540, 700], z);
+    if (o.source) o.source(X); else { X.fillStyle = '#fff'; X.fillRect(0, 0, 1080, 2200); }
+    if (o.mark) { const [mx, my, mw] = o.mark, km = at(t, o.s + 1.0, o.s + 1.5, 'cubicInOut'); if (km > 0) { X.save(); X.globalCompositeOperation = 'multiply'; X.fillStyle = P.hi || P.acc; X.globalAlpha = 0.55; X.beginPath(); X.roundRect(mx + mw - mw * km, my - 50, mw * km, 76, 12); X.fill(); X.restore(); } }
+    X.restore(); X.restore();
+    const ka = at(t, o.s + 0.5, o.s + 1.0, 'backOut') * (1 - kout);
+    if (PM) { if (ka <= ON) return; X.save(); X.globalAlpha = cl(ka); X.translate(0, 300 * (1 - cl(ka))); placeP(X, { s: 0.6, x: -170, y: 0 }); shd(X, 40, 0, 0.45); o.person(X); X.restore(); noShd(X); }
+    else if (ka > ON) { const cx = 300, cy = 1380, rr = 200 * ka; X.save(); shd(X, 40, 14, 0.3); X.fillStyle = P.acc; X.beginPath(); X.arc(cx, cy, rr + 12, 0, 6.2832); X.fill(); noShd(X); X.beginPath(); X.arc(cx, cy, rr, 0, 6.2832); X.clip();
+      const sc = (2 * rr) / 760; X.translate(cx, cy); X.scale(sc, sc); X.translate(-540, -760); if (o.video) o.video(X); X.restore(); }
+  };
+
+  /* 61 قصاصة ورق — المتحدث مقصوص كأنه ملصق ورق: حافة بيضا ممزقة وملمس ورق وظل، ويتلصق بحركة ستوب موشن (12 فريم). يحتاج قصّ (ماك) — بلاه: الفيديو صورة ورق ممزقة.
+     o: {s, out, person, video, text (كلمة على ورقة ممزقة), fps=12, bg} */
+  FX.paperCut = (ctx, t, o) => {
+    const { X, P, at, E } = ctx, PM = hasP(o), fps = o.fps || 12, tq = Math.floor(t * fps) / fps, hold = Math.floor(t * fps);
+    const kin = at(tq, o.s, o.s + 0.45, 'backOut'), kout = o.out != null ? at(tq, o.out, o.out + 0.35, 'cubicIn') : 0, k = kin * (1 - kout);
+    const jit = (i, a) => (h2(hold, i) - 0.5) * 2 * a;
+    X.fillStyle = o.bg || P.bg; X.fillRect(0, 0, 1080, 1920); paperFill(X, 0, 0, 1080, 1920, 0.3);
+    // شرايح ورق ملونة ورا (تتلصق قبل)
+    [[P.acc, -8, 330, 0], [darker(P.ink, P.bg), 5, 1180, 1]].forEach(([c, rot, y, i]) => { const kk = at(tq, o.s - 0.2 + i * 0.12, o.s + 0.15 + i * 0.12, 'expoOut'); if (kk <= 0) return;
+      X.save(); X.translate(540 + (1 - kk) * (i ? -1200 : 1200), y); X.rotate((rot + jit(10 + i, 0.4)) * Math.PI / 180); shd(X, 20, 8, 0.2); X.fillStyle = c; tornRect(X, -700, -110, 1400, 220, 31 + i * 7, 18); X.fill(); noShd(X); X.clip(); paperFill(X, -700, -110, 1400, 220, 0.3); X.restore(); });
+    if (k <= ON) return;
+    const rot = lerp(-9, -2.2, kin) + jit(1, 0.5), sc = lerp(1.25, 1, kin) * (1 - 0.15 * kout), dx = jit(2, 3), dy = jit(3, 3);
+    X.save(); X.translate(540 + dx, 1000 + dy); X.rotate(rot * Math.PI / 180); X.scale(sc, sc); X.translate(-540, -1000);
+    if (PM) {
+      const pl = { s: 0.84, y: -40 };
+      const A = offC(X, 'pcA'); A.Y.save(); placeP(A.Y, pl); o.person(A.Y); A.Y.restore();
+      const B = offC(X, 'pcB'); B.Y.save(); B.Y.setTransform(1, 0, 0, 1, 0, 0); const m = X.getTransform().a;
+      for (let i = 0; i < 28; i++) { const a = i * 6.2832 / 28, rr = (20 + 9 * h2(i, 77)) * m; B.Y.drawImage(A.c, Math.cos(a) * rr, Math.sin(a) * rr); }
+      B.Y.globalCompositeOperation = 'source-in'; B.Y.fillStyle = '#FBF8F1'; B.Y.fillRect(0, 0, B.c.width, B.c.height); B.Y.restore();
+      B.Y.save(); B.Y.globalCompositeOperation = 'source-atop'; paperFill(B.Y, -100, -100, 1300, 2100, 0.35); B.Y.restore();
+      X.save(); X.setTransform(1, 0, 0, 1, 0, 0); X.shadowColor = 'rgba(0,0,0,.32)'; X.shadowBlur = 30 * m; X.shadowOffsetY = 18 * m; X.shadowOffsetX = 6 * m; X.drawImage(B.c, 0, 0); X.restore();
+      putC(X, A.c);
+      X.save(); X.globalAlpha = 0.12; X.globalCompositeOperation = 'multiply'; putC(X, B.c); X.restore();
+    } else {
+      const R = { x: 200, y: 520, w: 680, h: 920 }; shd(X, 30, 18, 0.32); X.fillStyle = '#FBF8F1'; tornRect(X, R.x - 30, R.y - 30, R.w + 60, R.h + 60, 51, 22); X.fill(); noShd(X);
+      X.save(); X.clip(); paperFill(X, R.x - 40, R.y - 40, R.w + 80, R.h + 80, 0.3); X.restore(); vidIn(X, o, R, 0);
+    }
+    X.restore();
+    const ktx = at(tq, o.s + 0.45, o.s + 0.75, 'backOut') * (1 - kout);
+    if (o.text !== null && ktx > ON) { const s = o.text || 'قصّتي', size = 120; X.save(); X.translate(560 + jit(5, 2), 1460 + jit(6, 2)); X.rotate((3 + jit(7, 0.6)) * Math.PI / 180); X.scale(ktx, ktx);
+      X.font = ctx.font('display', 400, size); const w = Math.min(820, X.measureText(s).width) + 90, h = size * 1.35; shd(X, 18, 8, 0.25); X.fillStyle = P.acc; tornRect(X, -w / 2, -h / 2, w, h, 71, 14); X.fill(); noShd(X);
+      X.save(); X.clip(); paperFill(X, -w / 2, -h / 2, w, h, 0.3); X.restore();
+      ctx.text(X, s, 0, size * 0.36, { family: 'display', size, color: P.onAcc || '#fff', maxWidth: 800 });
+      X.fillStyle = 'rgba(240,232,214,.75)'; X.save(); X.rotate(-0.5); X.fillRect(-w / 2 - 30, -h / 2 + 10, 120, 40); X.restore(); X.restore(); }
+  };
+
   G.FX = FX;
 })();

@@ -28,3 +28,13 @@
 | 46، 47، 49 | بطاقة سعر · زر ينبض · حلقة نسبة | [magicui](https://github.com/magicuidesign/magicui): `number-ticker` · `pulsating-button` · `animated-circular-progress-bar` | MIT |
 | 48 | قبل وبعد | [sneas/img-comparison-slider](https://github.com/sneas/img-comparison-slider) | MIT |
 | 50 | أعمدة تكبر | [chartjs/Chart.js](https://github.com/chartjs/Chart.js) (أنيميشن الأعمدة الافتراضي: easeOutQuart) | MIT |
+
+### توسعة 51–61 (16 أكتوبر 2026) — حركات المتحدث المقصوص. المعاينات بنفس سلويت 1–50 المرسوم (قناعه معروف فيقوم مقام القصّ)
+
+| # | الحركة | المصدر | الرخصة |
+|---|---|---|---|
+| 51 | مدار | [iart-ai · camera-and-grids.md](https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md): «Orbit (3D)» | MIT |
+| 56 | رسومات ترجف | [rough-stuff/rough](https://github.com/rough-stuff/rough) (أسلوب الخط اليدوي؛ «الغليان» = إعادة رسم بضجيج ثابت كل 5 فريمات) | MIT |
+| 58 | كلام زجاجي | [MDN · backdrop-filter](https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter) (الفكرة: غباش اللي ورا العنصر) — مرسوم بالكانفس | CC-BY-SA (التوثيق) |
+| 52، 54، 55، 57، 59، 60، 61 | جدار الكنبة · كسر الإطار · جدار العناوين · غلاف مجلة · الفيديو داخل الجوال · قرين سكرين بالنص · قصاصة ورق | من البلقن نفسه: قصّ المتحدث (`11_behind_text.js` / `personmask.swift`)، ورق الكولاج (`13_collage.js`)، والجوال (`motion/device3d.html`) | MIT (البلقن) |
+| 53 | عالم الواجهات | من البلقن نفسه | MIT (البلقن) |

@@ -25,6 +25,7 @@ video{width:100%;height:100%;display:block;object-fit:cover}
 .n{position:absolute;top:10px;right:10px;background:var(--acc);color:#fff;font:900 21px Inter,sans-serif;min-width:42px;height:42px;border-radius:21px;display:grid;place-items:center;padding:0 10px}
 .badge{position:absolute;top:10px;left:10px;font-weight:700;font-size:14px;border-radius:12px;padding:4px 10px;color:#fff;display:none}
 .on .badge{display:block;background:var(--yes)} .off .badge{display:block;background:var(--no)}
+.mac{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-weight:700;font-size:12px;border-radius:10px;padding:3px 9px}
 h3{font-family:Lalezar,sans-serif;font-weight:400;font-size:24px;margin:10px 4px 0}
 h3 small{font-family:'IBM Plex Sans Arabic';font-size:13px;color:var(--mut)}
 .c p{margin:4px;font-size:14.5px;line-height:1.6}
@@ -59,7 +60,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 function card(m) {
   const src = m.source.url ? `المصدر: <a href="${esc(m.source.url)}" target="_blank" rel="noopener">${esc(m.source.label)}</a>` : `المصدر: ${esc(m.source.label)}`;
   const el = document.createElement('article'); el.className = 'c'; el.dataset.id = m.id;
-  el.innerHTML = `<div class="v"><video src="${esc(m.preview)}" autoplay muted loop playsinline preload="metadata"></video><b class="n">${m.n}</b><span class="badge"></span></div>
+  el.innerHTML = `<div class="v"><video src="${esc(m.preview)}" autoplay muted loop playsinline preload="metadata"></video><b class="n">${m.n}</b><span class="badge"></span>${m.mac ? '<span class="mac">ماك</span>' : ''}</div>
     <h3>${esc(m.name)} <small>${esc(m.sub)}</small></h3><p>${esc(m.desc)}</p><p class="s">${src}</p>
     <div class="btns"><button class="yes">أبي ✓</button><button class="no">لا ✗</button></div>`;
   el.querySelector('.yes').onclick = () => set(m.id, state[m.id] === 'on' ? null : 'on');

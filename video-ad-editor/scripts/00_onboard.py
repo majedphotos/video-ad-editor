@@ -97,11 +97,11 @@ def ensure_previews(moves_dir):
     """ملف البلقن (رفع تطبيق كلود، حد 200 ملف) يحمل المعاينات zip واحد — نفكّه أول مرة."""
     import zipfile
     d, z = moves_dir / "previews", moves_dir / "previews.zip"
-    if z.exists() and not any(d.glob("*.mp4")):
+    if z.exists():                                        # يفك الناقص بس (تحديث البنك يضيف معاينات جديدة لمجلد مفكوك من قبل)
         d.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(z) as f:
             for n in f.namelist():
-                if n.endswith(".mp4") and "/" not in n.strip("/").replace("previews/", "", 1):
+                if n.endswith(".mp4") and "/" not in n.strip("/").replace("previews/", "", 1) and not (d / Path(n).name).exists():
                     (d / Path(n).name).write_bytes(f.read(n))
 
 

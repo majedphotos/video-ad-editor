@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent).",
+ "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent). mask: required (تحتاج قصّ الشخص — mac: true، والبديل بلا قصّ كرت فيديو) | optional (أحلى بالقصّ وتشتغل بلاه).",
  "moves": [
   {
    "n": 1,
@@ -1104,6 +1104,280 @@
     "number",
     "contrast"
    ]
+  },
+  {
+   "n": 51,
+   "id": "orbit",
+   "cat": "camera",
+   "name": "مدار",
+   "sub": "كاميرا تلف حوله",
+   "desc": "الكاميرا تلف حولك وكلماتك حلقة تدور: اللي ورا تمر خلفك واللي قدام تمر قدامك، والخلفية تلف بعمق. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "iart-ai/motion-design-skills · camera-and-grids.md (Orbit 3D)",
+    "url": "https://github.com/iart-ai/motion-design-skills/blob/main/skills/shot-composition/references/camera-and-grids.md"
+   },
+   "preview": "previews/51.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 3,
+   "families": [
+    "onetake",
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "hit"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 52,
+   "id": "couchWall",
+   "cat": "card",
+   "name": "جدار الكنبة",
+   "sub": "مشهد جديد وراك",
+   "desc": "تنقص من خلفيتك وتنحط بمشهد جديد: قاعد على كنبة ووراك جدار بوستاتك يطلع وحدة وحدة. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن (قصّ المتحدث 11_behind_text.js)",
+    "url": ""
+   },
+   "preview": "previews/52.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "reveal"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 53,
+   "id": "uiWorld",
+   "cat": "card",
+   "name": "عالم الواجهات",
+   "sub": "شاشات حولك بعمق",
+   "desc": "كروت تطبيق (بحث، رقم، زر، رسالة) تطفو حولك بأعماق مختلفة: اللي ورا مغبشة وراك، واللي قدام أكبر. أحلى بالقصّ (ماك)، وتشتغل بلاه.",
+   "source": {
+    "label": "من محرّك البلقن",
+    "url": ""
+   },
+   "preview": "previews/53.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "tech"
+   ],
+   "mask": "optional"
+  },
+  {
+   "n": 54,
+   "id": "frameBreak",
+   "cat": "card",
+   "name": "كسر الإطار",
+   "sub": "راسك يطلع برّا الكرت",
+   "desc": "أنت داخل كرت، وحافته تنزل لين راسك يطلع برّاه، والكلمة الكبيرة ورا راسك. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن (headout بريل الكلام)",
+    "url": ""
+   },
+   "preview": "previews/54.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "reveal"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 55,
+   "id": "headlineWall",
+   "cat": "card",
+   "name": "جدار العناوين",
+   "sub": "عناوين تنلزق وراك",
+   "desc": "لوحة وراك، والعناوين ورق ممزق ينلزق وحدة وحدة بدبوس وخيط بينهم، والكاميرا ترجف مع كل لزقة. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن (ورق الكولاج 13_collage.js)",
+    "url": ""
+   },
+   "preview": "previews/55.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "list",
+    "contrast"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 56,
+   "id": "doodleBoil",
+   "cat": "card",
+   "name": "رسومات ترجف",
+   "sub": "خط يد حولك",
+   "desc": "دايرة وسهم ونجوم بخط اليد ترتسم حولك، والخط يغلي (ينرسم من جديد 12 مرة بالثانية) مثل الرسوم المتحركة. أحلى بالقصّ (ماك)، وتشتغل بلاه.",
+   "source": {
+    "label": "rough-stuff/rough (أسلوب الرسم باليد)",
+    "url": "https://github.com/rough-stuff/rough"
+   },
+   "preview": "previews/56.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "calm"
+   ],
+   "cues": [
+    "emphasis",
+    "hit"
+   ],
+   "mask": "optional"
+  },
+  {
+   "n": 57,
+   "id": "coverStory",
+   "cat": "card",
+   "name": "غلاف مجلة",
+   "sub": "أنت على الغلاف",
+   "desc": "فلاش، وتصير غلاف مجلة: الاسم ورا راسك، سطر العدد، عناوين الغلاف والباركود. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن",
+    "url": ""
+   },
+   "preview": "previews/57.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "reveal"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 58,
+   "id": "glassType",
+   "cat": "text",
+   "name": "كلام زجاجي",
+   "sub": "زجاج مثلّج",
+   "desc": "كلمة كبيرة من زجاج مثلّج تكسر اللي وراها، ولوحة زجاج تحتها بسطر، ولمعة تعبرهم.",
+   "source": {
+    "label": "MDN · backdrop-filter (فكرة الزجاج المثلّج)",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter"
+   },
+   "preview": "previews/58.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "emphasis"
+   ]
+  },
+  {
+   "n": 59,
+   "id": "phoneMockup",
+   "cat": "camera",
+   "name": "الفيديو داخل الجوال",
+   "sub": "تصغر لشاشة جوال",
+   "desc": "فيديوك يصغر لين يصير شاشة جوال بواجهة ريلز، والجوال يتمايل بمنظور ثلاثي.",
+   "source": {
+    "label": "من محرّك البلقن (motion/device3d.html)",
+    "url": ""
+   },
+   "preview": "previews/59.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "cta"
+   ]
+  },
+  {
+   "n": 60,
+   "id": "greenScreen",
+   "cat": "card",
+   "name": "قرين سكرين بالنص",
+   "sub": "المصدر وراك",
+   "desc": "مقال أو لقطة تطلع ورقة كاملة وتمشي ببطء، وقلم يحدد السطر، وأنت مقصوص قدامها تحت. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن (قصّ المتحدث 11_behind_text.js)",
+    "url": ""
+   },
+   "preview": "previews/60.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "contrast"
+   ],
+   "mask": "required",
+   "mac": true
+  },
+  {
+   "n": 61,
+   "id": "paperCut",
+   "cat": "card",
+   "name": "قصاصة ورق",
+   "sub": "ملصق ورق ممزق",
+   "desc": "تصير ملصق ورق: حافة بيضا ممزقة وملمس ورق وظل، وتنلزق بحركة ستوب موشن 12 فريم. ماك بس (قصّ الشخص)؛ بلاه ترجع لكرت فيديو.",
+   "source": {
+    "label": "من محرّك البلقن (ورق الكولاج 13_collage.js)",
+    "url": ""
+   },
+   "preview": "previews/61.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "calm",
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "hit"
+   ],
+   "mask": "required",
+   "mac": true
   }
  ],
  "families": {

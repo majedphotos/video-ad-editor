@@ -6,6 +6,7 @@
    node 11_behind_text.js <work> stack 3:1-5     → «طبقات» لكلمات بعينها
    node 11_behind_text.js <work> cutout 23.8-26.6 → «واقف قدام اللوحة»: بلا كرت، أنت العنصر
    node 11_behind_text.js <work> headout 23.8-26.6 → «راسك برّا المستطيل»: الفيديو بكرت وراسك يطلع فوق حافته
+   node 11_behind_text.js <work> person 23.8-26.6 → قصّ بس (بلا تأثير): MV.person لحركات البنك 51–61 (مدار، كسر الإطار، غلاف مجلة…)
    node 11_behind_text.js <work> drop 9          → يشيل جملة وحدة (أو أكثر: drop 1 9) ويخلّي الباقي
    node 11_behind_text.js <work> off             → يلغي التأثير كله (الجُمل + cutout + headout)
 
@@ -28,7 +29,7 @@ function rebuildRanges(o){
   let nv=1e9; try{ nv=fs.readdirSync(W+'vfr').filter(f=>f.endsWith('.jpg')).length||1e9; }catch(e){}
   const fr=(a,b)=>[Math.max(1,Math.floor(a*FPS)+1), Math.min(nv,Math.ceil(b*FPS)+1)], rs=[];
   (o.lines||[]).forEach(l=>rs.push(fr(l.s,l.e)));
-  (o.cutouts||[]).concat(o.headouts||[]).forEach(c=>rs.push(fr(c[0],c[1])));
+  (o.cutouts||[]).concat(o.headouts||[],o.persons||[]).forEach(c=>rs.push(fr(c[0],c[1])));
   rs.sort((p,q)=>p[0]-q[0]); const out=[];
   for(const r of rs){ const z=out[out.length-1]; if(z&&r[0]<=z[1]+1) z[1]=Math.max(z[1],r[1]); else out.push(r.slice()); }
   o.ranges=out; return o; }
@@ -44,7 +45,7 @@ if(MODE==='drop'){
 }
 
 /* ── ماك فقط (مضاف): القصّ يعتمد على Vision عبر swiftc ── */
-if(['build','stack','cutout','headout'].indexOf(MODE)>=0){
+if(['build','stack','cutout','headout','person'].indexOf(MODE)>=0){
   let hasSwift=false;
   if(process.platform==='darwin'){
     try{ hasSwift = cp.spawnSync('swiftc',['--version'],{stdio:'ignore'}).status===0; }catch(e){ hasSwift=false; }
@@ -76,7 +77,7 @@ if(MODE==='plan'){
   process.exit(0);
 }
 
-if(MODE==='cutout'||MODE==='headout'){
+if(MODE==='cutout'||MODE==='headout'||MODE==='person'){
   /* «واقف قدام اللوحة»: نقصّ المتحدث بمدى زمني كامل، ونرسمه فوق التصميم بلا كرت */
   const m=String(process.argv[4]||'').match(/^([\d.]+)-([\d.]+)$/);
   if(!m){ console.log('عطني مدى بالثواني: cutout 23.8-26.6'); process.exit(2); }
@@ -101,7 +102,7 @@ if(MODE==='cutout'||MODE==='headout'){
     ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v][a]alphamerge,format=rgba"'+
     ' -start_number '+f0+' -y '+JSON.stringify(W+'bt/person/%05d.png'),{stdio:'pipe'});
   const prev=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):{lines:[],ranges:[],faces:{}};
-  const key=MODE==='headout'?'headouts':'cutouts';
+  const key=MODE==='headout'?'headouts':MODE==='person'?'persons':'cutouts';
   prev[key]=(prev[key]||[]).filter(c=>!(c[0]===a&&c[1]===b)).concat([[a,b]]);   /* نفس المدى مرتين = مرة وحدة */
   rebuildRanges(prev);
   const meta=JSON.parse(fs.readFileSync(W+'bt/mask/meta.json','utf8'));
@@ -119,11 +120,11 @@ if(MODE==='cutout'||MODE==='headout'){
     }catch(e){ console.log('⚠️ ما قدرت أحسب الحدود الثابتة (يحتاج PIL) — الكرت بيتبع الجسم بكل فريم'); }
   }
   fs.writeFileSync(W+'behind.json',JSON.stringify(prev,null,1));
-  console.log('✅ '+(MODE==='headout'?'«راسك برّا المستطيل»':'«واقف قدام اللوحة»')+' جاهز من',a,'إلى',b,'ثانية.');
+  console.log('✅ '+(MODE==='headout'?'«راسك برّا المستطيل»':MODE==='person'?'قصّ المتحدث (MV.person)':'«واقف قدام اللوحة»')+' جاهز من',a,'إلى',b,'ثانية.');
   console.log('   ارسم: node 04_render_frames.js '+W+' range '+a+' '+b);
   process.exit(0);
 }
-if(MODE!=='build'&&MODE!=='stack'){ console.log('الأوامر: plan · build · stack · cutout · headout · drop · off'); process.exit(2); }
+if(MODE!=='build'&&MODE!=='stack'){ console.log('الأوامر: plan · build · stack · cutout · headout · person · drop · off'); process.exit(2); }
 /* «2» = الجملة كاملة · «2:6-8» = الكلمات 6→8 داخل الجملة 2 */
 const pick=process.argv.slice(4).map(a=>{
   const m=String(a).match(/^(\d+)(?::(\d+)-(\d+))?$/); if(!m) return null;

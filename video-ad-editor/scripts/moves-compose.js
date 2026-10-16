@@ -8,6 +8,7 @@
    الخط: كل العائلات (display/body/num) = خط الثيم؛ display بوزن 800 على الأقل عشان يطلع عريض مثل Lalezar.
    أدوات compose:
      MV.video(Y, R?)        يرسم فريم الفيديو الحالي على Y بمستطيل R (افتراضي ملء الشاشة) — للانتقالات وpushIn
+     MV.person(Y, R?)       المتحدث مقصوص لهالفريم (ماك: 11_behind_text.js person) — MV.person.ok() يقول موجود ولا
      MV.panel(Y, fn?)       يعبّي Y بلون الخلفية ثم fn(Y) — مشهد B جاهز للانتقال
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
@@ -236,6 +237,16 @@
     const fa = typeof FACE_ANCH === 'number' ? FACE_ANCH : 0.3;
     Y.drawImage(VF, (sw - cw) / 2, (shh - ch) * fa, cw, ch, R.x, R.y, R.w, R.h);
   }
+  /* المتحدث مقصوص (ماك): صورة bt/person لهالفريم بنفس تأطير MV.video — للحركات 51–61. مرّره كما هو: person: MV.person
+     يجهّزه: node 11_behind_text.js <work> person <من-إلى>. بلاه MV.person.ok() = false والحركة ترجع لبديلها (كرت فيديو). */
+  function person(Y, R) {
+    if (!person.ok()) return false;
+    const PI = document.getElementById('PRS'); R = R || { x: 0, y: 0, w: 1080, h: 1920 };
+    const sw = PI.naturalWidth, shh = PI.naturalHeight, sc = Math.max(R.w / sw, R.h / shh), cw = R.w / sc, ch = R.h / sc;
+    const fa = typeof FACE_ANCH === 'number' ? FACE_ANCH : 0.3;
+    Y.drawImage(PI, (sw - cw) / 2, (shh - ch) * fa, cw, ch, R.x, R.y, R.w, R.h); return true;
+  }
+  person.ok = () => { const PI = document.getElementById('PRS'); return typeof PRS_OK !== 'undefined' && !!PRS_OK && !!PI && PI.naturalWidth > 0; };
   function panel(Y, fn) { Y.save(); Y.fillStyle = PAL().bg; Y.fillRect(0, 0, 1080, 1920); Y.restore(); if (fn) { Y.save(); fn(Y); Y.restore(); } }
   const HIDE = [];
   function hideCaption(s, e) {
@@ -264,7 +275,7 @@
     text: Object.assign((X, s, x, y, o) => text(X, s, x, y, o), { draw: text, layout, drawLayout, kashida, drawKashida, typeSub, westernDigits, visualOrder }),
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
-    video, panel, hideCaption, scene, ready,
+    video, person, panel, hideCaption, scene, ready,
   };
   G.MV = MV;
 })();
