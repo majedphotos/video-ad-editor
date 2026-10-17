@@ -1,3 +1,12 @@
+/* خط الرقعة (Aref Ruqaa) يرسم التاء المربوطة المنفصلة بلا نقطتين («الخطوة» تنقرا «الخطوه»).
+   الحل: حرف ربط خفي (ZWJ) قبل «ة» اللي بعد حرف ما يتصل بعده — تطلع بشكلها الأخير بنقطتيها. ينطبق على أي رسم بهالخط. */
+(function () {
+  const P = (typeof CanvasRenderingContext2D !== 'undefined') && CanvasRenderingContext2D.prototype;
+  if (!P || P.__ruqaaFix) return; P.__ruqaaFix = true;
+  const fix = (s) => String(s).replace(/(?<=^|[\s\u0640اأإآٱدذرزوؤءة]|[اأإآٱدذرزوؤءة][\u064B-\u065F]+)ة/gu, '\u200Dة');
+  const wrap = (name) => { const f = P[name]; P[name] = function (s, ...a) { return f.call(this, /Aref Ruqaa/.test(this.font) ? fix(s) : s, ...a); }; };
+  ['fillText', 'strokeText', 'measureText'].forEach(wrap);
+})();
 /* ═══ engine.js — محرّك «شرح بالموشن» (2D + 3D، حتمي بالزمن) ═══
    العقد والـAPI الكامل: ENGINE-API.md
    قاعدة ذهبية: الفريم t يعتمد على t فقط — لا rAF ولا Date ولا Math.random بأي مشهد. */
