@@ -131,7 +131,7 @@ https://github.com/user-attachments/assets/1047c4e8-141c-4f45-b601-c58d1353fe4c
 </td></tr></table>
 
 <details open><summary><b>الـ61 كلها</b> — كل مربع رقم الحركة بالبنك، والجديدة (51–61) بإطار ورقمها أسود</summary>
-<p align="center"><img src="_pkg/moves-all.gif" width="100%" alt="بنك الحركات: 61 حركة مرقّمة من 1 لين 61"></p>
+<p align="center"><img src="_pkg/moves-all-61.gif" width="100%" alt="بنك الحركات: 61 حركة مرقّمة من 1 لين 61"></p>
 </details>
 
 ## 🖼️ كفر وثمبنيل ينقرون بالجوال
