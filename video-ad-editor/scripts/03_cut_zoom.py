@@ -36,6 +36,33 @@ for i,(s,e) in enumerate(k):
     # بالوضع الهادي: نفس الزوم يستمر لين تتجمّع 4 ثوانٍ، ثم ينتقل للي بعده
     if i and (not CALM or held>=MINHOLD): zi+=1; held=0.0
     held+=(e-s); ZS.append(Z[zi%len(Z)])
+# 🆕 6.0 (ريل بوبيان): الزوم كان بترتيب المقطع — تشيل/تضيف مقطع فيتزحلق زوم كل اللي بعده وتخرب إحداثيات الرسم.
+#    الحين cut.json ← "zooms" مفتاحه بداية المقطع بثواني الأصل ({"25.05":1.06, …}) — ثابت مهما تغيّر الترتيب.
+#    أول تشغيل يكتبه من الإيقاع ويقفله؛ بعدها: المقطع الموجود ياخذ زومه، والمقطع المقسوم (بداية جديدة) ياخذ زوم المقطع
+#    اللي انقسم منه (أقرب مفتاح قبله داخل مداه)، والجديد كلياً ياخذ الإيقاع. قائمة بنفس طول keep (الطريقة القديمة) تنقبل وتتحوّل.
+#    تبي تغيّر زوم مقطع؟ عدّل رقمه بـcut.json. تبي ترجع للإيقاع؟ شيل "zooms".
+_zk=lambda x: f"{float(x):.2f}"
+_zj=_cj.get("zooms")
+if isinstance(_zj,list) and len(_zj)==len(k): _zj={_zk(sg[0]):float(z) for sg,z in zip(k,_zj)}
+elif isinstance(_zj,list): print(f"⚠️ cut.json ← zooms قائمة طولها {len(_zj)} وkeep {len(k)} — تجاهلتها ورجعت للإيقاع"); _zj=None
+if isinstance(_zj,dict) and _zj:
+    _ks=sorted(_zj, key=float); _src_k=_cj.get("_zsrc",{})   # _zsrc: نهاية كل مقطع وقت القفل — نعرف منه المقطع المقسوم
+    for i,(s,e) in enumerate(k):
+        if _zk(s) in _zj: ZS[i]=float(_zj[_zk(s)]); continue
+        par=[x for x in _ks if float(x)<=s+1e-6 and s<float(_src_k.get(x,float(x)))]   # بداية جديدة داخل مقطع مقفول = جزء منه
+        if par: ZS[i]=float(_zj[par[-1]])
+else: _zj={}
+_merged={**{x:round(float(y),4) for x,y in _zj.items()},**{_zk(s):round(z,4) for (s,e),z in zip(k,ZS)}}
+_msrc={**_cj.get("_zsrc",{}),**{_zk(s):round(e,3) for s,e in k}}
+if _cj.get("zooms")!=_merged or _cj.get("_zsrc")!=_msrc:
+    _cj["zooms"]=_merged; _cj["_zsrc"]=_msrc
+    json.dump(_cj,open(os.path.join(W,"cut.json"),"w"),indent=1,ensure_ascii=False)
+    print(f"🔒 الزوم مقفول لكل مقطع ببداية وقته (cut.json ← zooms، {len(k)} مقطع) — تغيير الترتيب ما يحرّكه")
+print("الزوم لكل مقطع:", " · ".join(f"{s:.2f}→{z:g}" for (s,e),z in zip(k,ZS)))
+for i,(s,e) in enumerate(k):
+    if not (e>s>=0): sys.exit(f"❌ cut.json ← keep[{i}] = [{s}, {e}] — النهاية لازم بعد البداية")
+if any(k[i+1][0]<k[i][0] for i in range(len(k)-1)):
+    print("ℹ️ keep مو بترتيب الوقت — يتركّب بالترتيب المكتوب (مقطع من آخر الكلام قبل اللي قبله مسموح)")
 # 🆕 v3.5 فيديو بالعرض (مقابلة · بودكاست · حلقة): كان يتمطّ لـ9:16 — الحين قصّ بالطول حول الوجه لكل لقطة
 #    (بلاغ ماجد ٢٧ سبتمبر على ريلات المقابلة). الفيديو الطولي يمشي على نفس الطريق القديم بالضبط.
 if SW/SH > 0.62:

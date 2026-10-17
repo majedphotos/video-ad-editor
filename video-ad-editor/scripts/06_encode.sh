@@ -3,7 +3,7 @@
 set -e
 . "$(dirname "$0")/_compat.sh"
 W="$(abspath "$1")"; OUT="${2:-$W/ad-final.mp4}"
-DUR=$("$PY" -c "import json;c=json.load(open('$W/caps.json'));s=json.load(open('$W/sfx.json'));print(round(c['total']+s['outro'],3))")
+DUR=$("$PY" -c "import json;c=json.load(open('$W/caps.json'));s=json.load(open('$W/sfx.json'));print(round(c['total']+float(s.get('outro',0) or 0),3))")
 FADE=$("$PY" -c "print(round($DUR-0.6,3))")
 echo "🎞  أجمّع الفريمات والصوت… (بلا عدّاد)"
 ffmpeg -v error -nostats -framerate 30 -i "$W/out/%05d.jpg" -i "$W/cutz.mp4" -i "$W/sfx.wav" \

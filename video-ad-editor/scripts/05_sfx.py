@@ -19,7 +19,7 @@ import json
 SR=48000
 _c=json.load(open(S+"caps.json"))
 _s=json.load(open(S+"sfx.json"))
-VEND=_c["total"]; OUTRO=_s["outro"]; DUR=VEND+OUTRO
+VEND=_c["total"]; OUTRO=float(_s.get("outro",0) or 0); DUR=VEND+OUTRO
 n=int(DUR*SR)+SR
 buf=np.zeros(n)
 rng=np.random.RandomState(11)

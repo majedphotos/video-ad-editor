@@ -26,7 +26,7 @@ const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.js
 const caps=JSON.parse(fs.readFileSync(W+'caps.json','utf8'));
 const BEHIND=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):null;
 const STUDIO=fs.existsSync(W+'studio.json')?JSON.parse(fs.readFileSync(W+'studio.json','utf8')):null;
-const FPS=30, OUT_D=CFG.outro, DUR=caps.total+OUT_D;
+const FPS=30, OUT_D=Number(CFG.outro??0)||0, DUR=Number(caps.total)+OUT_D;   /* 6.0: بلا outro = 0 (كان NaN) */
 
 /* المناطق الخطرة — نسبة الحبر المسموحة داخل كل وحدة */
 const DEF={
@@ -101,6 +101,13 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
   movesCopy();
   await p.goto(fileURL(W+'compose.html'),{waitUntil:'networkidle0'});
   await movesInject(p);
+  /* 6.0: مجلد شغل قديم فيه moves-compose.js قبل 6.0 — نلف MV.frameAt/personAt هني عشان الفريم المجمّد ينحسب فيديو مو رسم */
+  await p.evaluate(()=>{ if(!window.MV||!MV.frameAt||String(MV.frameAt).includes('__SAFE_FLAT')) return;
+    const f0=MV.frameAt, p0=MV.personAt;
+    const dh=(Y,im,R)=>{ R=R||{x:0,y:0,w:1080,h:1920}; const sw=im.naturalWidth,sh=im.naturalHeight,sc=Math.max(R.w/sw,R.h/sh),cw=R.w/sc,ch=R.h/sc,fa=typeof FACE_ANCH==='number'?FACE_ANCH:0.3;
+      Y.drawImage(im,(sw-cw)/2,(sh-ch)*fa,cw,ch,R.x,R.y,R.w,R.h); };
+    MV.frameAt=function(Y,t,R){ if(window.__SAFE_FLAT){ dh(Y,window.__SAFE_FLAT,R); return true; } return f0.apply(this,arguments); };
+    if(p0){ MV.personAt=function(Y,t,R){ return window.__SAFE_FLAT?true:p0.apply(this,arguments); }; MV.personAt.ok=p0.ok; } });
   /* 🪝 الهوك: نفس تركيب 04_render_frames.js — لو compose.html ما فيه hook-card.js والثيم فيه hook، نركّبه عشان نفحص اللي ينرسم فعلاً */
   if(THEME.hook&&!(await p.evaluate(()=>!!window.HookCard))){ const hc=[path.join(__dirname,'hook-card.js'),W+'hook-card.js'].find(f=>fs.existsSync(f)); if(hc) await p.addScriptTag({path:hc}); }
   const FF=THEME.font||'Cairo';
@@ -144,8 +151,10 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     for(const t of times){
       await person(t);
       window.draw(t); if(window.MV&&MV.pending&&MV.pending()) await MV.settle();   /* فريم بوقت ثاني/خط إضافي (65، 74) يتحمّل قبل القياس */
-      await window.setFrame(FA); swap(IA); window.draw(t); const A=X.getImageData(0,0,W,H).data;
-      await window.setFrame(FB); swap(IB); window.draw(t); const C=X.getImageData(0,0,W,H).data;
+      /* 6.0: MV.frameAt (فريم مجمّد من vfr/ بالانتقالات) يرسم نفس اللون المسطّح — صورة فيديو مو نص (كانت إنذار كاذب) */
+      await window.setFrame(FA); swap(IA); window.__SAFE_FLAT=IA; window.draw(t); const A=X.getImageData(0,0,W,H).data;
+      await window.setFrame(FB); swap(IB); window.__SAFE_FLAT=IB; window.draw(t); const C=X.getImageData(0,0,W,H).data;
+      window.__SAFE_FLAT=null;
       /* لقطة ما تغيّرت بين اللونين = الفيديو ما انرسم (شرح كامل R_OFF أو كرت النهاية) — ما نتخطّاها:
          تنقاس بلا قناع الفيديو، فكل بكسل غير الخلفية = رسمك. */
       let moved=0;

@@ -266,12 +266,29 @@ function layout(ws){X.font='800 '+FS+'px '+FONT;
   for(const i of it){const add=c.length?i.w+GAP:i.w;
     if(cw+add>MAXW&&c.length){L.push({items:c,w:cw});c=[i];cw=i.w;}else{c.push(i);cw+=add;}}
   if(c.length)L.push({items:c,w:cw});return L;}
+/* 🆕 6.0 (ريل بوبيان): «طبقات» أو «ورا الراس» لجزء من الجملة (stack 21:1-3) — بعد ما يخلص كان الكابشن يرجع يكتب
+   الجملة كاملة فالمشاهد يقرا نفس الكلام مرتين. الحين الكابشن يكتب بس الكلمات اللي ما طلعت بالتأثير:
+   قبل التأثير = الكلمات اللي قبله · بعده = تكملة الجملة (تدخل من نهاية التأثير) · كل الجملة بالتأثير = بلا كابشن.
+   لو التأثير ما انرسم (مو ملء الشاشة بوقته، أو مطفي من الاستوديو) الكابشن يبقى كامل. */
+function _capRest(c,t){
+  if(!BEHIND||!Array.isArray(BEHIND.lines)) return c;
+  const ci=CAPS.indexOf(c);
+  const L=BEHIND.lines.find(l=>l.card===ci&&!BEHIND_OFF.includes(l.card)&&isFull(vrect(cl((l.s+l.e)/2,0,VEND))));
+  if(!L||(t>=L.s&&t<=L.e)) return c;
+  const key=w=>Number(w.s).toFixed(2)+'|'+w.t, shown=new Set((L.words||[]).map(key));
+  const rest=c.w.filter(w=>!shown.has(key(w)));
+  if(rest.length===c.w.length) return c;
+  const part=t<L.s?rest.filter(w=>w.s<L.s):rest.filter(w=>w.s>=L.s);
+  if(!part.length) return null;
+  return t<L.s?{...c,w:part,e:Math.min(c.e,L.s)}:{...c,w:part,s:Math.max(c.s,L.e)};
+}
 function caption(t){
   if(SCENES.some(sc=>sc.nocap&&t>=sc.s&&t<sc.e)) return;   /* {s,e,m,nocap:true}: مشهد بلا كابشن — لما اللوحة فوق فيها النص نفسه (قرار المستخدم 8 سبتمبر) */
   /* لا تكرّر: لو الكلام يمرّ ورا الشخص بهاللحظة، كرت الكابشن يختفي */
   if(BEHIND&&PRS_OK&&isFull(vrect(t))&&BEHIND.lines.some(l=>t>=l.s&&t<=l.e&&!BEHIND_OFF.includes(l.card))) return;
   if(collageActive(t)) return;   /* الكولاج يرسم كلماته قصاصات */
-  const c=CAPS.find(c=>t>=c.s&&t<c.e); if(!c)return;
+  let c=CAPS.find(c=>t>=c.s&&t<c.e); if(!c)return;
+  c=_capRest(c,t); if(!c) return;   /* 6.0: الكلمات اللي طلعت ورا الشخص/«طبقات» ما تنعاد بالكابشن */
   const lt=t-c.s,rt=c.e-t;let a=1,dy=0,sc=1;   /* capStill: الدخول والطلعة بالشفافية بس — بلا صعود ولا تكبير */
   if(lt<0.2){const k=lt/0.2;a=ease(k);if(!CAP_STILL){dy=(1-ease(k))*28;sc=0.93+0.07*back(k);}}
   if(rt<0.13){const k=rt/0.13;a=k;if(!CAP_STILL)dy=-(1-k)*10;}
@@ -531,7 +548,10 @@ function _behindLine(t){ if(!BEHIND||!PRS_OK||!Array.isArray(BEHIND.lines)) retu
    فالمسند ينرسم تحت الحروف مو فوقها.
    الألوان: theme.json ← stack:{fill:'#FFFFFF', shade:'#000000', accent:false|true (الكلمة الفوقية بلون ACC),
    font:null (= خط الثيم), weight:900, maxBehind:2} — الافتراضي أبيض/أسود محايد، مو هوية أحد. */
-let STK={fill:'#FFFFFF',shade:'#000000',accent:false,font:null,weight:900,maxBehind:2};
+let STK={fill:'#FFFFFF',shade:'#000000',accent:false,font:null,weight:900,maxBehind:2,above:1};
+/* 🆕 6.0 ترتيب الكلمات: theme.json ← stack:{above:2, behind:1} = أول كلمتين فوق الراس (فوق بعض) وكلمة وحدة ورا الراس
+   تبدأ من قمته (الكشيدة بس تمرّ وراه) — مثل «بنك / بوبيان / يشتغل» بريل بوبيان. behind = نفس maxBehind. الافتراضي above:1. */
+const _stkB=()=>Math.max(0,(STK.behind!==undefined?+STK.behind:+STK.maxBehind)||0), _stkA=()=>Math.max(1,+STK.above||1);
 const STK_M=44, STK_TOP=170, STK_THR=13;   /* هامش الحواف · أعلى نص (حزام انستقرام فوق) · عتبة قناع الجمع (5٪ من الفريمات) */
 const STK_FBOT=1490, STK_FBOT2=1600;        /* آخر حد للنص القدّامي: فوق حزام الأسفل الحذر (1500) · وبالضيق داخل الحزام (المنطقة الممنوعة من 1620) */
 const STK_BMIN=64;                          /* أصغر خط للكلمات اللي ورا الراس (اللقطة القريبة تحتاج خط أصغر عشان الحروف تدخل على الجانبين) */
@@ -653,7 +673,7 @@ function _stkLayout(L){ if(L._lay!==undefined) return L._lay;
     let pick=null;
     for(let fs=fs0; fs>=STK_BMIN; fs=Math.round(fs*0.93)){
       const gapV=Math.round(fs*0.15), items=[]; let y=null, nb=0;   /* 0.15: بين سطرين ورا الراس فراغ يبان (0.07 كان يلزقهم) */
-      for(let i=nAbove;i<ws.length&&nb<STK.maxBehind;i++){
+      for(let i=nAbove;i<ws.length&&nb<_stkB()+_stkA()-1;i++){
         const w=ws[i].t, pts=_pts(w); if(!pts.length) break;          /* بلا موضع كشيدة (ورا، دار…) → تنزل قدّام */
         const G0=_skGlyph(w,fs,pts[0]), hI=G0.iB-G0.iT;
         const top=y===null?Math.max(P.top+hI*0.08,STK_TOP+hI*1.1):y+gapV, bot=top+hI;   /* أول سطر يبدأ عند قمة الراس (مثل المرجع) — الكشيدة تمرّ على الجبهة/العيون */
@@ -662,7 +682,7 @@ function _stkLayout(L){ if(L._lay!==undefined) return L._lay;
         const G=_skFit(w,fs,span,STK_M,xr,gap); if(!G) break;
         items.push({w:ws[i],G,top,span,gap,xl:STK_M,xr,fs}); y=top+(G.iB-G.iT); nb++;
       }
-      const want=Math.min(STK.maxBehind,ws.length-nAbove);
+      const want=Math.min(_stkB()+_stkA()-1,ws.length-nAbove);
       if(!pick||nb>pick.items.length) pick={fs,items};
       if(nb>=want) break;
     }
@@ -715,8 +735,21 @@ function _stkLayout(L){ if(L._lay!==undefined) return L._lay;
   };
   let lay=tryLay(ws.length>1?1:0); if(!lay) lay=tryLay(0);
   if(lay&&!lay.above&&!lay.behind.length) lay=null;              /* ولا كلمة ورا ولا فوق = مو «طبقات» */
+  lay=_stkRestack(L,lay,P);                                      /* 6.0: above>1 ← كلمات «ورا» الأولى تطلع فوق الراس */
   if(!_stkFontOK()) return lay||null;                            /* الخط ما اكتمل — لا تحفظ، أعد الحساب بالفريم الجاي */
   return (L._lay=lay||null); }
+/* 6.0: above>1 — نفس فكرة لفّة بوبيان (_stkLayout): أول (above-1) من سطور «ورا» تنرفع فوق الراس بعرض الشاشة (فوق بعض)،
+   والباقي ورا الراس يبدأ من قمته. يصغّر الكل لين أعلى سطر يدخل تحت حزام انستقرام فوق (STK_TOP). */
+function _stkBest(w,fs){ let G=null,bd=1e9; for(const pt of _pts(w)){ const g=_skGlyph(w,fs,pt); if(!g.stretch) continue; const d=Math.abs(g.rw-g.lw); if(d<bd){bd=d;G=g;} } return G||_skGlyph(w,fs,null); }
+function _stkRestack(L,Y,P){
+  const k=Math.min(_stkA()-1,Y&&Y.behind?Y.behind.length:0); if(!Y||!Y.above||k<1||!P) return Y;
+  const up=Y.behind.slice(0,k), stay=Y.behind.slice(k), A=Y.above, h=it=>it.G.iB-it.G.iT;
+  const place=()=>{ let cur=P.top-18; for(let j=up.length-1;j>=0;j--){ up[j].top=cur-h(up[j]); cur=up[j].top-Math.round(up[j].fs*0.10); } A.top=cur-h(A); return A.top; };
+  for(let n=0;n<8&&place()<STK_TOP;n++) for(const it of [A,...up]){ it.fs=Math.round(it.fs*0.93); it.G=_stkBest(it.w.t,it.fs); }
+  for(const it of up){ it.span=null; }
+  if(stay.length){ stay[0].top=P.top+14; stay[0].span=_pspan(P,stay[0].top,stay[0].top+h(stay[0]))||stay[0].span;
+    for(let j=1;j<stay.length;j++){ stay[j].top=stay[j-1].top+h(stay[j-1])+Math.round(stay[j].fs*0.15); stay[j].span=_pspan(P,stay[j].top,stay[j].top+h(stay[j]))||stay[j].span; } }
+  Y.aboveMore=up; Y.behind=stay; return Y; }
 function stackText(t,L){
   const Y=_stkLayout(L); if(!Y) return false;
   const fo=t>L.e-0.10?cl((L.e-t)/0.10,0,1):1;                      /* خروج ناعم بآخر الجملة */
@@ -729,6 +762,7 @@ function stackText(t,L){
     const cv=_skBuild(G,(xr-xl)-G.rw-G.lw);
     _skPaint(cv,xl-G.iL,it.top-G.iT,it.fs,a,it.fill); };
   if(Y.above){ Y.above.fill=STK.accent?ACC:STK.fill; wide(Y.above); }
+  for(const it of (Y.aboveMore||[])){ it.fill=STK.fill; wide(it); }   /* 6.0: كلمات فوق الراس الإضافية (above>1) */
   for(const it of Y.behind){ it.fill=STK.fill; wide(it); }
   /* الشخص فوق الطبقتين الأوليين — من فوق الراس لين الرقبة بعمود الراس بس (مسند الكرسي/اللي لاصق فيه ينرسم تحت الحروف) */
   const hd=_stkHead(L);
@@ -1021,8 +1055,12 @@ function draw(t){
   if(t<VEND) safe(brollClips,t,'brollClips');
   if(t<VEND) safe(genCard,t,'genCard');   /* 🖼️ v3.2: صورة/مقطع مولّد بكرت فوق + رسم فوقه (وضع card/full) */
   badge(t);bar(t); if(t<VEND) safe(stickers,t,'stickers');
-  for(const sc of SCENE_LIST) if((sc[2]||sc[1].layer)!=='video') safe(sc[1],t,sc[0]);   /* مشاهد المشروع — فاضية افتراضياً (شوف SCENE_LIST فوق) */
+  for(const sc of SCENE_LIST) if(!['video','afterPerson'].includes(sc[2]||sc[1].layer)) safe(sc[1],t,sc[0]);   /* مشاهد المشروع — فاضية افتراضياً (شوف SCENE_LIST فوق) */
   if(_cut) safe(personStage,t,'cutout');   /* هو قدام اللوحة */
+  /* 🆕 6.0 طبقة فوق الشخص: بوضع القصّ (cutout) الشخص ينرسم فوق كل المشاهد فيغطي نصها. أي دالة بـwindow.AFTER_PERSON
+     (أو مشهد مسجّل بطبقة 'afterPerson') تنرسم بعده — للنص اللي لازم يبين قدّامه. تشتغل بكل الأوضاع، مو بس القصّ. */
+  if(window.AFTER_PERSON) for(const f of window.AFTER_PERSON) safe(f,t,'afterPerson');
+  for(const sc of SCENE_LIST) if((sc[2]||sc[1].layer)==='afterPerson') safe(sc[1],t,sc[0]);
   safe(caption,t,'caption'); safe(outro,t,'outro');
 }
 window.draw=draw;window.init=init;window.vrect=vrect;

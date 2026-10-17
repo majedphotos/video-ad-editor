@@ -32,6 +32,34 @@ def _bin(cache):
     return b
 
 
+def _ftbin(cache):
+    """راصد الوجه (facetrack.swift — Vision بالماك). يرجّع المسار أو "" لو ما نقدر نبنيه (مو ماك)."""
+    b = os.path.join(cache, "facetrack")
+    if os.path.exists(b): return b
+    if not shutil.which("swiftc"): return ""
+    os.makedirs(cache, exist_ok=True)
+    r = subprocess.run(["swiftc", "-O", "-o", b, os.path.join(HERE, "facetrack.swift")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return b if r.returncode == 0 and os.path.exists(b) else ""
+
+
+def faces_in(folder, cache):
+    """{اسم_الملف: {x,y,w,h,n}} لكل صورة jpg بالمجلد فيها وجه (نِسَب 0..1). فاضي لو ما فيه راصد."""
+    b = _ftbin(cache)
+    if not b: return {}
+    out = os.path.join(folder, "_faces.json")
+    if subprocess.run([b, folder, out], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode or not os.path.exists(out): return {}
+    return {r["f"]: dict(r["face"], n=r.get("n", 1)) for r in json.load(open(out)) if "face" in r}
+
+
+def speaker(faces, fw=1.0):
+    """🆕 6.0 (كفر بوبيان): المتكلم = الوجه اللي يتكرر بنفس المكان والحجم بأغلب العيّنات.
+       لقطة بي-رول فيها شخص ثاني (مكان/حجم مختلف) تطلع برّا — قبلها كان الكفر يختار وجه غيره.
+       faces: {key: {x,y,w,h}} (fw = عرض الصورة لو الأرقام بكسل) → set(keys) للمتكلم."""
+    if not faces: return set()
+    cx = np.median([f["x"] + f["w"] / 2 for f in faces.values()]); mw = np.median([f["w"] for f in faces.values()])
+    return {k for k, f in faces.items() if abs(f["x"] + f["w"] / 2 - cx) < 0.18 * fw and 0.55 < f["w"] / max(mw, 1e-6) < 1.8}
+
+
 def cutout(video, out, t=-1.0, n=12, cache=None):
     """يطلّع out (PNG شفاف مقصوص على حدود الشخص) ويرجّع الثانية اللي انأخذ منها."""
     tmp = tempfile.mkdtemp(); fr, mk = os.path.join(tmp, "f"), os.path.join(tmp, "m"); os.makedirs(fr)
@@ -44,8 +72,10 @@ def cutout(video, out, t=-1.0, n=12, cache=None):
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     meta = json.load(open(os.path.join(mk, "meta.json")))
     best = None
+    _fw = Image.open(os.path.join(fr, meta[0]["f"])).size[0] if meta else 1.0
+    spk = speaker({r["f"]: r["face"] for r in meta if "face" in r}, _fw)   # 6.0: وجه المتكلم بس — مو شخص ثاني بلقطة بي-رول
     for r in meta:
-        if "face" not in r: continue
+        if "face" not in r or (len(spk) >= 2 and r["f"] not in spk): continue
         a = np.asarray(Image.open(os.path.join(fr, r["f"])).convert("L").resize((270, 480)), dtype=np.float32)
         sharp = np.abs(a[1:-1, 1:-1] * 4 - a[:-2, 1:-1] - a[2:, 1:-1] - a[1:-1, :-2] - a[1:-1, 2:]).var()
         score = r["face"]["w"] * np.sqrt(sharp)            # وجه كبير وواضح (مو مهزوز وسط حركة)

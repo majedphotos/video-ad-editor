@@ -4,7 +4,7 @@
         [--photo me.png]            صورته مقصوصة (خلفية شفافة) — من عنده
         [--cut]                     صورته من الفيديو: أحسن فريم مقصوص (_cutout.py — ماك) على خلفية كريمية
         (بلا الاثنين: الفريم كامل بخلفيته — اسأل المستخدم أول: «آخذ صورتك من الفيديو ولا عندك صور تعطيني؟»)
-        [--video src.mov] [--t 3.2] [--n 16]   مصدر الفريم (بدون --t يختار أوضح فريم)
+        [--video src.mov] [--t 3.2] [--n 16]   مصدر الفريم (بدون --t: فريم فيه وجه المتكلم أكبر وأوضح — مو شخص ثاني بالبي-رول)
         [--bg "#F0EEE6"]            لون الخلفية مع --photo/--cut (الافتراضي كريمي مثل كلود · "video" = لون خلفية الفيديو نفسه)
         [--x manychat.png]          شعار عليه ✕ (اللي تركته / الخطأ)
         [--ok zorcha.png]           شعار عليه ✓ (البديل / الصح)
@@ -15,6 +15,7 @@
       كل اللي لازم ينشاف — الوجه والكلام والشعارات — داخل مربع 1080×1080 بنص الصورة (y من 420 لين 1500).
       المربع وهمي: لا إطار ولا خط. برّاه خلفية بس (أو كمّلة الجسم).
    الكلام هوك مختصر (سطرين + سطر صغير) على الصدر أو تحته شوي.
+   🙂 6.0: الوجه ما يتغطى أبداً — السكربت يرصد الوجه (ماك) ويصغّر الصورة المقصوصة أو يرفع الفريم لين الذقن فوق أعلى الكلام بـ30px.
    📏 أحجام تنقرا بشبكة الجوال (بحث + قياس شاشة ماجد 3 أكتوبر — references/thumbnails.md):
       الكفر ينعرض ≈ 0.12 من حجمه، وأصغر خط مقروء 11 نقطة ⇒ ولا نص تحت 91 بكسل.
       العنوان العربي ≥ 170 · السطر الصغير ≥ 110 · الشعار ≥ 200 · 5 كلمات بالكثير · بلا الحساب (ما ينقرا ومكانه البروفايل).
@@ -35,18 +36,41 @@ def chrome():
     sys.exit("❌ ما لقيت كروم")
 def dur(f):
     return float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f], capture_output=True, text=True).stdout)
-def pick(video, n):
-    d = dur(video); tmp = tempfile.mkdtemp(); best = (-1, 1.0)
+def pick(video, n, cache=None):
+    """🆕 6.0 (كفر بوبيان): بدون --t كان يختار «أوضح فريم» بس — فطلع فريم بي-رول فيه شخص ثاني.
+       الحين: راصد الوجه (ماك) على العيّنات ← وجه المتكلم (نفس المكان والحجم بأغلب اللقطات) والأكبر والأوضح يفوز.
+       بلا وجه بأي عيّنة / مو ماك: يرجع للطريقة القديمة (الأوضح)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import _cutout
+    d = dur(video); tmp = tempfile.mkdtemp(); best = (-1, 1.0); sharp = {}; times = {}
     for i in range(n):
         t = 1.0 + (d - 2.0) * i / max(1, n - 1)
-        p = os.path.join(tmp, f"{i}.png")
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", video, "-frames:v", "1", "-vf", "scale=270:-1", p])
+        p = os.path.join(tmp, f"{i:03d}.jpg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", video, "-frames:v", "1", "-q:v", "3", "-vf", "scale=540:-2", p])
         if not os.path.exists(p): continue
-        a = np.asarray(Image.open(p).convert("L"), dtype=np.float32)
+        a = np.asarray(Image.open(p).convert("L").resize((270, 480)), dtype=np.float32)
         lap = np.abs(a[1:-1, 1:-1] * 4 - a[:-2, 1:-1] - a[2:, 1:-1] - a[1:-1, :-2] - a[1:-1, 2:]).var()
-        m = a.mean(); score = lap * (1.0 if 60 < m < 200 else 0.5)
-        if score > best[0]: best = (score, t)
+        m = a.mean(); sharp[f"{i:03d}.jpg"] = lap * (1.0 if 60 < m < 200 else 0.5); times[f"{i:03d}.jpg"] = t
+    faces = _cutout.faces_in(tmp, cache or os.path.join(tmp, "bt"))
+    spk = _cutout.speaker(faces)
+    if spk:
+        for f in spk:   # وجه أكبر = لقطة قريبة له · شخص واحد بالصورة أحسن من اثنين
+            sc = faces[f]["w"] * np.sqrt(sharp[f]) * (1.0 if faces[f]["n"] == 1 else 0.6)
+            if sc > best[0]: best = (sc, times[f])
+        print(f"🙂 الكفر: وجه المتكلم بان بـ{len(spk)} من {len(sharp)} عيّنة — اخترت الأكبر والأوضح (الثانية {best[1]:.2f})")
+        return best[1]
+    for f, sc in sharp.items():
+        if sc > best[0]: best = (sc, times[f])
+    print("⚠️ الكفر: ما قدرت أرصد وجه (مو ماك / ما بان وجه) — اخترت الأوضح بس؛ تأكد إنه هو مو شخص ثاني، أو حدد --t")
     return best[1]
+def face_box(img_path, cache):
+    """مستطيل الوجه بصورة (بكسل) — أو None. PNG شفاف ينفرش على رمادي أول (الراصد يقرا jpg)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import _cutout
+    tmp = tempfile.mkdtemp(); im = Image.open(img_path)
+    if im.mode in ("RGBA", "LA"):
+        bgi = Image.new("RGB", im.size, (128, 128, 128)); bgi.paste(im, mask=im.split()[-1]); im = bgi
+    im.convert("RGB").save(os.path.join(tmp, "f.jpg"), quality=90)
+    f = _cutout.faces_in(tmp, cache).get("f.jpg")
+    return None if not f else {"x": f["x"] * im.width, "y": f["y"] * im.height, "w": f["w"] * im.width, "h": f["h"] * im.height}
 def uri(p):
     return "file://" + html.escape(os.path.abspath(p))
 def hexc(c):
@@ -69,9 +93,16 @@ def main():
     bg, ink, acc = th.get("bg", "#111111"), th.get("ink", "#FFFFFF"), th.get("acc", "#F2B33D")
     on = th.get("onAcc", "#FFFFFF"); font = th.get("font", "Tajawal"); handle = th.get("handle", "")
 
+    tt = html.escape(title).replace('*', '<b>', 1).replace('*', '</b>', 1).replace('|', '<br>')
+    longest = max(len(x.replace('*', '')) for x in title.split('|'))
+    size = int(max(170, min(230, 960 / (0.62 * max(longest, 1)))))     # ⛔ أصغر شي 170 (العربي يبين أصغر من اللاتيني)
+    # 🆕 6.0: أعلى الكلام (العنوان + السطر الصغير) — الوجه لازم يخلص فوقه بهامش (كان الكلام يغطي الوجه باللقطة القريبة)
+    text_top = (SQ1 - 24) - (title.count('|') + 1) * size * 1.1 - ((110 * 1.15 + 22 + 16) if eyebrow else 0)
+    FACE_GAP = 30
+    cache = os.path.join(W, "bt")
     frame = os.path.join(W, "cover_frame.png"); t = -1.0
     if video and os.path.exists(video):
-        t = arg("--t", -1.0); t = t if t >= 0 else pick(video, arg("--n", 16))
+        t = arg("--t", -1.0); t = t if t >= 0 else pick(video, arg("--n", 16), cache)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", video, "-frames:v", "1",
                         "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920", frame], check=True)
     elif not photo:
@@ -100,9 +131,10 @@ def main():
         band = al[top_y:top_y + int(hb * 0.12)]; cols = np.where(band.max(0) > 40)[0]; cx = (cols[0] + cols[-1]) / 2
         head_y = SQ0 + (270 if (xlogo or oklogo) else 30)   # فيه شعارات؟ صفّها أعلى المربع والراس تحتها — ولا شي على الراس
         s = (1920 - head_y) / (0.62 * hb)                 # الراس عند head_y، والجسم لين الورك يعبي تحت
-        fj = photo + ".face.json"                         # من الفيديو (--cut): الجسم مقطوع عند الصدر — الذقن لازم فوق العنوان (≈1000)
-        if os.path.exists(fj):
-            fc = json.load(open(fj)); s = min(s, (1000 - head_y) / (fc["y"] + fc["h"] - top_y))
+        fj = photo + ".face.json"                         # من الفيديو (--cut): مكان الوجه بالصورة المقصوصة
+        fc = json.load(open(fj)) if os.path.exists(fj) else face_box(photo, cache)   # --photo: نرصده (ماك)
+        if fc:   # 6.0: الذقن لازم فوق أعلى الكلام الفعلي (كان رقم ثابت 1000 — باللقطة القريبة والسطر الصغير غطّى الوجه)
+            s = min(s, (text_top - FACE_GAP - head_y) / max(1.0, fc["y"] + fc["h"] - top_y))
         pw, ph = im.width * s, im.height * s
         px, py = 540 - cx * s, head_y - top_y * s
         fade = ""                                         # الجسم مقطوع (حد الفريم تحت أو على الجوانب): يذوب بالخلفية بدل حواف حادة
@@ -112,7 +144,18 @@ def main():
                   + ('' if light else '<div class="sh2"></div>'))   # الظل الغامق تحت يوسّخ الكريمي
         bgcss = f".bgc{{position:absolute;inset:0;background:radial-gradient(ellipse 80% 58% at 50% 50%,{c_in} 0%,{c_out} 100%)}}"
     else:
-        visual = f'<img class="fr" src="{uri(frame)}"><div class="sh"></div>'; bgcss = ""
+        # 6.0: الفريم كامل — لو الوجه نازل تحت أعلى الكلام نرفع الصورة (بس لين أعلى المربع الآمن) بدل ما يغطيه الكلام
+        lift = 0; fb = face_box(frame, cache) if os.path.exists(frame) else None
+        if fb:
+            over = fb["y"] + fb["h"] - (text_top - FACE_GAP)
+            if over > 0:
+                lift = int(min(over, max(0, fb["y"] - (SQ0 + 10))))
+                print(f"🙂 الكفر: الوجه كان تحت الكلام بـ{over:.0f}px — رفعت الصورة {lift}px"
+                      + ("" if lift >= over else " (أكثر من كذا يطلع الراس برّا المربع — اختصر العنوان لسطر أو شيل السطر الصغير)"))
+            if (xlogo or oklogo) and fb["y"] - lift < SQ0 + 260:
+                print("⚠️ الكفر: صف الشعارات فوق بيغطي الراس بهالفريم — استخدم --cut أو --photo مع الشعارات")
+        under = f'<img class="fr" src="{uri(frame)}" style="filter:blur(40px);transform:scale(1.1)">' if lift else ""   # الشريط اللي ينكشف تحت = نفس الفريم مغبّش
+        visual = under + f'<img class="fr" src="{uri(frame)}" style="top:{-lift}px"><div class="sh"></div>'; bgcss = ""
 
     def badge(path, ok):
         if not path or not os.path.exists(path): return ""
@@ -120,9 +163,6 @@ def main():
                 '<svg viewBox="0 0 40 40"><path d="M13 13 L27 27 M27 13 L13 27" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/></svg>')
         return (f'<div class="lg {"ok" if ok else "no"}"><img src="{uri(path)}"><div class="mk" style="background:{"#2E8B57" if ok else "#D64545"}">{mark}</div></div>')
     logos = badge(oklogo, True) + badge(xlogo, False)   # الصف ltr: ✓ يسار و✕ يمين — العين العربية تبدأ من ✕ وتنتهي عند ✓
-    tt = html.escape(title).replace('*', '<b>', 1).replace('*', '</b>', 1).replace('|', '<br>')
-    longest = max(len(x.replace('*', '')) for x in title.split('|'))
-    size = int(max(170, min(230, 960 / (0.62 * max(longest, 1)))))     # ⛔ أصغر شي 170 (العربي يبين أصغر من اللاتيني)
     words = len(title.replace('|', ' ').replace('*', '').split())
     if words > 5: print(f"⚠️ العنوان {words} كلمات — الأفضل 5 بالكثير عشان ينقرا بالشبكة")
     if longest > 9: print(f"⚠️ سطر طويل ({longest} حرف) — بحجم 170 يدخل 9 أحرف بالسطر بس؛ اختصر العنوان (الشعارات والصورة تكمّل المعنى)")
@@ -131,7 +171,7 @@ def main():
 @import url('https://fonts.googleapis.com/css2?family={font.replace(' ', '+')}:wght@700;800;900&display=swap');
 *{{margin:0}} html{{overflow:hidden}} body{{width:1080px;height:1920px;position:relative;overflow:hidden;direction:ltr;font-family:'{font}',Tajawal,'Geeza Pro',sans-serif;background:#000}}
 {bgcss}
-.fr{{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}}
+.fr{{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover}}
 .me{{position:absolute}}
 .sh{{position:absolute;left:0;right:0;top:{SQ0+560}px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 40%,rgba(0,0,0,.7))}}
 .sh2{{position:absolute;left:0;right:0;top:{SQ0+620}px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.28) 45%,rgba(0,0,0,.35))}}

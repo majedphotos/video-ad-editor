@@ -30,6 +30,17 @@ bash scripts/00_setup.sh --install
 
 جهّز مجلد شغل، وانسخ له `scripts/compose.REFERENCE.html` باسم `compose.html`.
 
+### 💡 نصايح من ريل بوبيان (6.0)
+- **مقاطع آيفون كثيرة (HLG/HDR) تبي تدمجها بفيديو واحد؟ حوّل كل مقطع SDR أول، بعدين ادمج.**
+  `03_cut_zoom.py` يكشف HDR بالملف الواحد بس — الدمج بـffmpeg قبلها يضيّع وسم HLG فتطلع الألوان باهتة/برتقالية بلا ما ينكشف.
+  ```bash
+  swiftc -O -o scripts/hdr2sdr scripts/hdr2sdr.swift          # مرة وحدة (ماك + أدوات Xcode)
+  mkdir -p sdr; for f in IMG_*.MOV; do scripts/hdr2sdr "$f" "sdr/${f%.*}.mov"; done   # كل مقطع لحاله
+  ```
+  تعرف إنه HDR: `ffprobe -v error -select_streams v:0 -show_entries stream=color_transfer -of csv=p=0 IMG_1.MOV` ← `arib-std-b67` (HLG) أو `smpte2084`.
+- **تنظيف الصوت بكلود كود = DeepFilterNet على الجهاز** (`bash scripts/00_setup.sh --extras` ثم `02b_enhance_audio.sh <work> --local`).
+  أداة أدوبي `media_enhance_speech` تبدأ الشغل بس ما فيه أداة متابعة بكلود كود تجيب الملف النظيف — لا تعتمد عليها هني.
+
 ---
 
 ## الخطوة 0.5 — صفحة التعارف (أول مرة بس)

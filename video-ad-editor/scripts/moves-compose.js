@@ -18,6 +18,7 @@
    أدوات compose:
      MV.video(Y, R?)        يرسم فريم الفيديو الحالي على Y بمستطيل R (افتراضي ملء الشاشة) — للانتقالات وpushIn
      MV.person(Y, R?)       المتحدث مقصوص لهالفريم (ماك: 11_behind_text.js person) — MV.person.ok() يقول موجود ولا
+     MV.env(t)              علو صوته الحقيقي 0..1 (env.js من scripts/37_env.py) — موجة/نبض يتحرك مع كلامه
      MV.frameAt(Y, t, R?) / MV.personAt(Y, t, R?)  الفريم/القصّ بوقت ثاني (تجميد 65) — 04_render_frames ينتظر MV.settle() قبل اللقطة
      MV.faceAt(t)           مستطيل الوجه والفم عند t (face.js من 36_facetrack.py — ماك) أو null — للحركات 85 و86: face: MV.faceAt
      MV.palmAt(t)           الكف عند t (palm.js من 29_handtrack.py — ماك) أو null — للحركة 91: palm: MV.palmAt
@@ -272,8 +273,10 @@
   }
   function drawHeld(Y, im, R) { R = R || { x: 0, y: 0, w: 1080, h: 1920 }; const sw = im.naturalWidth, shh = im.naturalHeight, sc = Math.max(R.w / sw, R.h / shh), cw = R.w / sc, ch = R.h / sc;
     const fa = typeof FACE_ANCH === 'number' ? FACE_ANCH : 0.3; Y.drawImage(im, (sw - cw) / 2, (shh - ch) * fa, cw, ch, R.x, R.y, R.w, R.h); }
-  function frameAt(Y, t, R) { const h = held('v', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
-  function personAt(Y, t, R) { const h = held('p', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
+  /* 6.0: فحص المنطقة الآمنة (08_safe_check.js) يحط window.__SAFE_FLAT = بكسل مسطّح — فالفريم المجمّد يرسم نفس لون الفيديو المبدّل
+     (ينحسب فيديو مو «رسمك»)، والقصّ بوقت ثاني ما يرسم شي (نفس MV.person بالفحص). قبلها الانتقالات من vfr تعطي إنذار كاذب. */
+  function frameAt(Y, t, R) { if (G.__SAFE_FLAT) { drawHeld(Y, G.__SAFE_FLAT, R); return true; } const h = held('v', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
+  function personAt(Y, t, R) { if (G.__SAFE_FLAT) return true; const h = held('p', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
   personAt.ok = t => { const h = held('p', t); return h.ok || !h.bad; };   // لسا يتحمّل = نفترض موجود (settle يحسمها قبل اللقطة)
   /* خط إضافي بالطلب (74 آية بسكينة: 'Amiri Quran'): MV.needFont(fam) يرجّع true لو جاهز، وإلا يبدأ التحميل من مجلد الشغل
      (04_render_frames.js و08_safe_check.js ينسخون AmiriQuran-Regular.ttf من motion/fonts لما compose.html فيه ayahCalm) ويرجّع false —
@@ -288,6 +291,8 @@
     h.p = face.load().then(f => { document.fonts.add(f); h.ok = true; }, () => { h.bad = true; console.error('⚠️ MV.needFont: ما لقيت ' + file + ' بمجلد الشغل (انسخه من motion/fonts)'); });
     return false;
   }
+  /* 🆕 6.0 موجة صوته: MV.env(t) = علو صوته الحقيقي عند t (0..1) من env.js (scripts/37_env.py). بلا env.js = 0 */
+  function env(t) { const E = G.ENV; if (!E || !E.length) return 0; const i = Math.round(t * 30); return E[Math.max(0, Math.min(E.length - 1, i))] || 0; }
   const pending = () => [...HELD.values(), ...FONTS.values()].filter(h => !h.ok && !h.bad).length;
   const settle = () => Promise.all([...HELD.values(), ...FONTS.values()].map(h => h.p));
   /* الكف (91 بكفّك): palm.js من scripts/29_handtrack.py يعرّف window.palmAt(t) → {x,y,c} أو null. MV.palmAt نفسها بأمان (null بلا palm.js). */
@@ -330,7 +335,7 @@
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
-    frameAt, personAt, pending, settle, faceAt, needFont, palmAt,
+    frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env,
   };
   G.MV = MV;
 })();

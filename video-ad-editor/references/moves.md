@@ -152,6 +152,49 @@ MV.ready(() => { const h = MV.wordTime(3, 2).s;
   MV.scene('echo', t => { if (t >= h - 0.1 && t < h + 0.7) FX.motionEcho(MV, t, { s: h, video: Y => MV.video(Y), videoAt: MV.frameAt, person: MV.person, personAt: MV.personAt }); }, 'video'); });
 ```
 
+## 3و) لحظات العمق — الأصل من أول مسودة (6.0، من ريل بوبيان)
+
+ريل بوبيان (اعتمده البنك وانتشر) نجح لأن الموشن كان **عميق من أول نسخة**. الأصل: تتعب على الأداء والموشن — مو أشياء هادية.
+البطاقات والأختام والشارات مو ممنوعة؛ استخدمها لما الموضوع يستاهل. بس قبل ما ترسم، **خطّط 2–3 لحظات عمق** للريل وقلها بسطر:
+«لحظات العمق: موجة صوتك ورا راسك عند (مقابلة بصوت) · خريطة الكويت عند (أول مرة) · مدار يلف حولك عند (العميل/الشغل/الموظفين)».
+
+| الأداة | متى | شلون |
+|---|---|---|
+| **ورا الشخص** | أي عنصر (موجة، خريطة، مدار) يمر ورا راسه | قصّ المدى: `node scripts/11_behind_text.js <work> person 5.8-7.7` · ارسم بطبقة `'video'` ثم `MV.person(X)` فوقه |
+| **موجة صوته** | «صوت»، «يتكلم»، «مقابلة»، ذكاء اصطناعي يرد | `python3 scripts/37_env.py <work>` ← `env.js` · `<script src="env.js">` · الارتفاع = `MV.env(t)` |
+| **خريطة نقاط** | مكان، «أول مرة بالكويت»، انتشار | `FX.dotMap` بـ`cities:[]` وألوان فاتحة، تكبر ببطء ورا راسه |
+| **مدار 3D** | 3 أشياء (عميل · شغل · موظفين) | حلقة بيضوية: النص اللي ورا ينرسم قبل `MV.person` واللي قدّام بعده |
+| **شكل من هوية العميل** | رقم، انتقال | قوس شعاره يرتسم = عدّاد (`k` من 0 لـ1) أو مسحة تبلع الشاشة وداخلها اللقطة الجاية |
+| **دخلة ون تيك** | تغيّر لقطة | الكاميرا تغوص بالشعار/التابلت (زوم 1→10 + غباش) وتطلع باللقطة الجاية — `MV.frameAt` للفريم المجمّد |
+
+```js
+/* موجة صوته ورا راسه — طبقة الفيديو، والشخص فوقها */
+MV.scene('wave', t => { if (t < 5.86 || t > 7.62) return;
+  const n = 43, cx = 540, cy = 790; X.save(); X.fillStyle = '#fff';
+  for (let i = 0; i < n; i++) { const x = 40 + i * (1000 / (n - 1)), d = Math.abs(x - cx) / 500;
+    const h = 18 + 420 * MV.env(t - d * 0.22) * (1 - d * 0.3); X.fillRect(x - 7, cy - h / 2, 14, h); }
+  X.restore(); MV.person(X); }, 'video');
+
+/* خريطة نقاط ورا راسه — ألوان فاتحة، بلا مدن */
+const MAPC = Object.assign({}, MV, { P: Object.assign({}, MV.P, { mut: '#FFFFFF', bg: '#FFFFFF', ink: '#FFFFFF' }) });
+MV.scene('map', t => { if (t < 11.8 || t > 14.4) return;
+  FX.dotMap(MAPC, t, { s: 11.8, y: 140, cities: [], total: null, title: null }); MV.person(X); }, 'video');
+
+/* مدار: اللي ورا قبل الشخص، واللي قدّام بعده (orbitDraw دالتك: front=false يرسم النص الخلفي من الحلقة) */
+MV.scene('orbit', t => { if (t < 31 || t > 38) return; orbitDraw(t, false); MV.person(X); orbitDraw(t, true); }, 'video');
+
+/* دخلة ون تيك بنقطة (px,py) عند القطع tc */
+function dive(t, tc, px, py) { if (t < tc - 0.38 || t > tc + 0.36) return;
+  if (t < tc) { const k = Math.pow(2, 10 * ((t - tc + 0.38) / 0.38) - 10), s = 1 + 9 * k;
+    X.save(); X.filter = `blur(${(k * 14).toFixed(1)}px)`; X.translate(px, py); X.scale(s, s); X.translate(-px, -py); MV.video(X); X.restore(); }
+  else { const k = 1 - Math.pow(2, -10 * ((t - tc) / 0.36)), s = 1.45 - 0.45 * k;
+    X.save(); X.filter = `blur(${((1 - k) * 12).toFixed(1)}px)`; X.translate(540, 900); X.scale(s, s); X.translate(-540, -900); MV.video(X); X.restore(); } }
+```
+- هذي أفكار مو قوالب: كل ريل يخترع لحظاته من كلامه وهوية عميله (بوبيان: قوس الشعار عدّاد 90 ثانية، سباق «من أوائل»، كرت أحمر مدرّج).
+- أي جملة كلامها مكتوب بالموشن = `nocap` لهالجملة (`references/scenes.md`).
+- النص اللي لازم يبين قدّام الشخص (وضع `cutout`) = طبقة `'afterPerson'` أو `window.AFTER_PERSON`.
+- `08_safe_check.js` يحسب الفريم المجمّد (`MV.frameAt`) فيديو مو نص — الانتقالات ما تعطي إنذار كاذب (6.0).
+
 ## 4) إضافة حركة جديدة (البنك وصل 100 — أي زيادة برقم جديد بالآخر)
 
 0. عطها `role` و`energy` و`families` و`cues` بالكتالوج. **العائلات الضعيفة أولاً**: `plan --dry` لكل عائلة وشوف وين الخيارات قليلة.

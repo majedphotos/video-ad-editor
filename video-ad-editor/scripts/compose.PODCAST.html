@@ -147,6 +147,8 @@ function draw(t){ X.setTransform(1,0,0,1,0,0); nsh(); X.globalAlpha=1;
   drawMode(sc,t);
   if(prev&&t<sc.s+TR&&prev.m!=='HEAD'&&sc.m!=='HEAD'){ X.save(); X.globalAlpha=1-eio(pr(t,sc.s,sc.s+TR)); drawMode(prev,t); X.restore(); }
   if(sc.m!=='HEAD'){ if(!sc.nocap&&sc.m!=='QUOTE') drawCaption(t, sc.cap&&sc.cap.y?sc.cap.y:(sc.m==='SPLIT'?975:1440)); if(LOGO.naturalWidth){X.save();X.globalAlpha=0.95;X.drawImage(LOGO,W-190,160,120,120);X.restore();} progress(t); }
+  /* 6.0: طبقة فوق الشخص — نفس هوك compose.REFERENCE (window.AFTER_PERSON = [fn(t), …]) */
+  if(window.AFTER_PERSON) for(const f of window.AFTER_PERSON){ X.save(); try{ f(t); }catch(e){ console.error('⚠️ AFTER_PERSON: '+e.message); } X.restore(); }
 }
 window.draw=draw;
 </script></body></html>

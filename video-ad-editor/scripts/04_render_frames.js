@@ -9,7 +9,9 @@ const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));       // فيه outr
 const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.json','utf8')):{};
 const BEHIND=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):null;  // الكلام ورا الشخص
 const HASCOVER=fs.existsSync(W+'cover');   // خلفية باهتة: cover/NNNNN.png لكل فريم (يبنيها 14_backdrop.py) — اختيارية
-const OUT_D=CFG.outro, FPS=30;
+/* 6.0: sfx.json بلا "outro" كان يطلّع المدة NaN و«0 فريم من NaN» ويخرج نجاح بصمت — الافتراضي 0 (بلا كرت ختام) */
+const OUT_D=(CFG.outro===undefined||CFG.outro===null)?0:Number(CFG.outro), FPS=30;
+if(CFG.outro===undefined) console.log('ℹ️ sfx.json بلا "outro" — أعتبره 0 (بلا كرت ختام)');
 function resolvePuppeteer(){
   for(const p of [process.env.PUPPETEER_PATH,'puppeteer-core','puppeteer',
       path.join(process.cwd(),'node_modules/puppeteer-core')]) {
@@ -51,7 +53,11 @@ async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))
   const mode=process.argv[3]||'all';
   const caps=JSON.parse(fs.readFileSync(W+'caps.json','utf8'));
   const NVF=fs.readdirSync(W+'vfr').filter(f=>f.endsWith('.jpg')).length;
-  const dur=caps.total+OUT_D;
+  const dur=Number(caps.total)+OUT_D;
+  /* 6.0: مدة مو رقم أو صفر = رسم فاضي ينجح بصمت — نوقف بصوت عالي قبل ما نفتح كروم */
+  if(!isFinite(dur)||Math.round(dur*FPS)<=0){
+    console.error('❌ المدة غلط ('+dur+') — caps.total='+caps.total+' · outro='+CFG.outro+'. افحص caps.json وsfx.json قبل الرسم.');
+    process.exit(1); }
   const b=await puppeteer.launch({executablePath:CHROME,headless:'new',
     args:['--no-sandbox','--allow-file-access-from-files','--font-render-hinting=none','--force-color-profile=srgb']});
   const p=await b.newPage();
@@ -146,9 +152,10 @@ async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))
     console.log('تم',drawn,'فريم مرسوم من',n,'— المدة',dur.toFixed(3));
     if(mode!=='range'){                  // ناقص فريم = تجميع مكسور، لازم ينكشف الحين
       let miss=0; for(let i=0;i<n;i++) if(!done(W+'out/'+String(i).padStart(5,'0')+'.jpg')) miss++;
-      if(miss)console.log('⚠️ ناقص',miss,'فريماً — أعد التشغيل قبل 06_encode.sh');
+      if(miss){ console.error('❌ ناقص',miss,'فريماً — أعد التشغيل قبل 06_encode.sh'); process.exitCode=1; }
+      if(drawn+skipped===0){ console.error('❌ صفر فريم انرسم — شي غلط بالمدة أو مجلد vfr'); process.exitCode=1; }
     }
   }
   await b.close();
-  setTimeout(()=>process.exit(0),300);   // (16 سبتمبر) كروم أحياناً ما يقفل فيتعلّق السكربت بعد ما يخلص الرسم — نخرج بأنفسنا
+  setTimeout(()=>process.exit(process.exitCode||0),300);   // (16 سبتمبر) كروم أحياناً ما يقفل فيتعلّق السكربت بعد ما يخلص الرسم — نخرج بأنفسنا
 })();

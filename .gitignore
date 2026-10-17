@@ -8,3 +8,5 @@ dist/
 # أدوات سويفت تنبني محلياً من ملفات .swift (03_cut_zoom.py يبني hdr2sdr) — ما تدخل المستودع ولا الإصدار
 video-ad-editor/scripts/hdr2sdr
 video-ad-editor/scripts/facetrack
+# deep-filter بايناري ينزل محلياً (--extras) — ما يدخل المستودع
+video-ad-editor/bin/

@@ -53,6 +53,13 @@ fi
 
 # ➕ الإضافات (v3.9، أفكار Palmier) — اختيارية، السكل يشتغل بدونها وكل وحدة ترجع للطريق القديم لو ناقصة:
 #    ‹deep-filter› تنظيف صوت ذكي (02c) · ‹transformers› البحث بالمعنى (26)
+# 🆕 6.0: pip القديم (قبل 23) ما يعرف --break-system-packages — كان يطلّع «no such option» ويفشل التنصيب.
+#    نجرّب عادي ← لو pip يعرف الخيار نجرّبه ← وإلا --user (يشتغل بكل نسخ pip وبلا صلاحيات مدير).
+pip_in(){ "$PY" -m pip install --quiet "$@" 2>/dev/null && return 0
+  if "$PY" -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+    "$PY" -m pip install --quiet --break-system-packages "$@" && return 0
+  fi
+  "$PY" -m pip install --quiet --user "$@"; }
 extras_status(){
   local e=()
   { [ -x "$SKILL/bin/deep-filter" ] || [ -x "$SKILL/bin/deep-filter.exe" ] || have deep-filter; } && e+=("تنظيف-الصوت✅") || e+=("تنظيف-الصوت—")
@@ -60,7 +67,7 @@ extras_status(){
   echo "${e[*]}"
 }
 if [ "$1" = "--extras" ]; then
-  pipx2(){ "$PY" -m pip install --quiet "$@" || "$PY" -m pip install --quiet --break-system-packages "$@"; }
+  pipx2(){ pip_in "$@"; }
   mkdir -p "$SKILL/bin"
   DFV=0.5.6
   case "$OS-$(uname -m)" in
@@ -125,7 +132,7 @@ fi
 line "الناقص: ${MISS[*]}"
 if [ $INSTALL -eq 0 ]; then line "شغّل: $0 --install"; exit 10; fi
 
-pipi(){ "$PY" -m pip install --quiet "$@" || "$PY" -m pip install --quiet --break-system-packages "$@"; }
+pipi(){ pip_in "$@"; }
 for m in "${MISS[@]}"; do
   case "$m" in
     ffmpeg|ffprobe)
