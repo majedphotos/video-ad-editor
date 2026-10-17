@@ -56,7 +56,7 @@
 | 72 | الجزيرة تتمدد | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
 | 73 | الحقيقة تنكشف | [thepreviewapp — Reels effects](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
 
-### توسعة 75–87 (17 أكتوبر 2026) — الدفعة ب من البحث `moves100-research.md` (74 «آية بسكينة» محجوز، ما انبنى). المعاينات بنفس سلويت 1–73 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+### توسعة 75–87 (17 أكتوبر 2026) — الدفعة ب من البحث `moves100-research.md` (74 انبنت بالدفعة ج تحت). المعاينات بنفس سلويت 1–73 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
 
 | # | الحركة | المصدر (فكرة الحركة) | الرخصة |
 |---|---|---|---|
@@ -73,3 +73,22 @@
 | 85 | فقاعة كلام | [Magic UI — components (Comic Text)](https://magicui.design/docs/components) · تتبّع الوجه: `facetrack.swift` (Vision) | MIT |
 | 86 | كاميرا ثانية | [BroadcastBeat — Simulate a multi-camera shoot with one camera](https://broadcastbeat.com/news/simulate-a-multi-camera-shoot-with-one-camera) | — (مقال) |
 | 87 | خط المسح | [thepreviewapp — Transition Scan / Slit Scan](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+
+### الدفعة ج 74 و88–100 (17 أكتوبر 2026) — آخر دفعة من البحث `moves100-research.md` (البنك = 100). المعاينات بنفس سلويت 1–87 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 74 | آية بسكينة | [IslamOnline — Quranic verses in flash films](https://fiqh.islamonline.net/en/quranic-verses-in-flash-films) (الآية كاملة ومحترمة) · خط [Amiri Quran](https://github.com/aliftype/amiri) (`motion/fonts/AmiriQuran-Regular.ttf`) | SIL OFL 1.1 (الخط — نصها بـ`motion/fonts/LICENSES.txt`) |
+| 88 | بوست يطلع | [Magic UI — components (Tweet Card)](https://magicui.design/docs/components) (بلا شعار أي منصة) | MIT |
+| 89 | الكاميرا تلحقك | [thepreviewapp — Body Frame](https://thepreviewapp.com/instagram-reels-transition-effects) · تتبّع الوجه: `facetrack.swift` (Vision) | — (ترند) |
+| 90 | صدى الكلمة | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (type repetition / outline reveal) | MIT |
+| 91 | بكفّك | البلقن نفسه: `scripts/29_handtrack.py` (تتبّع الكف، معتمد 27 سبتمبر) | MIT (البلقن) |
+| 92 | قص البنتو | [Magic UI — components (Bento Grid)](https://magicui.design/docs/components) | MIT |
+| 93 | فاتورة تطبع | [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (الأرقام تستاهل حركة) — الحركة نفسها اختراع، بلا مرجع مباشر | — (تحليل) |
+| 94 | بحث وجواب | [Magic UI — components (Typing Animation, Ripple)](https://magicui.design/docs/components) | MIT |
+| 95 | سحبة وتستقر | [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (بان سريع يهدأ لزوم آوت) | — (تحليل) |
+| 96 | موجة | [Remotion — warpPath()](https://www.remotion.dev/docs/paths/warp-path) (الفكرة، مكتوبة بشرائح كانفس) | — (توثيق) |
+| 97 | باب ينفتح | [gl-transitions — doorway](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) | MIT |
+| 98 | مؤشر ينقر | [Magic UI — components (Smooth Cursor, Pointer, Ripple)](https://magicui.design/docs/components) | MIT |
+| 99 | ذوبان الضوء | [gl-transitions — luma / luminance_melt](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) | MIT |
+| 100 | صدى الحركة | [CapCut — Editing trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) (velocity edits) | — (ترند) |

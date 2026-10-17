@@ -126,6 +126,7 @@ const FONT_FILES = [
   ['Tajawal', 'Tajawal-Bold.ttf', '700'],
   ['Tajawal', 'Tajawal-Black.ttf', '900'],
   ['Inter', 'Inter-VF.ttf', '100 900'],
+  ['Amiri Quran', 'AmiriQuran-Regular.ttf', '400'],     // عثماني للقرآن بس (FX.ayahCalm 74) — SIL OFL 1.1
 ];
 async function loadFonts(extra = []) {
   const list = FONT_FILES.map(([fam, file, weight]) => ({ fam, url: './fonts/' + file, weight })).concat(extra);

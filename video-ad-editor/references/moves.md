@@ -1,6 +1,6 @@
 # بنك الحركات — كل فيديو له لوحة حركات، وأنت تختار بوعي
 
-بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json` — 86 حركة من 17 أكتوبر (الرقم 74 محجوز)). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
+بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json` — 100 حركة من 17 أكتوبر). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
 **قرار المستخدم (13 أكتوبر):** «ابيك تكون غني بالحركات… وتكون واعي». هو ما يختار حركة حركة. أنت تختار لكل فيديو.
 
 | الملف | شنو فيه |
@@ -108,13 +108,14 @@ MV.ready(() => { const s = MV.wordTime(6, 0).s;
 
 ## 3د) الدفعة 75–87 (نسخ · خريطة · رافعة · طرفية · زجاج · وجه)
 
-`morphWord` (كلام) · `nuqtaCurtain glassLens scanLine` (انتقالات، تاخذ `A` و`B`) · `craneUp punchCut` (كاميرا) · `cloneTrio dotMap rimOutline terminalType lineChartDraw girihBloom speechBubble` (كروت وطبقات). **74 محجوز** (آية بسكينة — ما انبنت).
+`morphWord` (كلام) · `nuqtaCurtain glassLens scanLine` (انتقالات، تاخذ `A` و`B`) · `craneUp punchCut` (كاميرا) · `cloneTrio dotMap rimOutline terminalType lineChartDraw girihBloom speechBubble` (كروت وطبقات).
 - **القصّ (ماك):** `cloneTrio` و`rimOutline` (`mask: required`) — بلاه: 3 كروت فيديو / شعاع على إطار كرت. `girihBloom` (`optional`) ورا الشخص بالقصّ، وفوق الفيديو بلاه.
   `cloneTrio` ياخذ `personAt: MV.personAt` (النسخ متأخرة 0.2/0.4 ث) و`videoAt: MV.frameAt` للبديل — نفس شرط القصّ بـ3ج.
 - **الوجه (ماك، `face: optional` بالكتالوج)** — `speechBubble` و`punchCut`: إضافة المحرّك (17 أكتوبر):
   `python3 scripts/36_facetrack.py <work> <من> <إلى>` يطلّع `face.js` (نفس `facetrack.swift` حق البودكاست، منعّم σ=5 فريم). حطه بـcompose.html: `<script src="face.js"></script>`، ومرّر `face: MV.faceAt`.
   `MV.faceAt(t)` = `{x,y,w,h,mx,my}` بإحداثيات الكانفس (بنفس تأطير `MV.video`) أو `null` — والحركة ترجع لمكان افتراضي.
   `punchCut` يثبّت الوجه على أول فريم بكل لقطة (الكاميرا الحقيقية ما تلحق)، والحد ×2.
+- `glassLens` العدسة تشيل المشهد الجديد معها (`carry`)، فاللي بنص B يظل كامل داخلها — خل عنوان B كلمة أو كلمتين (أعرض شي ~400px) عشان ما تنقص كلمة على حافتها.
 - `scanLine` ياخذ `Aat: MV.frameAt` (القديم مجمّد تحت الخط). `craneUp` ياخذ `A` (الفيديو) و`B` (الكرت الجاي) — بعد `at + 0.5` ارسم `B` بنفسك. الكروت صور ثابتة (`cards`).
 - `dotMap` خريطتها مضمّنة (يابسة مبسّطة، من الأطلسي لليابان) — المدن برّا هالمدى ما تبين. `terminalType` الأمر والناتج إنقليزي (خط Menlo/monospace)، والتعليق العربي بسطره.
 ```js
@@ -124,7 +125,34 @@ MV.ready(() => { const s = MV.wordTime(5, 0).s;
   MV.scene('cam2', t => { if (t >= p && t < MV.lineSpan(7).e) FX.punchCut(MV, t, { s: p, out: MV.lineSpan(7).e, video: Y => MV.video(Y), face: MV.faceAt }); }, 'video'); });
 ```
 
-## 4) إضافة حركة جديدة (البنك يكبر — الهدف 100)
+## 3هـ) الدفعة ج: 74 و88–100 (الآية · بوست · فاتورة · بحث · باب · صدى)
+
+`ayahCalm echoStack warpWave` (كلام) · `bentoCut doorway lumaMelt` (انتقالات، تاخذ `A` و`B`) · `bodyFollow swishSettle motionEcho` (كاميرا) · `postCard palmHold receiptPrint searchBar pointerCursor` (كروت وطبقات).
+
+**⛔ 74 آية بسكينة (`ayahCalm`) — قواعد القرآن قبل الحركة:**
+- **النص من مصدر موثوق بس**: Tarteel MCP (`search_ayahs_text`) أو quran.com بالرسم العثماني، ومرّره `text` **كما جا حرفاً بحرف**. ⛔ لا تكتب آية من الذاكرة، ولا تعدّل حرف ولا تشكيل. الدالة ما تغيّر النص: تقسمه على الفراغات بس (وعلامة الوقف مثل ۗ تلتصق بكلمتها).
+- ⛔ **62 «نقاط تنزل» ممنوعة نهائياً على نص القرآن** (تفكك الرسم والإعجام)، ومثلها 66 والكشيدة والقلتش وأي حركة كلام ثانية. على الآية: `ayahCalm` بس (وورا الآية `girihBloom` 84 مسموحة — هندسة بلا كائنات).
+- `manual: true` بالكتالوج: اللوحة (`plan`) ما تختارها أبداً — تستخدمها بس لما الفيديو فيه آية.
+- الخط `Amiri Quran` (عثماني، SIL OFL — `motion/fonts/AmiriQuran-Regular.ttf`): بالمحرّك محمّل؛ بريل الكلام `04_render_frames.js`/`08_safe_check.js` ينسخونه لمجلد الشغل لما compose.html فيه `ayahCalm`، و`MV.needFont` يحمّله (الفريم ينتظر الخط).
+- رقم الآية داخل ۝: `digits: 'arabic'` (الافتراضي، ٢٨ — ينرسم مباشرة بلا تحويل الأرقام الغربي حق المحرّك) أو `'western'`. `surah` فوق، و`ref` (مثلاً `'13 : 28'`) تحت اختياري.
+- الخلفية الثيم أو `video` مغمّق 60% — بلا صور كائنات حية فوق الآية. الكلمات تطلع بهدوء وحدة وحدة (`stagger`، أو `times` من توقيت التلاوة).
+```js
+MV.ready(() => { const s = MV.lineSpan(4).s;   // النص من search_ayahs_text كما هو
+  MV.scene('ayah', t => { if (t >= s && t < s + 6) FX.ayahCalm(MV, t, { s, out: s + 5.3, text: AYAH_TEXT, surah: 'الرعد', ayah: 28, ref: '13 : 28' }); }); });
+```
+**الباقي:**
+- `bodyFollow` (89) يحتاج الوجه (`face: MV.faceAt` من `36_facetrack.py` — ماك)؛ بلاه يرجع لـ`handheld` (31). بطبقة `'video'`.
+- `motionEcho` (100) يحتاج فريم بوقت ثاني: `videoAt: MV.frameAt`، وبالقصّ (`mask: optional`) `person: MV.person, personAt: MV.personAt` فالصدى على جسمك بس. بلاهم تتخطى. حطها مع `FX.ramp` (20) على نفس الضربة.
+- `palmHold` (91) يحتاج الكف (`hand: optional`): `python3 scripts/29_handtrack.py <work> <من> <إلى>` يطلّع `palm.js` — حطه بـcompose.html ومرّر `palm: MV.palmAt`. بلاه العنصر ثابت تحت يسار.
+- `postCard` (88): ⚠ لا تسوي بوست مزيف لشخص حقيقي — يا لقطة حقيقية، يا كلام صاحب الحساب نفسه. بلا شعار أي منصة.
+- `receiptPrint` (93) الأسعار بأرقام غربية والعملة من `currency`. `searchBar` (94) و`pointerCursor` (98) سهم ماوس بحبر الثيم؛ `pointerCursor` ياخذ `steps` (عدة نقرات) و`targets` (أزرار يرسمها).
+- `swishSettle` (95) بداية مشهد (يلف `draw`)، يكبر لحاله لين ما يبين طرف الفريم. `doorway` (97) و`lumaMelt` (99) يرسمون `A` بكانفس جانبي.
+```js
+MV.ready(() => { const h = MV.wordTime(3, 2).s;
+  MV.scene('echo', t => { if (t >= h - 0.1 && t < h + 0.7) FX.motionEcho(MV, t, { s: h, video: Y => MV.video(Y), videoAt: MV.frameAt, person: MV.person, personAt: MV.personAt }); }, 'video'); });
+```
+
+## 4) إضافة حركة جديدة (البنك وصل 100 — أي زيادة برقم جديد بالآخر)
 
 0. عطها `role` و`energy` و`families` و`cues` بالكتالوج. **العائلات الضعيفة أولاً**: `plan --dry` لكل عائلة وشوف وين الخيارات قليلة.
 1. دالة جديدة بـ`moves.js` بنفس الشكل `FX.<id>(ctx, t, o)`، والألوان من `ctx.P`.

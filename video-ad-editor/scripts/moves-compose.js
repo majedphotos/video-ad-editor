@@ -11,6 +11,8 @@
      MV.person(Y, R?)       المتحدث مقصوص لهالفريم (ماك: 11_behind_text.js person) — MV.person.ok() يقول موجود ولا
      MV.frameAt(Y, t, R?) / MV.personAt(Y, t, R?)  الفريم/القصّ بوقت ثاني (تجميد 65) — 04_render_frames ينتظر MV.settle() قبل اللقطة
      MV.faceAt(t)           مستطيل الوجه والفم عند t (face.js من 36_facetrack.py — ماك) أو null — للحركات 85 و86: face: MV.faceAt
+     MV.palmAt(t)           الكف عند t (palm.js من 29_handtrack.py — ماك) أو null — للحركة 91: palm: MV.palmAt
+     MV.needFont(fam)       يحمّل خط إضافي من مجلد الشغل ('Amiri Quran' للآية 74) — true لو جاهز
      MV.panel(Y, fn?)       يعبّي Y بلون الخلفية ثم fn(Y) — مشهد B جاهز للانتقال
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
@@ -264,8 +266,23 @@
   function frameAt(Y, t, R) { const h = held('v', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
   function personAt(Y, t, R) { const h = held('p', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
   personAt.ok = t => { const h = held('p', t); return h.ok || !h.bad; };   // لسا يتحمّل = نفترض موجود (settle يحسمها قبل اللقطة)
-  const pending = () => [...HELD.values()].filter(h => !h.ok && !h.bad).length;
-  const settle = () => Promise.all([...HELD.values()].map(h => h.p));
+  /* خط إضافي بالطلب (74 آية بسكينة: 'Amiri Quran'): MV.needFont(fam) يرجّع true لو جاهز، وإلا يبدأ التحميل من مجلد الشغل
+     (04_render_frames.js و08_safe_check.js ينسخون AmiriQuran-Regular.ttf من motion/fonts لما compose.html فيه ayahCalm) ويرجّع false —
+     الحركة تتخطى الرسم، وsettle() تنتظر الخط وتعيد الفريم. */
+  const FONTREQ = { 'Amiri Quran': 'AmiriQuran-Regular.ttf' }, FONTS = new Map();
+  function needFont(fam) {
+    let h = FONTS.get(fam); if (h) return h.ok;
+    h = { ok: false, bad: false }; FONTS.set(fam, h);
+    try { if ([...document.fonts].some(f => f.family.replace(/["']/g, '') === fam && f.status === 'loaded')) { h.ok = true; h.p = Promise.resolve(); return true; } } catch (e) {}
+    const file = FONTREQ[fam]; if (!file) { h.bad = true; h.p = Promise.resolve(); return false; }
+    const face = new FontFace(fam, 'url("' + file + '")', { weight: '400', style: 'normal' });
+    h.p = face.load().then(f => { document.fonts.add(f); h.ok = true; }, () => { h.bad = true; console.error('⚠️ MV.needFont: ما لقيت ' + file + ' بمجلد الشغل (انسخه من motion/fonts)'); });
+    return false;
+  }
+  const pending = () => [...HELD.values(), ...FONTS.values()].filter(h => !h.ok && !h.bad).length;
+  const settle = () => Promise.all([...HELD.values(), ...FONTS.values()].map(h => h.p));
+  /* الكف (91 بكفّك): palm.js من scripts/29_handtrack.py يعرّف window.palmAt(t) → {x,y,c} أو null. MV.palmAt نفسها بأمان (null بلا palm.js). */
+  function palmAt(t) { return typeof G.palmAt === 'function' ? G.palmAt(t) : null; }
   /* الوجه بوقت t (75–87: فقاعة 85 · كاميرا ثانية 86): من face.js (scripts/36_facetrack.py — ماك) بنفس تأطير MV.video.
      يرجّع {x,y,w,h,mx,my} بإحداثيات الكانفس (mx,my = الفم تقريباً) أو null (بلا face.js أو برّا المدى → الحركة ترجع لمكانها الافتراضي). */
   function faceAt(t) {
@@ -304,7 +321,7 @@
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
-    frameAt, personAt, pending, settle, faceAt,
+    frameAt, personAt, pending, settle, faceAt, needFont, palmAt,
   };
   G.MV = MV;
 })();
