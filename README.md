@@ -7,6 +7,9 @@
 
 <p align="center"><a href="https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin"><img src="_pkg/btn-install.png" alt="حمّل البلقن" width="420"></a></p>
 
+<p align="center"><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE"><img src="_pkg/yt-playlist.jpg" alt="شرح بلقن تحرير الفيديو كامل على يوتيوب" width="620"></a></p>
+<p align="center">📺 <b><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE">الشرح الكامل على يوتيوب</a></b> — 11 فيديو قصير (حوالي نص ساعة): التثبيت، صفحة التعارف، وشلون تطلع أول فيديو، خطوة بخطوة.</p>
+
 <a id="install"></a>
 
 ## ⚡ ثبّت البلقن — ثلاث طرق
