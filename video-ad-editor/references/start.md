@@ -120,10 +120,14 @@ python3 scripts/00_onboard.py onacc <work>
 | `badgeUntil` | شارة الحساب. مطفية (0) — الاسم بالمنصة وبكرت النهاية. `3` = أول 3 ثوانٍ لو طلبها |
 | `grade` | مطفي دايماً — شوف قاعدة «صفر تعديل لوني» |
 | `capStyle` | ستايل الكابشن ← `references/word-fx.md` |
+| `capStill` | `true` = كابشن بلا حركة: الكرت يدخل ويطلع بالشفافية بس، والكلمة ما تقفز ولا تنبض. تلوين الكلمة المنطوقة والكبسولة يبقى. الافتراضي الحركة ← `references/word-fx.md` |
+| `bar` | `false` = بلا شريط التقدّم. الافتراضي ظاهر. (مو `capStyle: "bar"` — هذاك ستايل كابشن) |
 | `pace` | `"calm"` إيقاع هادي ← `references/explainer-and-pace.md` |
 | `hookZoom` | زوم ناعم على وجهه أول الهوك (ثواني = نهاية الهوك). مطفي افتراضاً |
 | `outro` | كرت الختام `{l1,l2,chips,cta,word,sub}` |
 | `hook` | جملة هوك مكتوبة لريلات البودكاست — يكتبها `22_hook.py apply`، لا تكتبه باليد |
+
+**إعلان فخم هادي** (ماجد 17 أكتوبر): `"capStill": true` + `"bar": false`، وأي `FX.doorway` يفتح على وجهه ياخذ `zoomB: false` (بلا زوم على الوجه).
 
 **`hookZoom` بالتفصيل:**
 - بعد الخطوة 6 شغّل `python3 scripts/22b_hook_center.py <work>` — يكتب `hookCenter` على وجهه.
