@@ -55,3 +55,21 @@
 | 71 | ميلة الفصل | [SozAI — تحليل مونتاج Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (ميلة ثلاثية لعناوين الفصول) | — (تحليل) |
 | 72 | الجزيرة تتمدد | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
 | 73 | الحقيقة تنكشف | [thepreviewapp — Reels effects](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+
+### توسعة 75–87 (17 أكتوبر 2026) — الدفعة ب من البحث `moves100-research.md` (74 «آية بسكينة» محجوز، ما انبنى). المعاينات بنفس سلويت 1–73 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 75 | نسخ مني | [thepreviewapp — Duplicate / My Tiny Army](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+| 76 | ستارة نقاط القلم | [gl-transitions — PolkaDotsCurtain](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) (الفكرة، بمعيّنات نقطة القلم) | MIT |
+| 77 | خريطة نقاط | [Magic UI — components (Dotted Map)](https://magicui.design/docs/components) · اليابسة مضلّعات مبسّطة مرسومة يدوياً داخل `moves.js` (بلا بيانات خارجية) | MIT |
+| 78 | خط حولك | [Magic UI — components (Border Beam)](https://magicui.design/docs/components) · الحدود من قصّ البلقن نفسه (تتبّع مور + إغلاق) | MIT |
+| 79 | رافعة | [Videobolt — Motion graphics trends 2026](https://blog.videobolt.net/post/top-motion-graphics-trends-2026) · [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) | — (تحليل) |
+| 80 | كلمة تذوب بكلمة | [remotion-dev/morph-text](https://github.com/remotion-dev/morph-text) (فكرة الغباش + عتبة الألفا، مكتوبة من جديد بالكانفس) | MIT |
+| 81 | طرفية | [Magic UI — components (Terminal)](https://magicui.design/docs/components) | MIT |
+| 82 | عدسة زجاج | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
+| 83 | خط يرتسم | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (stroke reveal) · تطوير `MK.lineChart` | MIT (البلقن) |
+| 84 | زخرفة تتفتح | [Girih — Wikipedia](https://en.wikipedia.org/wiki/Girih) (شبكة مثمّنات ونجوم ثمانية) | CC-BY-SA (المرجع) |
+| 85 | فقاعة كلام | [Magic UI — components (Comic Text)](https://magicui.design/docs/components) · تتبّع الوجه: `facetrack.swift` (Vision) | MIT |
+| 86 | كاميرا ثانية | [BroadcastBeat — Simulate a multi-camera shoot with one camera](https://broadcastbeat.com/news/simulate-a-multi-camera-shoot-with-one-camera) | — (مقال) |
+| 87 | خط المسح | [thepreviewapp — Transition Scan / Slit Scan](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |

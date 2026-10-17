@@ -10,6 +10,7 @@
      MV.video(Y, R?)        يرسم فريم الفيديو الحالي على Y بمستطيل R (افتراضي ملء الشاشة) — للانتقالات وpushIn
      MV.person(Y, R?)       المتحدث مقصوص لهالفريم (ماك: 11_behind_text.js person) — MV.person.ok() يقول موجود ولا
      MV.frameAt(Y, t, R?) / MV.personAt(Y, t, R?)  الفريم/القصّ بوقت ثاني (تجميد 65) — 04_render_frames ينتظر MV.settle() قبل اللقطة
+     MV.faceAt(t)           مستطيل الوجه والفم عند t (face.js من 36_facetrack.py — ماك) أو null — للحركات 85 و86: face: MV.faceAt
      MV.panel(Y, fn?)       يعبّي Y بلون الخلفية ثم fn(Y) — مشهد B جاهز للانتقال
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
@@ -265,6 +266,15 @@
   personAt.ok = t => { const h = held('p', t); return h.ok || !h.bad; };   // لسا يتحمّل = نفترض موجود (settle يحسمها قبل اللقطة)
   const pending = () => [...HELD.values()].filter(h => !h.ok && !h.bad).length;
   const settle = () => Promise.all([...HELD.values()].map(h => h.p));
+  /* الوجه بوقت t (75–87: فقاعة 85 · كاميرا ثانية 86): من face.js (scripts/36_facetrack.py — ماك) بنفس تأطير MV.video.
+     يرجّع {x,y,w,h,mx,my} بإحداثيات الكانفس (mx,my = الفم تقريباً) أو null (بلا face.js أو برّا المدى → الحركة ترجع لمكانها الافتراضي). */
+  function faceAt(t) {
+    const F = G.FACE; if (!F || !F.pts || !F.pts.length || t < F.from - 0.05 || t > F.to + 0.05) return null;
+    const p = F.pts[Math.min(F.pts.length - 1, Math.max(0, Math.round((t - F.from) * F.fps)))], sw = F.sw, shh = F.sh;
+    const sc = Math.max(1080 / sw, 1920 / shh), cw = 1080 / sc, ch = 1920 / sc, fa = typeof FACE_ANCH === 'number' ? FACE_ANCH : 0.3, ox = (sw - cw) / 2, oy = (shh - ch) * fa;
+    const x = (p[1] * sw - ox) * sc, y = (p[2] * shh - oy) * sc, w = p[3] * sw * sc, h = p[4] * shh * sc;
+    return { x, y, w, h, mx: x + w / 2, my: y + h * 0.78 };
+  }
   function panel(Y, fn) { Y.save(); Y.fillStyle = PAL().bg; Y.fillRect(0, 0, 1080, 1920); Y.restore(); if (fn) { Y.save(); fn(Y); Y.restore(); } }
   const HIDE = [];
   function hideCaption(s, e) {
@@ -294,7 +304,7 @@
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
-    frameAt, personAt, pending, settle,
+    frameAt, personAt, pending, settle, faceAt,
   };
   G.MV = MV;
 })();

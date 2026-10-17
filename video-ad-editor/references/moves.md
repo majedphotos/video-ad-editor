@@ -1,6 +1,6 @@
 # بنك الحركات — كل فيديو له لوحة حركات، وأنت تختار بوعي
 
-بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json` — 73 حركة من 17 أكتوبر). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
+بنك حركات مرقّم يكبر مع الوقت (`motion/moves/catalog.json` — 86 حركة من 17 أكتوبر (الرقم 74 محجوز)). كل حركة: دالة جاهزة بـ`motion/moves.js` + معاينة 4 ث + مصدرها.
 **قرار المستخدم (13 أكتوبر):** «ابيك تكون غني بالحركات… وتكون واعي». هو ما يختار حركة حركة. أنت تختار لكل فيديو.
 
 | الملف | شنو فيه |
@@ -104,6 +104,24 @@ MV.ready(() => { const s = MV.wordTime(4, 0).s;
 ```js
 MV.ready(() => { const s = MV.wordTime(6, 0).s;
   MV.scene('freeze', t => { if (t >= s && t < s + 2.4) FX.stickerFreeze(MV, t, { s, out: s + 2, person: MV.person, personAt: MV.personAt, video: Y => MV.video(Y), videoAt: MV.frameAt, text: 'وقف!' }); }); });
+```
+
+## 3د) الدفعة 75–87 (نسخ · خريطة · رافعة · طرفية · زجاج · وجه)
+
+`morphWord` (كلام) · `nuqtaCurtain glassLens scanLine` (انتقالات، تاخذ `A` و`B`) · `craneUp punchCut` (كاميرا) · `cloneTrio dotMap rimOutline terminalType lineChartDraw girihBloom speechBubble` (كروت وطبقات). **74 محجوز** (آية بسكينة — ما انبنت).
+- **القصّ (ماك):** `cloneTrio` و`rimOutline` (`mask: required`) — بلاه: 3 كروت فيديو / شعاع على إطار كرت. `girihBloom` (`optional`) ورا الشخص بالقصّ، وفوق الفيديو بلاه.
+  `cloneTrio` ياخذ `personAt: MV.personAt` (النسخ متأخرة 0.2/0.4 ث) و`videoAt: MV.frameAt` للبديل — نفس شرط القصّ بـ3ج.
+- **الوجه (ماك، `face: optional` بالكتالوج)** — `speechBubble` و`punchCut`: إضافة المحرّك (17 أكتوبر):
+  `python3 scripts/36_facetrack.py <work> <من> <إلى>` يطلّع `face.js` (نفس `facetrack.swift` حق البودكاست، منعّم σ=5 فريم). حطه بـcompose.html: `<script src="face.js"></script>`، ومرّر `face: MV.faceAt`.
+  `MV.faceAt(t)` = `{x,y,w,h,mx,my}` بإحداثيات الكانفس (بنفس تأطير `MV.video`) أو `null` — والحركة ترجع لمكان افتراضي.
+  `punchCut` يثبّت الوجه على أول فريم بكل لقطة (الكاميرا الحقيقية ما تلحق)، والحد ×2.
+- `scanLine` ياخذ `Aat: MV.frameAt` (القديم مجمّد تحت الخط). `craneUp` ياخذ `A` (الفيديو) و`B` (الكرت الجاي) — بعد `at + 0.5` ارسم `B` بنفسك. الكروت صور ثابتة (`cards`).
+- `dotMap` خريطتها مضمّنة (يابسة مبسّطة، من الأطلسي لليابان) — المدن برّا هالمدى ما تبين. `terminalType` الأمر والناتج إنقليزي (خط Menlo/monospace)، والتعليق العربي بسطره.
+```js
+MV.ready(() => { const s = MV.wordTime(5, 0).s;
+  MV.scene('bubble', t => { if (t >= s && t < s + 3) FX.speechBubble(MV, t, { s, out: MV.lineSpan(5).e, line: 5, face: MV.faceAt }); });
+  const p = MV.wordTime(7, 0).s;
+  MV.scene('cam2', t => { if (t >= p && t < MV.lineSpan(7).e) FX.punchCut(MV, t, { s: p, out: MV.lineSpan(7).e, video: Y => MV.video(Y), face: MV.faceAt }); }, 'video'); });
 ```
 
 ## 4) إضافة حركة جديدة (البنك يكبر — الهدف 100)

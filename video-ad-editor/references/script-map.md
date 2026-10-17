@@ -41,6 +41,7 @@
 | `40_capcut.py` | مونتاج داخل كاب كت: خطة من التفريغ ← موشن ProRes شفاف + مؤثرات ← يكتب مشروع كاب كت قابل للتعديل (`projects` · `skeleton` · `check` · `stills` · `render` · `sfx` · `write` · `all`) | كاب كت |
 | `41_review.py` + `review.TEMPLATE.html` | صفحة مراجعة الحلقة: كل الريلات والكاروسيل بصفحة وحدة (ملاحظة · اعتمد · تحميل) تنتشر خاصة على claude.ai — `references/review-page.md` | بودكاست |
 | `29_handtrack.py` + `handpose.swift` | تتبّع الكف (Vision) → `palm.js` منعّم: عنصر يمشي مع الإيد | مشترك (ماك) |
+| `36_facetrack.py` + `facetrack.swift` | تتبّع الوجه (Vision) → `face.js` منعّم: `MV.faceAt(t)` لحركات المعرض 85 و86 (`references/moves.md` 3د) | مشترك (ماك) |
 | `22b_hook_center.py` | مركز زوم الهوك = وجهه → `theme.hookCenter` | الخفيف (ماك) |
 | `30_demo.js` | ديمو سينمائي: تسجيل شاشة/لقطات موقع داخل إطار جوال/متصفح + زوم على نقطة + ميلان 3D + علامة ضغط + عنوان | مشترك |
 | `31_device3d.js` + `motion/device3d.html` | آيفون/ماك بوك ثلاثي الأبعاد حقيقي (three.js، معدن وزجاج وظل) بنفس `demo.json` | مشترك |
