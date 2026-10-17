@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent). mask: required (تحتاج قصّ الشخص — mac: true، والبديل بلا قصّ كرت فيديو) | optional (أحلى بالقصّ وتشتغل بلاه).",
+ "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent). mask: required (تحتاج قصّ الشخص — mac: true، والبديل بلا قصّ كرت فيديو) | optional (أحلى بالقصّ وتشتغل بلاه). fallback = شنو يطلع بلا قصّ (من 62). face: optional = تستخدم تتبع الوجه (face.js من 36_facetrack.py — ماك) وبلاه مكان افتراضي (من 85). hand: optional = تستخدم تتبع الكف (palm.js من 29_handtrack.py — ماك) وبلاه مكان ثابت (91). manual: true = ما تنختار باللوحة أبداً، تنستخدم بس لما محتواها موجود (74 الآية — نص قرآن من مصدر موثوق).",
  "moves": [
   {
    "n": 1,
@@ -1378,6 +1378,936 @@
    ],
    "mask": "required",
    "mac": true
+  },
+  {
+   "n": 62,
+   "id": "ijamDrop",
+   "cat": "text",
+   "name": "نقاط تنزل",
+   "sub": "الرسم أولاً ثم الإعجام",
+   "desc": "السطر يطلع بلا نقاط مثل المصاحف الأولى، والنقاط تنزل وحدة وحدة من اليمين وتستقر بنقرة حبر، وآخرها يلوّن الكلمة المفتاح. ممنوع على نص القرآن.",
+   "source": {
+    "label": "Arabic diacritics — Wikipedia (المصاحف الأولى بلا نقاط)",
+    "url": "https://en.wikipedia.org/wiki/Arabic_diacritics"
+   },
+   "preview": "previews/62.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "reveal",
+    "emphasis"
+   ]
+  },
+  {
+   "n": 63,
+   "id": "qalamWrite",
+   "cat": "text",
+   "name": "القلم يكتب",
+   "sub": "كتابة بإيقاع القلم",
+   "desc": "كل جزء موصول من الكلمة ينكتب بحافة قلم مايلة، والقلم يرفع بين الأجزاء، والحبر يطلع فاتح ويجف، والنقاط تنحط بعد جزئها.",
+   "source": {
+    "label": "GitLab Pajamas — Motion (stroke reveal)",
+    "url": "https://design.gitlab.com/brand-design/motion"
+   },
+   "preview": "previews/63.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "reveal"
+   ]
+  },
+  {
+   "n": 64,
+   "id": "videoText",
+   "cat": "text",
+   "name": "كلمة بالفيديو",
+   "sub": "الفيديو داخل الحروف",
+   "desc": "كلمة ضخمة والفيديو الحي يشتغل داخل حروفها بس، وبالطلعة الكاميرا تدخل الحرف لين يصير الفيديو الشاشة كلها.",
+   "source": {
+    "label": "Magic UI — Video Text",
+    "url": "https://magicui.design/docs/components/video-text"
+   },
+   "preview": "previews/64.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch",
+    "onetake"
+   ],
+   "cues": [
+    "emphasis",
+    "hit",
+    "reveal"
+   ]
+  },
+  {
+   "n": 65,
+   "id": "stickerFreeze",
+   "cat": "card",
+   "name": "ستيكر",
+   "sub": "تجميد بحد أبيض",
+   "desc": "فلاش، والخلفية تصير لون هويتك بنقاط هافتون، وأنت مجمّد ستيكر بحد أبيض يتقشّر، وستيكر كلمة ينلزق. ماك بس (قصّ الشخص)؛ بلاه الفريم كامل يتجمّد صورة بولارويد.",
+   "source": {
+    "label": "thepreviewapp — Freeze Frame",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/65.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "hit",
+    "emphasis",
+    "contrast"
+   ],
+   "mask": "required",
+   "fallback": "بولارويد: الفريم كامل مجمّد بحد أبيض ونفس التقشير",
+   "mac": true
+  },
+  {
+   "n": 66,
+   "id": "joinSnap",
+   "cat": "text",
+   "name": "حروف تتلاصق",
+   "sub": "الوصل يتكوّن قدامك",
+   "desc": "الكلمة تطلع حروف منفصلة كل حرف بشكله المنفرد، وبعدين تنسحب لبعض وتتلاصق وتصير الكلمة المتصلة بلمعة على الوصل.",
+   "source": {
+    "label": "Zero-width non-joiner — Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zero-width_non-joiner"
+   },
+   "preview": "previews/66.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "emphasis",
+    "contrast"
+   ]
+  },
+  {
+   "n": 67,
+   "id": "kufiGrid",
+   "cat": "text",
+   "name": "كوفي مربع",
+   "sub": "الكلمة تنبني بلاط",
+   "desc": "الكلمة تنبني بلاط على شبكة مثل الخط الكوفي المربع، عمود عمود من اليمين، وبعدين ترجع للنص الحاد بنفس المكان.",
+   "source": {
+    "label": "Tuts+ — Square Kufic",
+    "url": "https://design.tutsplus.com/tutorials/creative-arabic-calligraphy-square-kufic--cms-23012"
+   },
+   "preview": "previews/67.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "emphasis",
+    "tech"
+   ]
+  },
+  {
+   "n": 68,
+   "id": "beamConnect",
+   "cat": "card",
+   "name": "شعاع الربط",
+   "sub": "أدوات مربوطة ببعض",
+   "desc": "أيقونات حول مركز، ومسارات منحنية بينها، وشعاع ضوء يمشي عليها والعقدة تنبض لما يوصلها. لأي ربط أو سير عمل.",
+   "source": {
+    "label": "Magic UI — Animated Beam",
+    "url": "https://magicui.design/docs/components/animated-beam"
+   },
+   "preview": "previews/68.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "tech",
+    "list"
+   ]
+  },
+  {
+   "n": 69,
+   "id": "pageTurnRTL",
+   "cat": "transition",
+   "name": "صفحة كتاب عربي",
+   "sub": "تنقلب من اليسار",
+   "desc": "الصفحة تنقلب مثل الكتاب العربي (كعبه يمين): خط طي مايل يمشي، وظهر الصفحة باهت، وظل على المشهد الجديد.",
+   "source": {
+    "label": "gl-transitions — InvertedPageCurl",
+    "url": "https://github.com/gl-transitions/gl-transitions/tree/master/transitions"
+   },
+   "preview": "previews/69.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 70,
+   "id": "lightRays",
+   "cat": "card",
+   "name": "أشعة من وراك",
+   "sub": "ضوء يطلع من وراك",
+   "desc": "أشعة ضوء تطلع من ورا راسك وتلف ببطء. بالقصّ (ماك) الأشعة ورا جسمك؛ بلاه تنزل من فوق مثل ضوء شباك.",
+   "source": {
+    "label": "Magic UI — Light Rays",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/70.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "reveal",
+    "emphasis"
+   ],
+   "mask": "optional",
+   "fallback": "الأشعة تنزل من فوق على الفيديو بـscreen"
+  },
+  {
+   "n": 71,
+   "id": "tilt3D",
+   "cat": "camera",
+   "name": "ميلة الفصل",
+   "sub": "عنوان فصل بمنظور",
+   "desc": "الفيديو يصير لوح يميل بمنظور ثلاثي ويصغر، وعنوان الفصل يطفو قدامه، ويرجع. نفس الحركة لكل فصل بالفيديو.",
+   "source": {
+    "label": "SozAI — تحليل مونتاج Iman Gadzhi",
+    "url": "https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md"
+   },
+   "preview": "previews/71.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 72,
+   "id": "dynamicIsland",
+   "cat": "card",
+   "name": "الجزيرة تتمدد",
+   "sub": "حبّة تصير إشعار",
+   "desc": "حبّة سودا فوق تتمدد بسبرنق لكرت فيه أيقونة وسطرين ورقم يعد، ووراها زجاج من الفيديو، وترجع حبّة.",
+   "source": {
+    "label": "Apple Newsroom — Liquid Glass",
+    "url": "https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/"
+   },
+   "preview": "previews/72.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "calm",
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "cta",
+    "number",
+    "reveal"
+   ]
+  },
+  {
+   "n": 73,
+   "id": "redact",
+   "cat": "text",
+   "name": "الحقيقة تنكشف",
+   "sub": "أشرطة سرية تنشال",
+   "desc": "السطر مكتوب وكلمات مغطاة بأشرطة حبر، كل شريط ينشال بوقت كلمته فتنكشف بلون الهوية، ومع آخر كشف ختم «سري».",
+   "source": {
+    "label": "thepreviewapp — Reels effects",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/73.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "contrast"
+   ]
+  },
+  {
+   "n": 74,
+   "id": "ayahCalm",
+   "name": "آية بسكينة",
+   "sub": "القرآن بخط عثماني",
+   "cat": "text",
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm"
+   ],
+   "cues": [],
+   "desc": "الآية بخط عثماني داخل إطار هندسي رفيع يرتسم، والكلمات تطلع بهدوء وحدة وحدة، وآخرها ۝ برقم الآية. للآيات بس، والنص من مصدر موثوق كما هو.",
+   "preview": "previews/74.mp4",
+   "source": {
+    "label": "IslamOnline — Quranic verses in flash films",
+    "url": "https://fiqh.islamonline.net/en/quranic-verses-in-flash-films"
+   },
+   "bonus": false,
+   "manual": true
+  },
+  {
+   "n": 75,
+   "id": "cloneTrio",
+   "cat": "card",
+   "name": "نسخ مني",
+   "sub": "ثلاث نسخ منك",
+   "desc": "نسختين منك تطلع وراك يمين ويسار بومضة تصفيقة، وعلى كل نسخة ملصق — «فيه 3 أنواع ناس». مع القصّ المتأخر تتحرك كل نسخة بإيقاعها. ماك بس (قصّ الشخص)؛ بلاه 3 كروت فيديو.",
+   "source": {
+    "label": "thepreviewapp — Duplicate / My Tiny Army",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/75.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "contrast",
+    "list"
+   ],
+   "mask": "required",
+   "fallback": "3 كروت فيديو جنب بعض (المتأخرة بـframeAt) والملصقات فوقها",
+   "mac": true
+  },
+  {
+   "n": 76,
+   "id": "nuqtaCurtain",
+   "cat": "transition",
+   "name": "ستارة نقاط القلم",
+   "sub": "معيّنات تفتح المشهد",
+   "desc": "معيّنات مايلة بشكل نقطة القلم العربي تكبر من نقطة وتنتشر لين تغطي الشاشة بالمشهد الجديد، وحوافها بلون الهوية.",
+   "source": {
+    "label": "gl-transitions — PolkaDotsCurtain",
+    "url": "https://github.com/gl-transitions/gl-transitions/tree/master/transitions"
+   },
+   "preview": "previews/76.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": []
+  },
+  {
+   "n": 77,
+   "id": "dotMap",
+   "cat": "card",
+   "name": "خريطة نقاط",
+   "sub": "من الكويت للعالم",
+   "desc": "خريطة نقاط تطلع دايرياً من الكويت، دبوس ينبض، وأقواس تطير للمدن وعند كل وصول عدّاد، وتحتها رقم المجموع.",
+   "source": {
+    "label": "Magic UI — Dotted Map",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/77.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "number",
+    "reveal"
+   ]
+  },
+  {
+   "n": 78,
+   "id": "rimOutline",
+   "cat": "card",
+   "name": "خط حولك",
+   "sub": "حد مضيء على جسمك",
+   "desc": "خط بلون الهوية يرتسم على حدودك من فوق راسك للجهتين، وبعدها نقطة مضيئة تلف عليها. ماك بس (قصّ الشخص)؛ بلاه الشعاع يلف على كرت الفيديو.",
+   "source": {
+    "label": "Magic UI — Border Beam",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/78.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "calm"
+   ],
+   "cues": [
+    "emphasis"
+   ],
+   "mask": "required",
+   "fallback": "الفيديو كرت بزوايا دائرية والشعاع يلف على إطاره",
+   "mac": true
+  },
+  {
+   "n": 79,
+   "id": "craneUp",
+   "cat": "camera",
+   "name": "رافعة",
+   "sub": "الصورة الأكبر",
+   "desc": "الكاميرا تبدأ لاصقة بالفيديو، وترتفع وتميل فوق طاولة كروت حوله، وبالآخر تنزل على الكرت الجاي لين يصير الشاشة.",
+   "source": {
+    "label": "Videobolt — Motion graphics trends 2026",
+    "url": "https://blog.videobolt.net/post/top-motion-graphics-trends-2026"
+   },
+   "preview": "previews/79.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "editorial"
+   ],
+   "cues": [
+    "reveal",
+    "list"
+   ]
+  },
+  {
+   "n": 80,
+   "id": "morphWord",
+   "cat": "text",
+   "name": "كلمة تذوب بكلمة",
+   "sub": "من خوف لثقة",
+   "desc": "الكلمة الأولى تتغبّش وتذوب، والثانية تتكوّن من نفس السائل، واللون يمشي من الحبر للهوية.",
+   "source": {
+    "label": "remotion-dev/morph-text",
+    "url": "https://github.com/remotion-dev/morph-text"
+   },
+   "preview": "previews/80.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "contrast"
+   ]
+  },
+  {
+   "n": 81,
+   "id": "terminalType",
+   "cat": "card",
+   "name": "طرفية",
+   "sub": "أمر واحد وخلص",
+   "desc": "نافذة ترمنال: الأمر ينكتب حرف حرف بمؤشر، الناتج يتدفق، دوّامة تحميل، وعلامة صح وتعليق عربي.",
+   "source": {
+    "label": "Magic UI — Terminal",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/81.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "tech"
+   ]
+  },
+  {
+   "n": 82,
+   "id": "glassLens",
+   "cat": "transition",
+   "name": "عدسة زجاج",
+   "sub": "انتقال iOS 26",
+   "desc": "عدسة زجاج تدخل من اليمين وتستقر، داخلها المشهد الجديد مكبّر بلمعة وهامش لوني، وبعدين تكبر لين تغطي الشاشة.",
+   "source": {
+    "label": "Apple Newsroom — Liquid Glass",
+    "url": "https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/"
+   },
+   "preview": "previews/82.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": []
+  },
+  {
+   "n": 83,
+   "id": "lineChartDraw",
+   "cat": "card",
+   "name": "خط يرتسم",
+   "sub": "نمو بالأرقام",
+   "desc": "المحاور تطلع، الخط ينرسم بقلم مضيء والمساحة تحته تتعبّى، الأرقام تعد، ودبوس على القمة فيه الرقم.",
+   "source": {
+    "label": "GitLab Pajamas — Motion (stroke reveal)",
+    "url": "https://design.gitlab.com/brand-design/motion"
+   },
+   "preview": "previews/83.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "number",
+    "contrast"
+   ]
+  },
+  {
+   "n": 84,
+   "id": "girihBloom",
+   "cat": "card",
+   "name": "زخرفة تتفتح",
+   "sub": "نجوم ثمانية ترتسم",
+   "desc": "زخرفة مثمّنات ونجوم ثمانية ترتسم من المركز لبرّا وتلف ببطء، وتهدأ لملمس خفيف. آمنة ورا الآية. بالقصّ (ماك) ورا الشخص؛ بلاه فوق الفيديو.",
+   "source": {
+    "label": "Girih — Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Girih"
+   },
+   "preview": "previews/84.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "reveal"
+   ],
+   "mask": "optional",
+   "fallback": "الزخرفة فوق الفيديو كله"
+  },
+  {
+   "n": 85,
+   "id": "speechBubble",
+   "cat": "card",
+   "name": "فقاعة كلام",
+   "sub": "كوميك جنب وجهك",
+   "desc": "فقاعة كوميك تطلع فوق يسار وجهك وذيلها يأشر على فمك، الكلام ينكتب داخلها، وتطلع بفرقعة. الوجه من التتبع (ماك)؛ بلاه مكان ثابت.",
+   "source": {
+    "label": "Magic UI — Comic Text",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/85.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "calm"
+   ],
+   "cues": [
+    "emphasis",
+    "hit"
+   ],
+   "face": "optional"
+  },
+  {
+   "n": 86,
+   "id": "punchCut",
+   "cat": "camera",
+   "name": "كاميرا ثانية",
+   "sub": "قص لزاوية أقرب",
+   "desc": "قص مباشر لكروب أقرب والوجه على خط الثلث، يثبت لين آخر الجملة ويرجع — كأنها كاميرا ثانية (وثالثة). الوجه من التتبع (ماك)؛ بلاه نقطة ثابتة.",
+   "source": {
+    "label": "BroadcastBeat — Simulate a multi-camera shoot",
+    "url": "https://broadcastbeat.com/news/simulate-a-multi-camera-shoot-with-one-camera"
+   },
+   "preview": "previews/86.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "hit"
+   ],
+   "face": "optional"
+  },
+  {
+   "n": 87,
+   "id": "scanLine",
+   "cat": "transition",
+   "name": "خط المسح",
+   "sub": "قبل وبعد",
+   "desc": "خط مضيء ينزل: فوقه المشهد الجديد وتحته القديم مجمّد، وتحت الخط سلِت سكان ممطوط. لقبل وبعد والفحص.",
+   "source": {
+    "label": "thepreviewapp — Transition Scan / Slit Scan",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/87.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "tech",
+    "contrast"
+   ]
+  },
+  {
+   "n": 88,
+   "id": "postCard",
+   "name": "بوست يطلع",
+   "sub": "«واحد كتب لي…»",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "contrast",
+    "reveal"
+   ],
+   "desc": "كرت بوست عام بلا شعار منصة يطلع من غباش، الكلام ينكتب مع الصوت، الأرقام تعد والقلب ينبض. لقطة حقيقية أو كلامك أنت بس.",
+   "preview": "previews/88.mp4",
+   "source": {
+    "label": "Magic UI — Tweet Card",
+    "url": "https://magicui.design/docs/components"
+   },
+   "bonus": false
+  },
+  {
+   "n": 89,
+   "id": "bodyFollow",
+   "name": "الكاميرا تلحقك",
+   "sub": "مصوّر حقيقي",
+   "cat": "camera",
+   "role": "camera",
+   "energy": 1,
+   "families": [
+    "onetake",
+    "calm"
+   ],
+   "cues": [],
+   "desc": "كروب خفيف يلحق وجهك بتأخير بسيط والوجه على الثلث، مع ميلان مع حركتك. الوجه من التتبع (ماك)؛ بلاه كاميرا باليد.",
+   "preview": "previews/89.mp4",
+   "source": {
+    "label": "thepreviewapp — Body Frame",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "bonus": false,
+   "face": "optional",
+   "fallback": "كاميرا باليد (31) بدال اللحاق"
+  },
+  {
+   "n": 90,
+   "id": "echoStack",
+   "name": "صدى الكلمة",
+   "sub": "كلمة تعلق",
+   "cat": "text",
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "emphasis",
+    "hit"
+   ],
+   "desc": "كلمة الهوك مكررة 7 صفوف: النص معبّى بلون الهوية والباقي حدود تبهت، تطلع من النص لبرّا وتنطوي بالآخر.",
+   "preview": "previews/90.mp4",
+   "source": {
+    "label": "GitLab Pajamas — Motion",
+    "url": "https://design.gitlab.com/brand-design/motion"
+   },
+   "bonus": false
+  },
+  {
+   "n": 91,
+   "id": "palmHold",
+   "name": "بكفّك",
+   "sub": "شي صغير بإيدك",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "reveal",
+    "price"
+   ],
+   "desc": "عنصر (رقم، سعر، منتج) يطفو فوق كفّك ويتمايل لما ترفع إيدك، ويختفي لما تنزلها. الكف من التتبع (ماك)؛ بلاه ثابت تحت يسار.",
+   "preview": "previews/91.mp4",
+   "source": {
+    "label": "السكل نفسه — scripts/29_handtrack.py",
+    "url": "https://github.com/majedphotos/video-ad-editor"
+   },
+   "bonus": false,
+   "hand": "optional",
+   "fallback": "العنصر ثابت تحت يسار طول مدته"
+  },
+  {
+   "n": 92,
+   "id": "bentoCut",
+   "name": "قص البنتو",
+   "sub": "شبكة خانات",
+   "cat": "transition",
+   "role": "transition",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "list"
+   ],
+   "desc": "المشهد يصغر لخانة بشبكة بنتو، الخانات الثانية تطلع حوله، والكاميرا تنزلق للخانة الجاية وتكبر لين تغطي الشاشة.",
+   "preview": "previews/92.mp4",
+   "source": {
+    "label": "Magic UI — Bento Grid",
+    "url": "https://magicui.design/docs/components"
+   },
+   "bonus": false
+  },
+  {
+   "n": 93,
+   "id": "receiptPrint",
+   "name": "فاتورة تطبع",
+   "sub": "كم كلّفني",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "price",
+    "number",
+    "list"
+   ],
+   "desc": "ورقة تطلع من طابعة بقفزات: البنود والأسعار، والمجموع يعد ويتظلل، وبالآخر تنقطع وتميل.",
+   "preview": "previews/93.mp4",
+   "source": {
+    "label": "SozAI — Iman Gadzhi",
+    "url": "https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md"
+   },
+   "bonus": false
+  },
+  {
+   "n": 94,
+   "id": "searchBar",
+   "name": "بحث وجواب",
+   "sub": "«سألته…»",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "cta"
+   ],
+   "desc": "شريط بحث زجاجي: السؤال ينكتب، تنزل اقتراحات، المؤشر ينقر وحدة، والشريط يتحوّل لكرت الجواب.",
+   "preview": "previews/94.mp4",
+   "source": {
+    "label": "Magic UI — Typing Animation, Ripple",
+    "url": "https://magicui.design/docs/components"
+   },
+   "bonus": false
+  },
+  {
+   "n": 95,
+   "id": "swishSettle",
+   "name": "سحبة وتستقر",
+   "sub": "بداية بطاقة",
+   "cat": "camera",
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "punch",
+    "onetake"
+   ],
+   "cues": [
+    "hit"
+   ],
+   "desc": "المشهد يبدأ والكاميرا مزاحة ومايلة بغباش حركة، وتستقر بسرعة وتهدأ. بداية مشهد بلا انتقال.",
+   "preview": "previews/95.mp4",
+   "source": {
+    "label": "SozAI — Iman Gadzhi",
+    "url": "https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md"
+   },
+   "bonus": false
+  },
+  {
+   "n": 96,
+   "id": "warpWave",
+   "name": "موجة",
+   "sub": "سطر يتموّج ويستقر",
+   "cat": "text",
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm"
+   ],
+   "cues": [],
+   "desc": "السطر يدخل بموجة تعبر من اليمين لليسار وتهدأ لين يستقر حاد. لجمل البحر والهدوء والتدفق.",
+   "preview": "previews/96.mp4",
+   "source": {
+    "label": "Remotion — warpPath()",
+    "url": "https://www.remotion.dev/docs/paths/warp-path"
+   },
+   "bonus": false
+  },
+  {
+   "n": 97,
+   "id": "doorway",
+   "name": "باب ينفتح",
+   "sub": "كشف كبير",
+   "cat": "transition",
+   "role": "transition",
+   "energy": 3,
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "hit"
+   ],
+   "desc": "المشهد ينقسم لبابين ينفتحون بمنظور ثلاثي، ومن الشق ينزل ضوء، والمشهد الجديد يطلع.",
+   "preview": "previews/97.mp4",
+   "source": {
+    "label": "gl-transitions — doorway",
+    "url": "https://github.com/gl-transitions/gl-transitions/tree/master/transitions"
+   },
+   "bonus": false
+  },
+  {
+   "n": 98,
+   "id": "pointerCursor",
+   "name": "مؤشر ينقر",
+   "sub": "«اضغط هني»",
+   "cat": "card",
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "cta"
+   ],
+   "desc": "سهم ماوس يمشي بمسار ناعم، الزر يكبر لما يحوم عليه، والنقرة تطلع تموّجة. لشرح التطبيقات.",
+   "preview": "previews/98.mp4",
+   "source": {
+    "label": "Magic UI — Smooth Cursor, Pointer, Ripple",
+    "url": "https://magicui.design/docs/components"
+   },
+   "bonus": false
+  },
+  {
+   "n": 99,
+   "id": "lumaMelt",
+   "name": "ذوبان الضوء",
+   "sub": "انتقال حالم",
+   "cat": "transition",
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [],
+   "desc": "المشهد الجديد يطلع أول من الأماكن الفاتحة بالقديم، فالضوء يذوب للقطة الثانية.",
+   "preview": "previews/99.mp4",
+   "source": {
+    "label": "gl-transitions — luma / luminance_melt",
+    "url": "https://github.com/gl-transitions/gl-transitions/tree/master/transitions"
+   },
+   "bonus": false
+  },
+  {
+   "n": 100,
+   "id": "motionEcho",
+   "name": "صدى الحركة",
+   "sub": "أشباح الحركة",
+   "cat": "camera",
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "punch",
+    "onetake"
+   ],
+   "cues": [
+    "hit"
+   ],
+   "desc": "نسخ شبح متأخرة تلحق حركتك بلحظة الضربة وتتلوّن بلون الهوية. تحتاج فريم بوقت ثاني؛ أحلى بقصّ الشخص (ماك).",
+   "preview": "previews/100.mp4",
+   "source": {
+    "label": "CapCut — Editing trends 2026",
+    "url": "https://www.capcut.com/help/latest-capcut-editing-trends"
+   },
+   "bonus": false,
+   "mask": "optional",
+   "fallback": "الصدى على الفيديو كامل (بلا قصّ)"
   }
  ],
  "families": {

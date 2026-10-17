@@ -41,7 +41,9 @@ const CHROME=findChrome();
    (بدونهم FX ما يتعرّف والمشهد يتخطّى). وcompose قديم بلا الوسمين: نركّبهم بعد الفتح عشان FX/MV يشتغلون وقت الرسم. */
 const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js')};
 function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
-  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); } }
+  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); }
+  /* 74 آية بسكينة: الخط العثماني يتحمّل من مجلد الشغل (MV.needFont) */
+  const QF=path.join(__dirname,'..','motion','fonts','AmiriQuran-Regular.ttf'); if(h.includes('ayahCalm')&&!fs.existsSync(W+'AmiriQuran-Regular.ttf')&&fs.existsSync(QF)){ fs.copyFileSync(QF,W+'AmiriQuran-Regular.ttf'); console.log('🎞️ نسخت خط Amiri Quran لمجلد الشغل'); } }
 async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))) return;
   for(const f of ['moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(src) await p.addScriptTag({path:src}); } }
 (async()=>{
@@ -99,7 +101,8 @@ async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))
       await p.evaluate((s,f)=>window.setPerson(s,f), ok?fileURL(pf):null, (BEHIND.faces&&BEHIND.faces[i])||null);
     }
     if(HASCOVER){const cf=W+'cover/'+id+'.png';await p.evaluate(s=>window.setCover?window.setCover(s):0, fs.existsSync(cf)?('file://'+cf):null);}
-    const d=await p.evaluate((t,q)=>{window.draw(t);return window.shot(q);},t,q);
+    /* 62–73: MV.frameAt/personAt (فريم بوقت ثاني) يحمّل أول ما ينطلب — ننتظره ونعيد الرسم عشان اللقطة ما تطلع بالبديل */
+    const d=await p.evaluate(async(t,q)=>{window.draw(t);if(window.MV&&MV.pending&&MV.pending()){await MV.settle();window.draw(t);}return window.shot(q);},t,q);
     fs.writeFileSync(file,Buffer.from(d.split(',')[1],'base64'));
   };
   if(mode==='preview'){

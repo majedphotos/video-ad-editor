@@ -42,7 +42,7 @@ myproj/
               { "id": "s2", "file": "scenes/s2.js", "lines": ["l3"], "transition": { "type": "wipe", "dur": 0.4, "dir": "rtl" } } ]
 }
 ```
-Font families you can use by name, or by the aliases in `fonts`: `Cairo` (variable 200–1000), `IBM Plex Sans Arabic` (400/700), `Noto Kufi Arabic` (100–900), `Lalezar`, `Readex Pro` (160–700), `Aref Ruqaa` (400/700), `Tajawal` (400/700/900), `Inter` (100–900). The built-in aliases are `display`, `body`, `num`, `kufi` and `cairo`. To add more families, use `"extraFonts": [{"family","file","weight"}]` with paths relative to the project folder.
+Font families you can use by name, or by the aliases in `fonts`: `Cairo` (variable 200–1000), `IBM Plex Sans Arabic` (400/700), `Noto Kufi Arabic` (100–900), `Lalezar`, `Readex Pro` (160–700), `Aref Ruqaa` (400/700), `Tajawal` (400/700/900), `Inter` (100–900), `Amiri Quran` (400 — Uthmani Qur'an text only, used by `FX.ayahCalm`). The built-in aliases are `display`, `body`, `num`, `kufi` and `cairo`. To add more families, use `"extraFonts": [{"family","file","weight"}]` with paths relative to the project folder.
 
 `timeline.json` is generated. It holds `duration`, `bpm`, `beats[]`, `bars[]`, `sections[{name,start,end}]`, `scenes[{id,file,start,end,lines,transition}]` and `vo[{id,text,start,end,words[{w,s,e}]}]`. All times are absolute seconds. Without a timeline.json, the engine falls back to each scene's own `start`/`end` and derives beats from `bpm`.
 

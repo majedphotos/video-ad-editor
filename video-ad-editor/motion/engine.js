@@ -1,3 +1,12 @@
+/* خط الرقعة (Aref Ruqaa) يرسم التاء المربوطة المنفصلة بلا نقطتين («الخطوة» تنقرا «الخطوه»).
+   الحل: حرف ربط خفي (ZWJ) قبل «ة» اللي بعد حرف ما يتصل بعده — تطلع بشكلها الأخير بنقطتيها. ينطبق على أي رسم بهالخط. */
+(function () {
+  const P = (typeof CanvasRenderingContext2D !== 'undefined') && CanvasRenderingContext2D.prototype;
+  if (!P || P.__ruqaaFix) return; P.__ruqaaFix = true;
+  const fix = (s) => String(s).replace(/(?<=^|[\s\u0640اأإآٱدذرزوؤءة]|[اأإآٱدذرزوؤءة][\u064B-\u065F]+)ة/gu, '\u200Dة');
+  const wrap = (name) => { const f = P[name]; P[name] = function (s, ...a) { return f.call(this, /Aref Ruqaa/.test(this.font) ? fix(s) : s, ...a); }; };
+  ['fillText', 'strokeText', 'measureText'].forEach(wrap);
+})();
 /* ═══ engine.js — محرّك «شرح بالموشن» (2D + 3D، حتمي بالزمن) ═══
    العقد والـAPI الكامل: ENGINE-API.md
    قاعدة ذهبية: الفريم t يعتمد على t فقط — لا rAF ولا Date ولا Math.random بأي مشهد. */
@@ -126,6 +135,7 @@ const FONT_FILES = [
   ['Tajawal', 'Tajawal-Bold.ttf', '700'],
   ['Tajawal', 'Tajawal-Black.ttf', '900'],
   ['Inter', 'Inter-VF.ttf', '100 900'],
+  ['Amiri Quran', 'AmiriQuran-Regular.ttf', '400'],     // عثماني للقرآن بس (FX.ayahCalm 74) — SIL OFL 1.1
 ];
 async function loadFonts(extra = []) {
   const list = FONT_FILES.map(([fam, file, weight]) => ({ fam, url: './fonts/' + file, weight })).concat(extra);
@@ -337,7 +347,7 @@ function drawLayout(X, L, x, y, o = {}) {
       if (st.clip || st.reveal != null || st.clipUp != null) {         // masks
         X.beginPath();
         if (st.reveal != null) { const rw = (box.w + 20) * clamp(st.reveal); X.rect(box.x + box.w + 10 - rw, box.y - L.size * .3, rw, box.h + L.size * .6); }   // RTL wipe
-        else if (st.clipUp != null) X.rect(box.x - 20, box.y - L.size * .3, box.w + 40, box.h + L.size * .3);                                           // rise from below baseline
+        else if (st.clipUp != null) X.rect(box.x - 20, box.y - L.size * .3, box.w + 40, box.h + L.size * .75);   // القناع ينزل تحت السطر: ذيل ج ي ع ونقاط الياء ما تنقص (كانت «تمنتج» تنقص)                                           // rise from below baseline
         else X.rect(st.clip.x, st.clip.y, st.clip.w, st.clip.h);
         X.clip();
       }

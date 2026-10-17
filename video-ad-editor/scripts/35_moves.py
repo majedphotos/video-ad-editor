@@ -195,7 +195,7 @@ def plan(title, family="auto", cues=(), dry=False):
     used = [i for h in hist for i in h.get("core", []) + h.get("accents", [])]
     def score(m):                                          # الأقل = الأحسن
         return (recent.count(m["id"]) * 10 + used.count(m["id"]) - (3 if m["id"] in pref else 0) + _h(title, m["id"]))
-    pool = [m for m in cat if family in m.get("families", []) and m["id"] not in off]
+    pool = [m for m in cat if family in m.get("families", []) and m["id"] not in off and not m.get("manual")]   # manual (74 الآية) ما تنختار أبداً
     core, why = [], []
     for slot, roles in SLOTS:
         cands = sorted([m for m in pool if m["role"] in roles], key=score)
@@ -203,7 +203,7 @@ def plan(title, family="auto", cues=(), dry=False):
             core.append(cands[0]["id"]); why.append("%s: %d %s" % (slot, cands[0]["n"], cands[0]["name"]))
     accents = []
     for cue in cues:                                       # لهجة لكل لحظة خاصة — من أي عائلة، بلا تكرار الأساسيات
-        cands = sorted([m for m in cat if cue in m.get("cues", []) and m["id"] not in off and m["id"] not in core + accents], key=score)
+        cands = sorted([m for m in cat if cue in m.get("cues", []) and m["id"] not in off and not m.get("manual") and m["id"] not in core + accents], key=score)
         if cands:
             accents.append(cands[0]["id"]); why.append("لهجة %s: %d %s" % (cue, cands[0]["n"], cands[0]["name"]))
     rules = [m["id"] for m in cat if m["role"] == "rule" and family in m.get("families", []) and m["id"] not in off and m["id"] not in accents]

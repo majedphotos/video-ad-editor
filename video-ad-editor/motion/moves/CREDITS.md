@@ -38,3 +38,57 @@
 | 58 | كلام زجاجي | [MDN · backdrop-filter](https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter) (الفكرة: غباش اللي ورا العنصر) — مرسوم بالكانفس | CC-BY-SA (التوثيق) |
 | 52، 54، 55، 57، 59، 60، 61 | جدار الكنبة · كسر الإطار · جدار العناوين · غلاف مجلة · الفيديو داخل الجوال · قرين سكرين بالنص · قصاصة ورق | من البلقن نفسه: قصّ المتحدث (`11_behind_text.js` / `personmask.swift`)، ورق الكولاج (`13_collage.js`)، والجوال (`motion/device3d.html`) | MIT (البلقن) |
 | 53 | عالم الواجهات | من البلقن نفسه | MIT (البلقن) |
+
+### توسعة 62–73 (17 أكتوبر 2026) — الدفعة أ من البحث `moves100-research.md`. المعاينات بنفس سلويت 1–61 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 62 | نقاط تنزل | [Arabic diacritics — Wikipedia](https://en.wikipedia.org/wiki/Arabic_diacritics) (المصاحف الأولى بالرسم بلا نقاط) | CC-BY-SA (المرجع) |
+| 63 | القلم يكتب | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (stroke reveal) · خط Aref Ruqaa (موجود بـ`motion/fonts`) | OFL (الخط) |
+| 64 | كلمة بالفيديو | [Magic UI — Video Text](https://magicui.design/docs/components/video-text) | MIT |
+| 65 | ستيكر | [thepreviewapp — Freeze Frame](https://thepreviewapp.com/instagram-reels-transition-effects) · [CapCut — trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) | — (ترند) |
+| 66 | حروف تتلاصق | [Zero-width non-joiner — Wikipedia](https://en.wikipedia.org/wiki/Zero-width_non-joiner) | CC-BY-SA (المرجع) |
+| 67 | كوفي مربع | [Tuts+ — Square Kufic](https://design.tutsplus.com/tutorials/creative-arabic-calligraphy-square-kufic--cms-23012) · خط Noto Kufi Arabic | OFL (الخط) |
+| 68 | شعاع الربط | [Magic UI — Animated Beam](https://magicui.design/docs/components/animated-beam) | MIT |
+| 69 | صفحة كتاب عربي | [gl-transitions](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) (InvertedPageCurl / BookFlip — الفكرة، مرسومة بالكانفس) | MIT |
+| 70 | أشعة من وراك | [Magic UI — components (Light Rays)](https://magicui.design/docs/components) | MIT |
+| 71 | ميلة الفصل | [SozAI — تحليل مونتاج Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (ميلة ثلاثية لعناوين الفصول) | — (تحليل) |
+| 72 | الجزيرة تتمدد | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
+| 73 | الحقيقة تنكشف | [thepreviewapp — Reels effects](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+
+### توسعة 75–87 (17 أكتوبر 2026) — الدفعة ب من البحث `moves100-research.md` (74 انبنت بالدفعة ج تحت). المعاينات بنفس سلويت 1–73 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 75 | نسخ مني | [thepreviewapp — Duplicate / My Tiny Army](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+| 76 | ستارة نقاط القلم | [gl-transitions — PolkaDotsCurtain](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) (الفكرة، بمعيّنات نقطة القلم) | MIT |
+| 77 | خريطة نقاط | [Magic UI — components (Dotted Map)](https://magicui.design/docs/components) · اليابسة مضلّعات مبسّطة مرسومة يدوياً داخل `moves.js` (بلا بيانات خارجية) | MIT |
+| 78 | خط حولك | [Magic UI — components (Border Beam)](https://magicui.design/docs/components) · الحدود من قصّ البلقن نفسه (تتبّع مور + إغلاق) | MIT |
+| 79 | رافعة | [Videobolt — Motion graphics trends 2026](https://blog.videobolt.net/post/top-motion-graphics-trends-2026) · [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) | — (تحليل) |
+| 80 | كلمة تذوب بكلمة | [remotion-dev/morph-text](https://github.com/remotion-dev/morph-text) (فكرة الغباش + عتبة الألفا، مكتوبة من جديد بالكانفس) | MIT |
+| 81 | طرفية | [Magic UI — components (Terminal)](https://magicui.design/docs/components) | MIT |
+| 82 | عدسة زجاج | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
+| 83 | خط يرتسم | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (stroke reveal) · تطوير `MK.lineChart` | MIT (البلقن) |
+| 84 | زخرفة تتفتح | [Girih — Wikipedia](https://en.wikipedia.org/wiki/Girih) (شبكة مثمّنات ونجوم ثمانية) | CC-BY-SA (المرجع) |
+| 85 | فقاعة كلام | [Magic UI — components (Comic Text)](https://magicui.design/docs/components) · تتبّع الوجه: `facetrack.swift` (Vision) | MIT |
+| 86 | كاميرا ثانية | [BroadcastBeat — Simulate a multi-camera shoot with one camera](https://broadcastbeat.com/news/simulate-a-multi-camera-shoot-with-one-camera) | — (مقال) |
+| 87 | خط المسح | [thepreviewapp — Transition Scan / Slit Scan](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
+
+### الدفعة ج 74 و88–100 (17 أكتوبر 2026) — آخر دفعة من البحث `moves100-research.md` (البنك = 100). المعاينات بنفس سلويت 1–87 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 74 | آية بسكينة | [IslamOnline — Quranic verses in flash films](https://fiqh.islamonline.net/en/quranic-verses-in-flash-films) (الآية كاملة ومحترمة) · خط [Amiri Quran](https://github.com/aliftype/amiri) (`motion/fonts/AmiriQuran-Regular.ttf`) | SIL OFL 1.1 (الخط — نصها بـ`motion/fonts/LICENSES.txt`) |
+| 88 | بوست يطلع | [Magic UI — components (Tweet Card)](https://magicui.design/docs/components) (بلا شعار أي منصة) | MIT |
+| 89 | الكاميرا تلحقك | [thepreviewapp — Body Frame](https://thepreviewapp.com/instagram-reels-transition-effects) · تتبّع الوجه: `facetrack.swift` (Vision) | — (ترند) |
+| 90 | صدى الكلمة | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (type repetition / outline reveal) | MIT |
+| 91 | بكفّك | البلقن نفسه: `scripts/29_handtrack.py` (تتبّع الكف، معتمد 27 سبتمبر) | MIT (البلقن) |
+| 92 | قص البنتو | [Magic UI — components (Bento Grid)](https://magicui.design/docs/components) | MIT |
+| 93 | فاتورة تطبع | [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (الأرقام تستاهل حركة) — الحركة نفسها اختراع، بلا مرجع مباشر | — (تحليل) |
+| 94 | بحث وجواب | [Magic UI — components (Typing Animation, Ripple)](https://magicui.design/docs/components) | MIT |
+| 95 | سحبة وتستقر | [SozAI — Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (بان سريع يهدأ لزوم آوت) | — (تحليل) |
+| 96 | موجة | [Remotion — warpPath()](https://www.remotion.dev/docs/paths/warp-path) (الفكرة، مكتوبة بشرائح كانفس) | — (توثيق) |
+| 97 | باب ينفتح | [gl-transitions — doorway](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) | MIT |
+| 98 | مؤشر ينقر | [Magic UI — components (Smooth Cursor, Pointer, Ripple)](https://magicui.design/docs/components) | MIT |
+| 99 | ذوبان الضوء | [gl-transitions — luma / luminance_melt](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) | MIT |
+| 100 | صدى الحركة | [CapCut — Editing trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) (velocity edits) | — (ترند) |

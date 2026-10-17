@@ -15,7 +15,9 @@ const W=path.resolve(process.argv[2])+path.sep;
    (بدونهم FX ما يتعرّف والمشهد يتخطّى). وcompose قديم بلا الوسمين: نركّبهم بعد الفتح عشان FX/MV يشتغلون وقت الرسم. */
 const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js')};
 function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
-  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); } }
+  for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); }
+  /* 74 آية بسكينة: الخط العثماني يتحمّل من مجلد الشغل (MV.needFont) */
+  const QF=path.join(__dirname,'..','motion','fonts','AmiriQuran-Regular.ttf'); if(h.includes('ayahCalm')&&!fs.existsSync(W+'AmiriQuran-Regular.ttf')&&fs.existsSync(QF)){ fs.copyFileSync(QF,W+'AmiriQuran-Regular.ttf'); console.log('🎞️ نسخت خط Amiri Quran لمجلد الشغل'); } }
 async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))) return;
   for(const f of ['moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(src) await p.addScriptTag({path:src}); } }
 const SHOT=process.argv.includes('--shot');
@@ -141,6 +143,7 @@ const FLAT_B='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2
     const near=(v,a,d)=>Math.abs(v-a)<d;
     for(const t of times){
       await person(t);
+      window.draw(t); if(window.MV&&MV.pending&&MV.pending()) await MV.settle();   /* فريم بوقت ثاني/خط إضافي (65، 74) يتحمّل قبل القياس */
       await window.setFrame(FA); swap(IA); window.draw(t); const A=X.getImageData(0,0,W,H).data;
       await window.setFrame(FB); swap(IB); window.draw(t); const C=X.getImageData(0,0,W,H).data;
       /* لقطة ما تغيّرت بين اللونين = الفيديو ما انرسم (شرح كامل R_OFF أو كرت النهاية) — ما نتخطّاها:
