@@ -171,7 +171,7 @@
         if (st.clip || st.reveal != null || st.clipUp != null) {
           X.beginPath();
           if (st.reveal != null) { const rw = (box.w + 20) * clamp(st.reveal); X.rect(box.x + box.w + 10 - rw, box.y - L.size * .3, rw, box.h + L.size * .6); }
-          else if (st.clipUp != null) X.rect(box.x - 20, box.y - L.size * .3, box.w + 40, box.h + L.size * .75);   // القناع ينزل تحت السطر: ذيل ج ي ع ونقاط الياء ما تنقص (كانت «تمنتج» تنقص)
+          else if (st.clipUp != null) { const ext = L.size * .75 * Math.max(0, Math.min(1, 1 - (st.dy || 0) / (L.size * .6))); X.rect(box.x - 20, box.y - L.size * .3, box.w + 40, box.h + L.size * .3 + ext); }   // وهي طالعة: القناع على السطر (طلعة نظيفة). لما توصل: ينزل تحت السطر فتكمل ذيول ج ي ع ونقاط الياء بلا حد ينشاف
           else X.rect(st.clip.x, st.clip.y, st.clip.w, st.clip.h);
           X.clip();
         }
