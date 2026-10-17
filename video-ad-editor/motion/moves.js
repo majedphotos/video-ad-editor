@@ -2015,8 +2015,8 @@
     X.save(); X.font = ctx.font('display', 400, size); X.direction = 'rtl'; X.textAlign = 'center'; X.textBaseline = 'alphabetic'; X.lineJoin = 'round';
     for (let r = 0; r < rows; r++) { const d = r - mid, ad = Math.abs(d), t0 = o.s + ad * 0.05, kr = E.expoOut(pr(t, t0, t0 + 0.45)); if (kr <= 0) continue;
       const y = yc + d * gap * (1 - ko), a = (1 - 0.13 * ad) * (ad ? 1 - ko : 1); if (a <= 0.01) continue;
-      X.save(); X.globalAlpha = a; X.beginPath(); X.rect(0, y - size * 1.0, 1080, size * 1.3); X.clip();
-      const yy = y + size * 0.3 + size * 1.1 * (1 - kr);
+      X.save(); X.globalAlpha = a; X.beginPath(); X.rect(0, y - size * 1.0, 1080, size * 1.85); X.clip();   // ⚠ القناع ينزل تحت خط الأساس (نقاط ي ب ج… تحت السطر) — لا تقصّه على الخط
+      const yy = y + size * 0.3 + size * 1.6 * (1 - kr);
       if (!ad) { X.fillStyle = P.acc; X.fillText(str, 540, yy); } else { X.strokeStyle = P.ink; X.lineWidth = 3; X.strokeText(str, 540, yy); }
       X.restore(); }
     X.restore();
