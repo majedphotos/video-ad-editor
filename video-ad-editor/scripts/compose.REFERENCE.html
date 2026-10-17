@@ -157,26 +157,45 @@ function resolveScenes(){ if(_RES||!CAPS.length)return; _RES=true;
     s.m=rDown(gb,lines); }); }
 const isFull=R=>R.w>=1079&&R.h>=1919;   /* ملء الشاشة حقيقةً — لا تعتمد على r */
 function vtarget(t){ resolveScenes(); let i=SCENES.findIndex(s=>t>=s.s&&t<s.e); if(i<0)i=SCENES.length-1; return SCENES[i].m; }
-function vrect(t){
+/* المشهدان (a ← b) ونسبة الانتقال k بينهم (eio داخل نافذة TR) — المستطيل والفيديو ياخذون نفس القيم */
+function vtrans(t){
   resolveScenes();
   let i=SCENES.findIndex(s=>t>=s.s&&t<s.e); if(i<0)i=SCENES.length-1;
   let a=SCENES[i].m,b=a,k=1;
   if(t<SCENES[i].s+TR&&i>0){a=SCENES[i-1].m;b=SCENES[i].m;k=eio(pr(t,SCENES[i].s,SCENES[i].s+TR));}
+  return {a,b,k};
+}
+function vrect(t){
+  const {a,b,k}=vtrans(t);
   return {x:lerp(a.x,b.x,k),y:lerp(a.y,b.y,k),w:lerp(a.w,b.w,k),h:lerp(a.h,b.h,k),r:lerp(a.r,b.r,k)};
 }
-function drawVideo(t){
-  const R=vrect(t), sw=VF.naturalWidth||1080, shh=VF.naturalHeight||1920;
-  /* ⛔ v3.8 قاعدة المستخدم: بالكرت القصّ ثابت من فوق راسه بمساحة آمنة (cardTop من 23_headcrop.py) — بلا تتبع.
-     kc: 0 = ملء الشاشة (faceAnchor) · 1 = كرت (cardTop + cardZoom) — يتدرّج مع انتقال المستطيل فما فيه قفزة */
+/* قصّ الفيديو لمستطيل: ⛔ v3.8 قاعدة المستخدم — بالكرت القصّ ثابت من فوق راسه بمساحة آمنة (cardTop من 23_headcrop.py) بلا تتبع.
+   kc: 0 = ملء الشاشة (faceAnchor) · 1 = كرت (cardTop + cardZoom) */
+function vcrop(R,sw,shh){
   const kc=CARD_TOP==null?0:cl((1919-R.h)/300,0,1), z=lerp(1,CARD_ZOOM,kc);
   const sc=Math.max(R.w/sw,R.h/shh)*z, cw=R.w/sc, ch=R.h/sc;
   const sx=(sw-cw)/2, sy0=(shh-ch)*FACE_ANCH, sy=CARD_TOP==null?sy0:lerp(sy0,cl(CARD_TOP*shh,0,shh-ch),kc);
+  return {sc,sx,sy,cw,ch};
+}
+function drawVideo(t){
+  const R=vrect(t), sw=VF.naturalWidth||1080, shh=VF.naturalHeight||1920, T=vtrans(t);
   X.save();
   if(R.r>0.5){sh(70,26,0.26);X.fillStyle='#000';rr(R.x,R.y,R.w,R.h,R.r);X.fill();nsh();}
   rr(R.x,R.y,R.w,R.h,R.r);X.clip();
-  X.drawImage(VF,sx,sy,cw,ch,R.x,R.y,R.w,R.h);
-  /* خلفية باهتة (اختيارية — 14_backdrop.py): غطاء بلون الثيم بنفس قصّ الفيديو، الشخص مستثنى بالقناع. بكل الأوضاع فالانتقال سلس */
-  if(CVR_OK){const kx=CVR.naturalWidth/sw,ky=CVR.naturalHeight/shh;X.drawImage(CVR,sx*kx,sy*ky,cw*kx,ch*ky,R.x,R.y,R.w,R.h);}
+  if(T.k<1&&T.a!==T.b&&CARD_TOP!=null){
+    /* 🎞️ انتقال ناعم (ماجد 17 أكتوبر: «أصعد وأنزل، المفروض تكون سموذ»): كان kc ينحسب من المستطيل المتحرّك، فالقصّ يقفز لفوق
+       بأول 300 بكسل من التصغير والكرت بعده ينزل ← الوجه ينزل ويطلع وينزل. الحين مكان الصورة (مقياس + إزاحة) لكل مشهد ثابت،
+       ونمزجهم بنفس تسهيل المستطيل ← كل نقطة بالصورة تمشي بخط واحد. الصورة تغطي المستطيل دايماً (كل الحدود خطية بـk). */
+    const A=vcrop(T.a,sw,shh), B=vcrop(T.b,sw,shh), sc=lerp(A.sc,B.sc,T.k);
+    const ox=lerp(T.a.x-A.sx*A.sc,T.b.x-B.sx*B.sc,T.k), oy=lerp(T.a.y-A.sy*A.sc,T.b.y-B.sy*B.sc,T.k);
+    X.drawImage(VF,ox,oy,sw*sc,shh*sc);
+    if(CVR_OK) X.drawImage(CVR,ox,oy,sw*sc,shh*sc);   /* الخلفية الباهتة بنفس التحويل */
+  } else {   /* ثابت — أو بلا cardTop (القصّ cover-fit متصل أصلاً، ما فيه قفزة): نفس الرسم القديم */
+    const c=vcrop(R,sw,shh);
+    X.drawImage(VF,c.sx,c.sy,c.cw,c.ch,R.x,R.y,R.w,R.h);
+    /* خلفية باهتة (اختيارية — 14_backdrop.py): غطاء بلون الثيم بنفس قصّ الفيديو، الشخص مستثنى بالقناع */
+    if(CVR_OK){const kx=CVR.naturalWidth/sw,ky=CVR.naturalHeight/shh;X.drawImage(CVR,c.sx*kx,c.sy*ky,c.cw*kx,c.ch*ky,R.x,R.y,R.w,R.h);}
+  }
   X.restore();
   if(R.r>0.5){X.save();X.strokeStyle=cINK(0.10);X.lineWidth=3;rr(R.x,R.y,R.w,R.h,R.r);X.stroke();X.restore();}
 }
