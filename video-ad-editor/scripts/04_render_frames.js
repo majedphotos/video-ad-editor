@@ -99,7 +99,8 @@ async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV))
       await p.evaluate((s,f)=>window.setPerson(s,f), ok?fileURL(pf):null, (BEHIND.faces&&BEHIND.faces[i])||null);
     }
     if(HASCOVER){const cf=W+'cover/'+id+'.png';await p.evaluate(s=>window.setCover?window.setCover(s):0, fs.existsSync(cf)?('file://'+cf):null);}
-    const d=await p.evaluate((t,q)=>{window.draw(t);return window.shot(q);},t,q);
+    /* 62–73: MV.frameAt/personAt (فريم بوقت ثاني) يحمّل أول ما ينطلب — ننتظره ونعيد الرسم عشان اللقطة ما تطلع بالبديل */
+    const d=await p.evaluate(async(t,q)=>{window.draw(t);if(window.MV&&MV.pending&&MV.pending()){await MV.settle();window.draw(t);}return window.shot(q);},t,q);
     fs.writeFileSync(file,Buffer.from(d.split(',')[1],'base64'));
   };
   if(mode==='preview'){

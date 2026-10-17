@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent). mask: required (تحتاج قصّ الشخص — mac: true، والبديل بلا قصّ كرت فيديو) | optional (أحلى بالقصّ وتشتغل بلاه).",
+ "note": "الأرقام ثابتة — لا تعيد ترقيمها (اختيارات الناس محفوظة بالـid). FX.<id> بـmotion/moves.js؛ cat=rule = قاعدة توقيت مو دالة رسم (إلا ramp). role: caption/text/transition/camera/card/rule · energy 1-3 · families = لون الحركة للفيديو · cues = لحظات تستاهل حركة لهجة (accent). mask: required (تحتاج قصّ الشخص — mac: true، والبديل بلا قصّ كرت فيديو) | optional (أحلى بالقصّ وتشتغل بلاه). fallback = شنو يطلع بلا قصّ (من 62).",
  "moves": [
   {
    "n": 1,
@@ -1378,6 +1378,301 @@
    ],
    "mask": "required",
    "mac": true
+  },
+  {
+   "n": 62,
+   "id": "ijamDrop",
+   "cat": "text",
+   "name": "نقاط تنزل",
+   "sub": "الرسم أولاً ثم الإعجام",
+   "desc": "السطر يطلع بلا نقاط مثل المصاحف الأولى، والنقاط تنزل وحدة وحدة من اليمين وتستقر بنقرة حبر، وآخرها يلوّن الكلمة المفتاح. ممنوع على نص القرآن.",
+   "source": {
+    "label": "Arabic diacritics — Wikipedia (المصاحف الأولى بلا نقاط)",
+    "url": "https://en.wikipedia.org/wiki/Arabic_diacritics"
+   },
+   "preview": "previews/62.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "reveal",
+    "emphasis"
+   ]
+  },
+  {
+   "n": 63,
+   "id": "qalamWrite",
+   "cat": "text",
+   "name": "القلم يكتب",
+   "sub": "كتابة بإيقاع القلم",
+   "desc": "كل جزء موصول من الكلمة ينكتب بحافة قلم مايلة، والقلم يرفع بين الأجزاء، والحبر يطلع فاتح ويجف، والنقاط تنحط بعد جزئها.",
+   "source": {
+    "label": "GitLab Pajamas — Motion (stroke reveal)",
+    "url": "https://design.gitlab.com/brand-design/motion"
+   },
+   "preview": "previews/63.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "reveal"
+   ]
+  },
+  {
+   "n": 64,
+   "id": "videoText",
+   "cat": "text",
+   "name": "كلمة بالفيديو",
+   "sub": "الفيديو داخل الحروف",
+   "desc": "كلمة ضخمة والفيديو الحي يشتغل داخل حروفها بس، وبالطلعة الكاميرا تدخل الحرف لين يصير الفيديو الشاشة كلها.",
+   "source": {
+    "label": "Magic UI — Video Text",
+    "url": "https://magicui.design/docs/components/video-text"
+   },
+   "preview": "previews/64.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 3,
+   "families": [
+    "punch",
+    "onetake"
+   ],
+   "cues": [
+    "emphasis",
+    "hit",
+    "reveal"
+   ]
+  },
+  {
+   "n": 65,
+   "id": "stickerFreeze",
+   "cat": "card",
+   "name": "ستيكر",
+   "sub": "تجميد بحد أبيض",
+   "desc": "فلاش، والخلفية تصير لون هويتك بنقاط هافتون، وأنت مجمّد ستيكر بحد أبيض يتقشّر، وستيكر كلمة ينلزق. ماك بس (قصّ الشخص)؛ بلاه الفريم كامل يتجمّد صورة بولارويد.",
+   "source": {
+    "label": "thepreviewapp — Freeze Frame",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/65.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "hit",
+    "emphasis",
+    "contrast"
+   ],
+   "mask": "required",
+   "fallback": "بولارويد: الفريم كامل مجمّد بحد أبيض ونفس التقشير",
+   "mac": true
+  },
+  {
+   "n": 66,
+   "id": "joinSnap",
+   "cat": "text",
+   "name": "حروف تتلاصق",
+   "sub": "الوصل يتكوّن قدامك",
+   "desc": "الكلمة تطلع حروف منفصلة كل حرف بشكله المنفرد، وبعدين تنسحب لبعض وتتلاصق وتصير الكلمة المتصلة بلمعة على الوصل.",
+   "source": {
+    "label": "Zero-width non-joiner — Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zero-width_non-joiner"
+   },
+   "preview": "previews/66.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "emphasis",
+    "contrast"
+   ]
+  },
+  {
+   "n": 67,
+   "id": "kufiGrid",
+   "cat": "text",
+   "name": "كوفي مربع",
+   "sub": "الكلمة تنبني بلاط",
+   "desc": "الكلمة تنبني بلاط على شبكة مثل الخط الكوفي المربع، عمود عمود من اليمين، وبعدين ترجع للنص الحاد بنفس المكان.",
+   "source": {
+    "label": "Tuts+ — Square Kufic",
+    "url": "https://design.tutsplus.com/tutorials/creative-arabic-calligraphy-square-kufic--cms-23012"
+   },
+   "preview": "previews/67.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "emphasis",
+    "tech"
+   ]
+  },
+  {
+   "n": 68,
+   "id": "beamConnect",
+   "cat": "card",
+   "name": "شعاع الربط",
+   "sub": "أدوات مربوطة ببعض",
+   "desc": "أيقونات حول مركز، ومسارات منحنية بينها، وشعاع ضوء يمشي عليها والعقدة تنبض لما يوصلها. لأي ربط أو سير عمل.",
+   "source": {
+    "label": "Magic UI — Animated Beam",
+    "url": "https://magicui.design/docs/components/animated-beam"
+   },
+   "preview": "previews/68.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "tech",
+    "list"
+   ]
+  },
+  {
+   "n": 69,
+   "id": "pageTurnRTL",
+   "cat": "transition",
+   "name": "صفحة كتاب عربي",
+   "sub": "تنقلب من اليسار",
+   "desc": "الصفحة تنقلب مثل الكتاب العربي (كعبه يمين): خط طي مايل يمشي، وظهر الصفحة باهت، وظل على المشهد الجديد.",
+   "source": {
+    "label": "gl-transitions — InvertedPageCurl",
+    "url": "https://github.com/gl-transitions/gl-transitions/tree/master/transitions"
+   },
+   "preview": "previews/69.mp4",
+   "bonus": false,
+   "role": "transition",
+   "energy": 1,
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 70,
+   "id": "lightRays",
+   "cat": "card",
+   "name": "أشعة من وراك",
+   "sub": "ضوء يطلع من وراك",
+   "desc": "أشعة ضوء تطلع من ورا راسك وتلف ببطء. بالقصّ (ماك) الأشعة ورا جسمك؛ بلاه تنزل من فوق مثل ضوء شباك.",
+   "source": {
+    "label": "Magic UI — Light Rays",
+    "url": "https://magicui.design/docs/components"
+   },
+   "preview": "previews/70.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 1,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "reveal",
+    "emphasis"
+   ],
+   "mask": "optional",
+   "fallback": "الأشعة تنزل من فوق على الفيديو بـscreen"
+  },
+  {
+   "n": 71,
+   "id": "tilt3D",
+   "cat": "camera",
+   "name": "ميلة الفصل",
+   "sub": "عنوان فصل بمنظور",
+   "desc": "الفيديو يصير لوح يميل بمنظور ثلاثي ويصغر، وعنوان الفصل يطفو قدامه، ويرجع. نفس الحركة لكل فصل بالفيديو.",
+   "source": {
+    "label": "SozAI — تحليل مونتاج Iman Gadzhi",
+    "url": "https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md"
+   },
+   "preview": "previews/71.mp4",
+   "bonus": false,
+   "role": "camera",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake"
+   ],
+   "cues": [
+    "reveal"
+   ]
+  },
+  {
+   "n": 72,
+   "id": "dynamicIsland",
+   "cat": "card",
+   "name": "الجزيرة تتمدد",
+   "sub": "حبّة تصير إشعار",
+   "desc": "حبّة سودا فوق تتمدد بسبرنق لكرت فيه أيقونة وسطرين ورقم يعد، ووراها زجاج من الفيديو، وترجع حبّة.",
+   "source": {
+    "label": "Apple Newsroom — Liquid Glass",
+    "url": "https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/"
+   },
+   "preview": "previews/72.mp4",
+   "bonus": false,
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "calm",
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "cta",
+    "number",
+    "reveal"
+   ]
+  },
+  {
+   "n": 73,
+   "id": "redact",
+   "cat": "text",
+   "name": "الحقيقة تنكشف",
+   "sub": "أشرطة سرية تنشال",
+   "desc": "السطر مكتوب وكلمات مغطاة بأشرطة حبر، كل شريط ينشال بوقت كلمته فتنكشف بلون الهوية، ومع آخر كشف ختم «سري».",
+   "source": {
+    "label": "thepreviewapp — Reels effects",
+    "url": "https://thepreviewapp.com/instagram-reels-transition-effects"
+   },
+   "preview": "previews/73.mp4",
+   "bonus": false,
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "reveal",
+    "contrast"
+   ]
   }
  ],
  "families": {

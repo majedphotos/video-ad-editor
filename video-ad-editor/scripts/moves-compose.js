@@ -9,6 +9,7 @@
    أدوات compose:
      MV.video(Y, R?)        يرسم فريم الفيديو الحالي على Y بمستطيل R (افتراضي ملء الشاشة) — للانتقالات وpushIn
      MV.person(Y, R?)       المتحدث مقصوص لهالفريم (ماك: 11_behind_text.js person) — MV.person.ok() يقول موجود ولا
+     MV.frameAt(Y, t, R?) / MV.personAt(Y, t, R?)  الفريم/القصّ بوقت ثاني (تجميد 65) — 04_render_frames ينتظر MV.settle() قبل اللقطة
      MV.panel(Y, fn?)       يعبّي Y بلون الخلفية ثم fn(Y) — مشهد B جاهز للانتقال
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
@@ -247,6 +248,23 @@
     Y.drawImage(PI, (sw - cw) / 2, (shh - ch) * fa, cw, ch, R.x, R.y, R.w, R.h); return true;
   }
   person.ok = () => { const PI = document.getElementById('PRS'); return typeof PRS_OK !== 'undefined' && !!PRS_OK && !!PI && PI.naturalWidth > 0; };
+  /* فريم بوقت ثاني (62–73: ستيكر 65): MV.frameAt(Y, t, R?) = فريم الفيديو عند t (vfr/NNNNN.jpg) · MV.personAt(Y, t, R?) = القصّ عند t (bt/person/NNNNN.png).
+     يرجّعون true لو رسموا. أول طلب يحمّل الصورة؛ 04_render_frames.js ينتظر MV.settle() ويعيد رسم الفريم، فالنتيجة حتمية بأي ترتيب رسم.
+     MV.personAt.ok(t) = القصّ موجود لهالوقت (11_behind_text.js person لازم يغطي t). */
+  const HELD = new Map();
+  function held(kind, t) {
+    const fps = (typeof FPS === 'number' && FPS) || 30, i = Math.max(1, Math.round(t * fps) + 1), id = String(i).padStart(5, '0'), src = (kind === 'v' ? 'vfr/' : 'bt/person/') + id + (kind === 'v' ? '.jpg' : '.png');
+    let h = HELD.get(src); if (h) return h;
+    const im = new Image(); h = { im, ok: false, bad: false };
+    h.p = new Promise(res => { im.onload = () => { h.ok = true; res(); }; im.onerror = () => { h.bad = true; res(); }; }); im.src = src; HELD.set(src, h); return h;
+  }
+  function drawHeld(Y, im, R) { R = R || { x: 0, y: 0, w: 1080, h: 1920 }; const sw = im.naturalWidth, shh = im.naturalHeight, sc = Math.max(R.w / sw, R.h / shh), cw = R.w / sc, ch = R.h / sc;
+    const fa = typeof FACE_ANCH === 'number' ? FACE_ANCH : 0.3; Y.drawImage(im, (sw - cw) / 2, (shh - ch) * fa, cw, ch, R.x, R.y, R.w, R.h); }
+  function frameAt(Y, t, R) { const h = held('v', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
+  function personAt(Y, t, R) { const h = held('p', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
+  personAt.ok = t => { const h = held('p', t); return h.ok || !h.bad; };   // لسا يتحمّل = نفترض موجود (settle يحسمها قبل اللقطة)
+  const pending = () => [...HELD.values()].filter(h => !h.ok && !h.bad).length;
+  const settle = () => Promise.all([...HELD.values()].map(h => h.p));
   function panel(Y, fn) { Y.save(); Y.fillStyle = PAL().bg; Y.fillRect(0, 0, 1080, 1920); Y.restore(); if (fn) { Y.save(); fn(Y); Y.restore(); } }
   const HIDE = [];
   function hideCaption(s, e) {
@@ -276,6 +294,7 @@
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
+    frameAt, personAt, pending, settle,
   };
   G.MV = MV;
 })();

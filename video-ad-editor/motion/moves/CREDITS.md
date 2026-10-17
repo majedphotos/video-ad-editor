@@ -38,3 +38,20 @@
 | 58 | كلام زجاجي | [MDN · backdrop-filter](https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter) (الفكرة: غباش اللي ورا العنصر) — مرسوم بالكانفس | CC-BY-SA (التوثيق) |
 | 52، 54، 55، 57، 59، 60، 61 | جدار الكنبة · كسر الإطار · جدار العناوين · غلاف مجلة · الفيديو داخل الجوال · قرين سكرين بالنص · قصاصة ورق | من البلقن نفسه: قصّ المتحدث (`11_behind_text.js` / `personmask.swift`)، ورق الكولاج (`13_collage.js`)، والجوال (`motion/device3d.html`) | MIT (البلقن) |
 | 53 | عالم الواجهات | من البلقن نفسه | MIT (البلقن) |
+
+### توسعة 62–73 (17 أكتوبر 2026) — الدفعة أ من البحث `moves100-research.md`. المعاينات بنفس سلويت 1–61 المرسوم، وكل الرسم بالكانفس (بلا كود منقول)
+
+| # | الحركة | المصدر (فكرة الحركة) | الرخصة |
+|---|---|---|---|
+| 62 | نقاط تنزل | [Arabic diacritics — Wikipedia](https://en.wikipedia.org/wiki/Arabic_diacritics) (المصاحف الأولى بالرسم بلا نقاط) | CC-BY-SA (المرجع) |
+| 63 | القلم يكتب | [GitLab Pajamas — Motion](https://design.gitlab.com/brand-design/motion) (stroke reveal) · خط Aref Ruqaa (موجود بـ`motion/fonts`) | OFL (الخط) |
+| 64 | كلمة بالفيديو | [Magic UI — Video Text](https://magicui.design/docs/components/video-text) | MIT |
+| 65 | ستيكر | [thepreviewapp — Freeze Frame](https://thepreviewapp.com/instagram-reels-transition-effects) · [CapCut — trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) | — (ترند) |
+| 66 | حروف تتلاصق | [Zero-width non-joiner — Wikipedia](https://en.wikipedia.org/wiki/Zero-width_non-joiner) | CC-BY-SA (المرجع) |
+| 67 | كوفي مربع | [Tuts+ — Square Kufic](https://design.tutsplus.com/tutorials/creative-arabic-calligraphy-square-kufic--cms-23012) · خط Noto Kufi Arabic | OFL (الخط) |
+| 68 | شعاع الربط | [Magic UI — Animated Beam](https://magicui.design/docs/components/animated-beam) | MIT |
+| 69 | صفحة كتاب عربي | [gl-transitions](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) (InvertedPageCurl / BookFlip — الفكرة، مرسومة بالكانفس) | MIT |
+| 70 | أشعة من وراك | [Magic UI — components (Light Rays)](https://magicui.design/docs/components) | MIT |
+| 71 | ميلة الفصل | [SozAI — تحليل مونتاج Iman Gadzhi](https://sozai.app/transcript/ai-edit-iman-gadzhi-videos/index.md) (ميلة ثلاثية لعناوين الفصول) | — (تحليل) |
+| 72 | الجزيرة تتمدد | [Apple Newsroom — Liquid Glass (يونيو 2025)](https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/) | — (إلهام، بلا شعار) |
+| 73 | الحقيقة تنكشف | [thepreviewapp — Reels effects](https://thepreviewapp.com/instagram-reels-transition-effects) | — (ترند) |
