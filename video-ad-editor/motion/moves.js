@@ -2168,12 +2168,13 @@
   };
 
   /* 97 باب ينفتح — «وهني تبدأ القصة»: المشهد ينقسم بالنص لبابين، كل باب يلف على حافته البرّانية بمنظور (لين 75°) بتسارع، ومن الشق ينزل ضوء، والمشهد الجديد يطلع من 0.85 لـ1.
-     o: {s, A, B, dur=.5} */
+     o: {s, A, B, dur=.5, zoomB=true}
+     zoomB:false = المشهد الجديد B يطلع بمقاسه بلا تكبير 0.85←1 — لما B وجه المتحدث (ماجد 17 أكتوبر: بلا زوم على وجهه) */
   FX.doorway = (ctx, t, o) => {
     const { X, P, E } = ctx, d = o.dur || 0.5; if (t < o.s) { o.A(X); return; } if (t >= o.s + d + 0.3) { o.B(X); return; }
     const k = E.expoIn(pr(t, o.s, o.s + d)), kb = E.expoOut(pr(t, o.s, o.s + d + 0.3)), th = k * 75 * Math.PI / 180, f = 1400;
     X.fillStyle = darker(P.ink, P.bg); X.fillRect(0, 0, 1080, 1920);
-    X.save(); zoomAt(X, [540, 960], lerp(0.85, 1, kb)); o.B(X); X.restore();
+    X.save(); if (o.zoomB !== false) zoomAt(X, [540, 960], lerp(0.85, 1, kb)); o.B(X); X.restore();
     const Ao = offC(X, 'drA'); o.A(Ao.Y); const M = X.getTransform();
     const pj = u => { const z = u * Math.sin(th), sc = f / (f - z); return { x: (u * Math.cos(th) - 540) * sc, sc }; };   // نسبةً للمركز، للباب اليسار
     const gapX = 540 + pj(540).x, la = (1 - pr(t, o.s + d * 0.7, o.s + d + 0.3)) * cl(k * 4);
