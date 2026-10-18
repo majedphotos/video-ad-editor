@@ -5,10 +5,22 @@
 <p align="center"><b>تتكلم للكاميرا… وتستلم ريل عمودي جاهز للنشر.</b><br>
 يشيل السكتات، يكتب كابشن عربي يمشي مع فمك، ويرسم موشن قرافيكس بألوانك — بلا برنامج مونتاج، وفيديوك ما يطلع من جهازك.</p>
 
-<p align="center"><a href="https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin"><img src="_pkg/btn-install.png" alt="حمّل البلقن" width="420"></a></p>
+<p align="center"><a href="https://github.com/majedphotos/video-ad-editor/releases/latest/download/majed-video.plugin"><img src="_pkg/btn-install.png" alt="حمّل البلقن" width="420"></a><br>
+<sub>⬇️ <b>هذا زر التحميل</b> — ملف <code>majed-video.plugin</code> · أو <a href="#install">طرق التنصيب الثلاث</a> تحت</sub></p>
 
-<p align="center"><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE"><img src="_pkg/yt-playlist.jpg" alt="شرح بلقن تحرير الفيديو كامل على يوتيوب" width="620"></a></p>
-<p align="center">📺 <b><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE">الشرح الكامل على يوتيوب</a></b> — 11 فيديو قصير (حوالي نص ساعة): التثبيت، صفحة التعارف، وشلون تطلع أول فيديو، خطوة بخطوة.</p>
+<br>
+
+---
+
+## 📺 الشرح بالفيديو — على يوتيوب
+
+<p align="center"><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE"><img src="_pkg/yt-playlist-video.jpg" alt="فيديو: شرح بلقن تحرير الفيديو كامل على يوتيوب (مو رابط تحميل)" width="560"></a></p>
+<p align="center">▶️ <b><a href="https://www.youtube.com/playlist?list=PLP3JSi62X3BE">افتح الشرح على يوتيوب</a></b> — 11 فيديو قصير (حوالي نص ساعة): التثبيت، صفحة التعارف، وشلون تطلع أول فيديو، خطوة بخطوة.<br>
+<sub>هذي الصورة <b>فيديو شرح</b>، مو تحميل — التحميل من الزر البرتقالي فوق ↑</sub></p>
+
+<br>
+
+---
 
 <a id="install"></a>
 
