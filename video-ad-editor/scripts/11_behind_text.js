@@ -109,15 +109,22 @@ if(MODE==='cutout'||MODE==='headout'||MODE==='person'){
   prev.faces=prev.faces||{};
   for(const mm of meta) if(mm.face) prev.faces[parseInt(mm.f,10)]=mm.face;
   /* 8 سبتمبر: حدود ثابتة للمشهد كله (وسيط حدود الجسم عبر فريماته) — بدونها الكرت الصغير كان يتبع الجسم بكل فريم
-     فتهتز الخلفية (بلاغ المستخدم). المحرّك يقرأ headbox[بداية المدى] ويثبّت التأطير، والحركة الوحيدة حركة المتحدث نفسه */
+     فتهتز الخلفية (بلاغ المستخدم). المحرّك يقرأ headbox[بداية المدى] ويثبّت التأطير، والحركة الوحيدة حركة المتحدث نفسه.
+     20 أكتوبر: كانت تنحسب بـ`python3 -c` عبر الشِل — JSON.stringify يحوّل أسطر الكود لـ«\n» حرفية والشِل ما يفكها
+     ← SyntaxError، والرسالة تقول «يحتاج PIL» غلط، فما انكتب headbox أبداً. الحين بـffmpeg (اشتغل فوق) + نود: بلا بايثون ولا PIL */
   if(MODE==='headout'){
     try{
-      const py='import json,os,statistics\nfrom PIL import Image\nW='+JSON.stringify(W)+';f0='+f0+';f1='+f1+'\nxs0=[];xs1=[];ys0=[];ys1=[]\n'+
-        'for n in range(f0,f1+1,3):\n p=W+"bt/mask/%05d.png"%n\n if not os.path.exists(p): continue\n bb=Image.open(p).convert("L").point(lambda v:255 if v>140 else 0).getbbox()\n if not bb: continue\n xs0.append(bb[0]);ys0.append(bb[1]);xs1.append(bb[2]);ys1.append(bb[3])\n'+
-        'print(json.dumps({"x0":statistics.median(xs0),"x1":statistics.median(xs1),"y0":statistics.median(ys0),"y1":statistics.median(ys1),"n":len(xs0)}) if xs0 else "null")';
-      const hb=JSON.parse(cp.execSync('python3 -c '+JSON.stringify(py),{stdio:'pipe'}).toString().trim());
-      if(hb){ prev.headbox=prev.headbox||{}; prev.headbox[String(a)]=hb; }
-    }catch(e){ console.log('⚠️ ما قدرت أحسب الحدود الثابتة (يحتاج PIL) — الكرت بيتبع الجسم بكل فريم'); }
+      const xs0=[],xs1=[],ys0=[],ys1=[];
+      for(let f=f0;f<=f1;f+=3){ const p=W+'bt/mask/'+String(f).padStart(5,'0')+'.png'; if(!fs.existsSync(p)) continue;
+        const g=cp.execFileSync('ffmpeg',['-v','error','-i',p,'-vf','scale=1080:1920,format=gray','-f','rawvideo','-'],{maxBuffer:1<<23});
+        let x0=1e9,x1=-1,y0=-1,y1=-1;   /* نفس getbbox بعد عتبة 140: x1/y1 = آخر بكسل + 1 */
+        for(let y=0;y<1920;y++){ const r=y*1080; for(let x=0;x<1080;x++) if(g[r+x]>140){ if(x<x0)x0=x; if(x>x1)x1=x; if(y0<0)y0=y; y1=y; } }
+        if(x1<0) continue; xs0.push(x0); ys0.push(y0); xs1.push(x1+1); ys1.push(y1+1); }
+      const med=v=>{ v=v.slice().sort((p,q)=>p-q); const m=v.length>>1; return v.length%2?v[m]:(v[m-1]+v[m])/2; };
+      if(!xs0.length) throw new Error('القناع فاضي بكل الفريمات');
+      prev.headbox=prev.headbox||{}; prev.headbox[String(a)]={x0:med(xs0),x1:med(xs1),y0:med(ys0),y1:med(ys1),n:xs0.length};
+      console.log('📐 headbox:',JSON.stringify(prev.headbox[String(a)]));
+    }catch(e){ console.log('⚠️ ما قدرت أحسب الحدود الثابتة ('+String(e.message||e).split('\n')[0]+') — الكرت بيتبع الجسم بكل فريم'); }
   }
   fs.writeFileSync(W+'behind.json',JSON.stringify(prev,null,1));
   console.log('✅ '+(MODE==='headout'?'«راسك برّا المستطيل»':MODE==='person'?'قصّ المتحدث (MV.person)':'«واقف قدام اللوحة»')+' جاهز من',a,'إلى',b,'ثانية.');
