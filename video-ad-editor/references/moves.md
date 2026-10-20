@@ -61,9 +61,9 @@ draw(t, lt, ctx) {
 مشاهدك بآخر `compose.html` (بعد سطر التحميل):
 ```js
 MV.ready(() => {                                   // caps.json يوصل بـinit — أي wordTime/lineSpan برّا الرسم داخل ready
-  MV.hideCaption(MV.lineSpan(0).s, MV.lineSpan(2).e);                       // FX.caption بدال كابشن المحرّك
-  MV.scene('cap', t => { const n = [0,1,2].find(i => t >= MV.lineSpan(i).s && t < MV.lineSpan(i).e);
-    if (n !== undefined) FX.caption(MV, t, { line: n, y: 1280 }); });        // 1 متزامن كلمة كلمة
+  MV.hideCaption(MV.lineSpan(0).s, MV.lineSpan(2).e + 0.5);                 // FX.caption بدال كابشن المحرّك
+  MV.scene('cap', t => { const n = [2,1,0].find(i => t >= MV.lineSpan(i).s);   // آخر جملة بدت — الجاية تاخذ مكانها
+    if (n !== undefined && t < MV.lineSpan(n).e + 0.5) FX.caption(MV, t, { line: n, y: 1280, out: MV.lineSpan(n).e }); });   // 1 · يقعد بعد صوته ويطلع (6.1)
   const s = MV.wordTime(3, 0).s;
   MV.scene('push', t => { if (t >= s && t < MV.lineSpan(4).e)
     FX.pushIn(MV, t, { s, to: 1.18, focus: [540, 560], blur: false, draw: Y => MV.video(Y) }); }, 'video');   // 12 طبقة الفيديو
@@ -76,6 +76,7 @@ MV.ready(() => {                                   // caps.json يوصل بـini
 - `MV.video(Y, R?)` يرسم فريم الفيديو الحالي (ملء الشاشة افتراضياً) — هو مشهد A/B للانتقالات و`draw` لحركات الكاميرا.
 - `MV.panel(Y, fn)` = خلفية الثيم + رسمك: شاشة كاملة بين لقطتين. كابشن المحرّك يبقى فوقها.
 - `MV.scene(name, fn, 'video')` لحركة تشتغل على الفيديو نفسه (pushIn/pullOut) فالكابشن يبقى فوقها؛ بدون طبقة = فوق الفيديو وتحت الكابشن.
+- ⛔ 6.1 **العنصر ما يختفي مع آخر كلمة:** `out` (بداية الطلعة) = آخر كلمة — و+0.3 لو طلعة الحركة أسرع من 0.4 ث (مثل `speechBubble`) — ونافذة المشهد لين `out + 0.7`. لا تقطع النافذة عند `lineSpan(n).e` (`motion-rules.md` §3).
 - ⚠ `FX.caption` بثيم غامق: الحدّ حول الكلمات يصير الأغمق من `ink`/`bg` تلقائياً، والكلمة الحالية بلون `onAcc` فوق الكبسولة.
 
 ## 3ب) حركات المتحدث المقصوص (51–61)
@@ -120,7 +121,7 @@ MV.ready(() => { const s = MV.wordTime(6, 0).s;
 - `dotMap` خريطتها مضمّنة (يابسة مبسّطة، من الأطلسي لليابان) — المدن برّا هالمدى ما تبين. `terminalType` الأمر والناتج إنقليزي (خط Menlo/monospace)، والتعليق العربي بسطره.
 ```js
 MV.ready(() => { const s = MV.wordTime(5, 0).s;
-  MV.scene('bubble', t => { if (t >= s && t < s + 3) FX.speechBubble(MV, t, { s, out: MV.lineSpan(5).e, line: 5, face: MV.faceAt }); });
+  MV.scene('bubble', t => { if (t >= s && t < MV.lineSpan(5).e + 1) FX.speechBubble(MV, t, { s, out: MV.lineSpan(5).e + 0.3, line: 5, face: MV.faceAt }); });   // يقعد بعد صوته (6.1)
   const p = MV.wordTime(7, 0).s;
   MV.scene('cam2', t => { if (t >= p && t < MV.lineSpan(7).e) FX.punchCut(MV, t, { s: p, out: MV.lineSpan(7).e, video: Y => MV.video(Y), face: MV.faceAt }); }, 'video'); });
 ```

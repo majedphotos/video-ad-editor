@@ -27,6 +27,7 @@
 ```html
 <script>
 SCENES=[{s:0,e:4.1,m:R_FULL},{s:4.1,e:9.8,m:R_DOWN,gb:480},{s:9.8,e:99,m:R_FULL}];
+/* 9.8 = آخر كلمة بالجملة + 0.45: اللوحة تقعد بعد صوته وتطلع بهدوء 0.4 ث (references/motion-rules.md §3) */
 function listPanel(t){
   if(t<4.1||t>9.8) return;
   panelIn(t,4.1,9.8,()=>{ /* رسم بإحداثيات 130..950 × 278..458 */ });

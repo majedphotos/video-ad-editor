@@ -66,7 +66,7 @@ for i,seg in enumerate(tr["segments"]):
         o.append(_w)
     a,b=keep[si]; lo,hi=(off[si],off[si]+(b-a)) if pin else (0.0,acc)
     cs=max(o[0]["s"]-0.10, lo)
-    ce=min(max(x["e"] for x in o)+0.28, hi)
+    ce=min(max(x["e"] for x in o)+0.45, hi)   # 6.1 (ماجد 20 أكتوبر): الكابشن يقعد 0.45 ث بعد آخر كلمة لو بعده سكتة (كان 0.28) — والجاي يقصّه تحت
     cards.append({"s":round(cs,3),"e":round(ce,3),"w":o})
 cards.sort(key=lambda c:c["s"])
 for i in range(len(cards)-1):

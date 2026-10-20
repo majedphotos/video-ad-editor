@@ -4,7 +4,7 @@
      R_DOWN  → داخل panelIn (صندوق 130..950 × 278..458، يتكبّر 1.2 وحده)
      R_LOWER → صندوق كبير فوق الكرت الصغير: {x:60,y:170,w:960,h:1150}
      R_OFF   → الشاشة كلها: {x:60,y:170,w:960,h:1400}
-   الوقت: o.s = بداية الدخول (ثبّتها على توقيت الكلمة: wordsOf(i)[j].s)، o.e = نهاية (اختياري — يطلع بتلاشي).
+   الوقت: o.s = بداية الدخول (ثبّتها على توقيت الكلمة: wordsOf(i)[j].s)، o.e = نهاية (اختياري — يطلع بهدوء 0.4ث تخلص عندها: حطها آخر كلمة + 0.45).
    التحميل بـcompose.html تحت سكربت المحرّك:  <script src="motion-kit.js"></script>
    الدليل الكامل والوصفات: references/motion-kit.md */
 (function () {
@@ -23,7 +23,10 @@
   const rrp = (x, y, w, h, r) => { const X = C(); X.beginPath(); X.roundRect(x, y, w, h, Math.min(r, w / 2, h / 2)); };
   const fmt = n => Math.round(n).toLocaleString('en-US');
   const kfmt = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(1) + 'K' : String(Math.round(v));
-  const out = (t, o) => o.e ? 1 - pr(t, o.e - 0.25, o.e) : 1;          // تلاشي الخروج
+  /* 6.1 (ماجد 20 أكتوبر: «الموشن يخلص مع صوتي ويختفي على طول»): الطلعة 0.4ث بهدوء (كانت 0.25 خطية) وتخلص عند o.e —
+     فحط o.e = آخر كلمة بجملته + 0.45 (مشاهدك تحرس t>e، فالطلعة لازم تخلص قبلها) */
+  const OUTD = 0.4, eio = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  const out = (t, o) => o.e ? 1 - eio(pr(t, o.e - OUTD, o.e)) : 1;    // تلاشي الخروج
   const live = (t, o) => t >= o.s - 0.01 && (!o.e || t <= o.e);
   const shadow = (b, y, a) => { const X = C(); X.shadowColor = 'rgba(0,0,0,' + a + ')'; X.shadowBlur = b; X.shadowOffsetY = y; };
   const noShadow = () => { const X = C(); X.shadowColor = 'transparent'; X.shadowBlur = 0; X.shadowOffsetY = 0; };

@@ -20,7 +20,7 @@ python3 studio/studio.py <work> [port]      # يطبع رابطاً تفتحه �
 المسافة = تشغيل/إيقاف · الأسهم = فريم · Shift+سهم = ثانية.
 
 ## مفاتيح `studio.json` اللي يقرأها المحرّك
-`scenes` (`[{s,e,m:"R_FULL"|"R_DOWN"|"R_LOWER"|"R_OFF"|"R_COLLAGE",nocap?,gb?}]`) · `stickers` · `brollClips` + `brNeed` · `behindOff` · `outro` (`l1,l2,chips,cta,word`) · `gen` + `genFrames` (`references/gen-scenes.md`) ·
+`scenes` (`[{s,e,m:"R_FULL"|"R_DOWN"|"R_LOWER"|"R_OFF"|"R_COLLAGE",nocap?,gb?,tr?}]` — `tr` مدة انتقال المشهد، 6.1) · `stickers` (6.1: الملصق يقعد لين `e` ويطلع بهدوء 0.4 ث بعده) · `brollClips` + `brNeed` · `behindOff` · `outro` (`l1,l2,chips,cta,word`) · `gen` + `genFrames` (`references/gen-scenes.md`) ·
 `sceneFx`: أسماء دوال مشاهد مكتوبة بـcompose.html تتسجّل بـ`SCENE_LIST` (مثال `["myPanel"]`) — **افتراضياً ما فيه أي مشهد مخصص**؛ `false` يفرّغ القائمة.
 
 ## الاستوديو القديم (سحب على التايم-لاين)
