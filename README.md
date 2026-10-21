@@ -22,11 +22,17 @@
 
 **نفس الطريقة للكل** — جوال، كمبيوتر، تطبيق الديسكتوب. ما تحتاج تيرمنال ولا تحمّل ملف. تثبّته مرة من **claude.ai** ويطلع لك بالويب والديسكتوب والجوال، ويتحدّث بروحه.
 
-<p align="center"><img src="_pkg/install-steps-web.jpg" alt="خطوات التثبيت بالصور: Settings، Plugins، Add marketplace، الصق majedphotos/majed-plugins، Manage marketplaces، Sync automatically" width="100%"></p>
+**1.** افتح **claude.ai** ← اضغط اسمك تحت ← **Settings**
 
-1. افتح **claude.ai** ← اضغط اسمك تحت ← **Settings**
-2. تحت **Customize** ← **Plugins** ← **Add** ← **Add marketplace**
-3. الصق هذا وأضفه:
+<p align="center"><img src="_pkg/step-1-settings.jpg" alt="Settings من القائمة تحت اسمك" width="360"></p>
+
+**2.** تحت **Customize** ← **Plugins** ← **Add** ← **Add marketplace**
+
+<p align="center"><img src="_pkg/step-2-plugins.jpg" alt="Plugins تحت Customize" width="360"></p>
+
+<p align="center"><img src="_pkg/step-3-add-marketplace.jpg" alt="Add ثم Add marketplace" width="360"></p>
+
+**3.** الصق هذا وأضفه:
 
 <div dir="ltr">
 
@@ -36,8 +42,15 @@ majedphotos/majed-plugins
 
 </div>
 
-4. يطلع لك **Majed video** — أضفه.
-5. **Add** ← **Manage marketplaces** ← **⋮** ← شغّل **Sync automatically** (حتى كل تحديث يوصلك بروحه).
+**4.** يطلع لك **Majed video** — أضفه.
+
+<p align="center"><img src="_pkg/step-4-majed-video.jpg" alt="Majed video من majed-plugins" width="360"></p>
+
+**5.** بعدين **Add** ← **Manage marketplaces** ← **⋮** ← شغّل **Sync automatically** (حتى كل تحديث يوصلك بروحه).
+
+<p align="center"><img src="_pkg/step-5-manage.jpg" alt="Add ثم Manage marketplaces" width="360"></p>
+
+<p align="center"><img src="_pkg/step-6-sync.jpg" alt="النقاط الثلاث ثم Sync automatically" width="360"></p>
 
 > ✅ **تأكد إنه انضاف:** بـ**Plugins** تشوف **Majed video** بالقائمة. ما طلع؟ أعد الخطوة 3.
 
