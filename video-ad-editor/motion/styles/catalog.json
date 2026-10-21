@@ -1,0 +1,360 @@
+{
+ "version": 1,
+ "note": "مولّد من motion/styles.js — لا تعدّله بيدك",
+ "styles": [
+  {
+   "id": "keynote",
+   "name": "كينوت",
+   "desc": "فراغ كبير، كلمة وحدة تحمل المشهد، حركة قليلة مضبوطة",
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "reveal",
+    "number",
+    "launch",
+    "calm"
+   ],
+   "blend": [
+    "explainer",
+    "devCard",
+    "studio3D"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "glassUI",
+   "name": "زجاج الواجهة",
+   "desc": "إشعارات وكروت وويدجت بمادة زجاجية فوق الفيديو، كأن الشاشة تتكلم",
+   "families": [
+    "editorial",
+    "punch"
+   ],
+   "cues": [
+    "tech",
+    "app",
+    "list",
+    "chat"
+   ],
+   "blend": [
+    "keynote",
+    "terminal"
+   ],
+   "moment": false,
+   "needsCut": false
+  },
+  {
+   "id": "explainer",
+   "name": "شرح صحفي",
+   "desc": "ورق ودبابيس وقلم تحديد وخيط أحمر — المعلومة تطلع موثّقة (Vox / جوني هاريس)",
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "news",
+    "number",
+    "contrast",
+    "map",
+    "source"
+   ],
+   "blend": [
+    "keynote",
+    "paperCut",
+    "archive"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "paperCut",
+   "name": "ورق مقصوص",
+   "desc": "كل شي قصاصة ورق بحد أبيض وظل قاسي، وانت نفسك ستيكر — ستوب موشن",
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "hit",
+    "list",
+    "fun",
+    "emphasis"
+   ],
+   "blend": [
+    "explainer",
+    "archive",
+    "doodle"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "archive",
+   "name": "وثائقي",
+   "desc": "حبيبات فلم، ملف مانيلا، آلة كاتبة، ختم أحمر، وكن بيرنز بطيء",
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "story",
+    "history",
+    "reveal",
+    "secret",
+    "date"
+   ],
+   "blend": [
+    "explainer",
+    "paperCut",
+    "newsprint"
+   ],
+   "moment": false,
+   "needsCut": false
+  },
+  {
+   "id": "editorial",
+   "name": "مجلة",
+   "desc": "غلاف مجلة: عنوان ضخم ورا الراس، خطوط رفيعة، أرقام صغيرة بالزوايا",
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": [
+    "quote",
+    "profile",
+    "story",
+    "title"
+   ],
+   "blend": [
+    "swiss",
+    "keynote"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "swiss",
+   "name": "سويسري",
+   "desc": "شبكة صارمة، أحمر وأسود وأبيض، أشرطة وأرقام ضخمة، بلا زخرفة",
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "number",
+    "list",
+    "steps",
+    "data"
+   ],
+   "blend": [
+    "editorial",
+    "brutal"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "doodle",
+   "name": "رسم يد",
+   "desc": "أسهم ودوائر بقلم تنرسم وهي تلحق الكلام، والخط «يغلي» شوي",
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "explain",
+    "arrow",
+    "tip"
+   ],
+   "blend": [
+    "paperCut",
+    "explainer"
+   ],
+   "moment": false,
+   "needsCut": false
+  },
+  {
+   "id": "terminal",
+   "name": "تيرمنال",
+   "desc": "نافذة كود داكنة، مؤشر يومض، أوامر تنكتب ونتايج تطلع",
+   "families": [
+    "punch",
+    "editorial"
+   ],
+   "cues": [
+    "tech",
+    "code",
+    "ai",
+    "tool"
+   ],
+   "blend": [
+    "glassUI",
+    "devCard"
+   ],
+   "moment": false,
+   "needsCut": false
+  },
+  {
+   "id": "riso",
+   "name": "ريزو",
+   "desc": "حبرين فلورسنت متراكبين مزحزحين، ونقاط هافتون — طباعة يدوية",
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hook",
+    "title",
+    "fun"
+   ],
+   "blend": [
+    "paperCut",
+    "newsprint"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "newsprint",
+   "name": "جريدة",
+   "desc": "ورق جرايد، عنوان عريض، أعمدة رفيعة، وأحمر للعاجل بس",
+   "families": [
+    "editorial"
+   ],
+   "cues": [
+    "news",
+    "breaking",
+    "source"
+   ],
+   "blend": [
+    "archive",
+    "explainer"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "blueprint",
+   "name": "بلوبرنت",
+   "desc": "أزرق وشبكة قياس، خطوط تنرسم وأسهم أبعاد وcallouts تأشر",
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": [
+    "how",
+    "explain",
+    "parts",
+    "tech"
+   ],
+   "blend": [
+    "terminal",
+    "swiss"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "vhs",
+   "name": "VHS",
+   "desc": "شاشة قديمة: خطوط مسح ونزيف ألوان وOSD — لحظات «زمان» بس (1–3 ث)",
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "flashback",
+    "old",
+    "retro"
+   ],
+   "blend": [
+    "archive"
+   ],
+   "moment": true,
+   "needsCut": false
+  },
+  {
+   "id": "brutal",
+   "name": "بروتالي",
+   "desc": "ألوان صارخة، حدود سودة عريضة وظل قاسي، ضربة واهتزاز — للهوك والطلب بس",
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "hook",
+    "cta",
+    "hit"
+   ],
+   "blend": [
+    "swiss",
+    "stickerToon"
+   ],
+   "moment": true,
+   "needsCut": false
+  },
+  {
+   "id": "studio3D",
+   "name": "ستوديو منتج",
+   "desc": "خلفية كريمية بإضاءة ناعمة، اسم بارز كأنه مجسّم مطفي، وتاق أسود صغير",
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "launch",
+    "tool",
+    "free",
+    "name"
+   ],
+   "blend": [
+    "keynote",
+    "devCard"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "stickerToon",
+   "name": "ستيكر كرتوني",
+   "desc": "باستيل وحدود سودة ثابتة السماكة، فقاعات وماسكوت ينط — مرح",
+   "families": [
+    "punch"
+   ],
+   "cues": [
+    "fun",
+    "tool",
+    "explain",
+    "kids"
+   ],
+   "blend": [
+    "doodle",
+    "paperCut"
+   ],
+   "moment": false,
+   "needsCut": true
+  },
+  {
+   "id": "devCard",
+   "name": "كرت أداة",
+   "desc": "كريمي بشبكة وأشعة، كرت أبيض، breadcrumb، كلمة أكسنت بالرقعة وchips",
+   "families": [
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "tool",
+    "skill",
+    "free",
+    "launch",
+    "fact"
+   ],
+   "blend": [
+    "keynote",
+    "terminal",
+    "studio3D"
+   ],
+   "moment": false,
+   "needsCut": true
+  }
+ ]
+}

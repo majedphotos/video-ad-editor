@@ -11,7 +11,7 @@
   python3 scripts/35_moves.py set "3 7 12" [--off "5"]
       يحفظ اختياراً من الشات مباشرة (أرقام المعرض) — لما يرد المستخدم «أبي 3 و7، 5 لا» بدل الصفحة.
   python3 scripts/35_moves.py list             يطبع الكتالوج (رقم · id · الاسم · الحالة)
-  python3 scripts/35_moves.py plan --title "عنوان الفيديو" [--family calm|punch|onetake|editorial|auto] [--cues number,list,price,cta,contrast,emphasis,reveal,tech,hit] [--dry]
+  python3 scripts/35_moves.py plan --title "عنوان الفيديو" [--family calm|punch|onetake|editorial|auto] [--cues number,list,price,cta,contrast,emphasis,reveal,tech,hit] [--style auto|none|<id>|<a>+<b>] [--dry]
       لوحة حركات الفيديو: 3 حركات أساسية (كلمات + انتقال + كاميرا/كرت) من عائلة وحدة يدور حولها الفيديو كله،
       + لهجات (accents) للحظات الخاصة حسب cues، + القواعد اللي تمشي دايماً. يتجنب أساسيات آخر 3 فيديوهات و"off".
       ينحفظ بسجل moves-history.json (إلا مع --dry) عشان الفيديو الجاي يطلع غير.
@@ -165,6 +165,47 @@ def serve(args):
 
 
 HISTORY = HOME / "moves-history.json"
+STYLES = Path(__file__).resolve().parent.parent / "motion" / "styles" / "catalog.json"
+
+
+def styles_catalog():
+    try:
+        return json.loads(STYLES.read_text(encoding="utf-8")).get("styles", [])
+    except Exception:
+        return []
+
+
+def pick_style(title, family, cues, hist, want="auto"):
+    """🎨 ستايل الفيديو (motion/styles.js): يناسب العائلة واللحظات، وما يتكرر ورا بعض. يرجّع (style, moments, why).
+    want: auto · none · <id> · <a>+<b> (دمج). اللحظات (vhs/brutal) ما تصير ستايل الفيديو كله — تنقترح للهوك/الطلب بس."""
+    cat = styles_catalog()
+    if not cat or want == "none":
+        return None, [], []
+    ids = {c["id"]: c for c in cat}
+    moments = [c["id"] for c in cat if c.get("moment") and set(c.get("cues", [])) & set(cues or [])]
+    if want != "auto":
+        bad = [x for x in want.split("+") if x not in ids]
+        if bad:
+            raise SystemExit("ستايل مو معروف: %s — الموجود: %s" % (" ".join(bad), " ".join(ids)))
+        return want, moments, ["ستايل (اختيارك): " + " × ".join(ids[x]["name"] for x in want.split("+"))]
+    recent = [h.get("style", "").split("+")[0] for h in hist[-4:]]
+    def score(c):                                          # الأقل = الأحسن
+        s = recent.count(c["id"]) * 10 - 2 * len(set(c.get("cues", [])) & set(cues or [])) + _h(title, "style", c["id"])
+        if family not in c.get("families", []):
+            s += 6
+        if c.get("needsCut") and sys.platform != "darwin":   # السطح يحتاج قصّ الشخص (ماك) — برّاه يرجع لمعالجة الفيديو
+            s += 3
+        return s
+    pool = sorted([c for c in cat if not c.get("moment")], key=score)
+    a = pool[0]
+    style, why = a["id"], ["ستايل: %s — %s" % (a["name"], a["desc"])]
+    mates = [b for b in a.get("blend", []) if b in ids and not ids[b].get("moment") and b not in recent]
+    if mates and _h(title, "blend") < 0.35:                 # ثلث الفيديوهات تطلع دمج: سطح الأول + خط وحركة الثاني
+        style += "+" + mates[0]
+        why = ["ستايل: دمج %s × %s (السطح من الأول، الخط والحركة من الثاني)" % (a["name"], ids[mates[0]]["name"])]
+    if moments:
+        why.append("لحظات: " + " · ".join(ids[m]["name"] for m in moments) + " (للهوك أو الطلب بس، 1–3 ث)")
+    return style, moments, why
 SLOTS = [("text", ("text",)), ("transition", ("transition",)), ("camera", ("camera", "card"))]
 
 
@@ -180,7 +221,7 @@ def _h(*a):
     return int(hashlib.sha1("|".join(map(str, a)).encode("utf-8")).hexdigest()[:8], 16) / 0xFFFFFFFF
 
 
-def plan(title, family="auto", cues=(), dry=False):
+def plan(title, family="auto", cues=(), dry=False, style="auto"):
     cat = catalog()
     off = set((load_profile().get("moves") or {}).get("off", []))
     if sys.platform != "darwin":                           # حركات القصّ (mac: true) تحتاج Vision بالماك — برّاه ما تنختار
@@ -208,10 +249,11 @@ def plan(title, family="auto", cues=(), dry=False):
             accents.append(cands[0]["id"]); why.append("لهجة %s: %d %s" % (cue, cands[0]["n"], cands[0]["name"]))
     rules = [m["id"] for m in cat if m["role"] == "rule" and family in m.get("families", []) and m["id"] not in off and m["id"] not in accents]
     caption = [m["id"] for m in cat if m["role"] == "caption" and m["id"] not in off]
-    out = {"title": title, "family": family, "core": core, "accents": accents[:2], "rules": rules, "caption": caption, "why": why}
+    st, moments, swhy = pick_style(title, family, cues, hist, style)
+    out = {"title": title, "family": family, "style": st, "moments": moments, "core": core, "accents": accents[:2], "rules": rules, "caption": caption, "why": swhy + why}
     if not dry:
         import datetime
-        hist.append({"date": datetime.date.today().isoformat(), "title": title, "family": family, "core": core, "accents": accents[:2]})
+        hist.append({"date": datetime.date.today().isoformat(), "title": title, "family": family, "style": st or "", "core": core, "accents": accents[:2]})
         HISTORY.parent.mkdir(parents=True, exist_ok=True)
         HISTORY.write_text(json.dumps(hist[-50:], ensure_ascii=False, indent=1), encoding="utf-8")
     return out
@@ -244,7 +286,7 @@ def main(argv):
     if cmd == "plan":
         opt = lambda k, d=None: rest[rest.index(k) + 1] if k in rest else d
         cues = [c.strip() for c in (opt("--cues", "") or "").split(",") if c.strip()]
-        print(json.dumps(plan(opt("--title", "بلا عنوان"), opt("--family", "auto"), cues, "--dry" in rest), ensure_ascii=False, indent=2))
+        print(json.dumps(plan(opt("--title", "بلا عنوان"), opt("--family", "auto"), cues, "--dry" in rest, opt("--style", "auto")), ensure_ascii=False, indent=2))
         return 0
     log(__doc__)
     return 1

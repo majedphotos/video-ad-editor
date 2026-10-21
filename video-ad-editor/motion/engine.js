@@ -636,6 +636,8 @@ function makeCtx(sc) {
     get MK() { return G.MK; },
     // moves.js — مكتبة حركات المعرض المرقّم: ctx.FX.<اسم>(ctx, t, o) (references/moves.md)
     get FX() { return G.FX; },
+    // styles.js — ctx.S = ستايل المشروع (null لو ما فيه) · ctx.STYLES للدمج/التبديل داخل مشهد
+    get S() { return S.ST; }, get STYLES() { return G.STYLES; },
   };
   return ctx;
 }
@@ -651,6 +653,13 @@ async function boot() {
     S.W = proj.width || 1080; S.H = proj.height || 1920; S.fps = proj.fps || 60;
     S.P = Object.assign({ bg: '#F0EBE0', ink: '#1B1A17', acc: '#D97757', clay: '#C15F3C', hi: '#E8A283', mut: '#8A847A' }, proj.palette || {});
     FAMS = Object.assign(FAMS, proj.fonts || {});
+    // 🎨 بنك الستايلات (styles.js): project.style = "paperCut" أو "explainer+keynote" — ألوانه وخطوطه للمحرّك كله، وctx.S للمشاهد
+    S.ST = null;
+    if (proj.style && G.STYLES) {
+      S.ST = G.STYLES.make(proj.style, { W: S.W, H: S.H, fps: S.fps, brand: proj.palette, keepBrand: proj.keepBrand });
+      S.P = Object.assign({}, S.P, S.ST.P, proj.styleOverride || {});
+      FAMS = Object.assign(FAMS, { display: S.ST.fonts.display, body: S.ST.fonts.body, num: S.ST.fonts.num });
+    }
     const tl = S.tl = (await jOpt(PROJ + 'timeline.json')) || {};
     S.bpm = tl.bpm || proj.bpm || 120; S.spb = 60 / S.bpm; S.bpb = tl.beatsPerBar || proj.beatsPerBar || 4;
     await loadFonts((proj.extraFonts || []).map(f => ({ fam: f.family, url: PROJ + f.file, weight: f.weight || '400' })));

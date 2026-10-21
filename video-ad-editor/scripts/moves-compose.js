@@ -81,11 +81,17 @@
   function fontStr(family = 'body', weight = 700, size = 80) {
     const role = ALIAS[family];
     if (!role) return `${weight} ${size}px "${family}"`;           // عائلة مو معروفة: نمرّرها كما هي
+    if (STY && STY.fonts[role]) return `${weight} ${size}px "${STY.fonts[role]}"`;
     const w = role === 'display' ? Math.max(800, +weight || 0) : weight;
     return `${w} ${size}px "${theme().FONT}"`;
   }
   const applyFont = (X, o) => { X.font = o.font || fontStr(o.family || 'body', o.weight ?? 700, o.size || 80); };
+  let STY = null;   // 🎨 MV.useStyle(spec) — ستايل من motion/styles.js (ألوانه وخطوطه تغلب ثيم compose)
   const PAL = () => {
+    if (STY) return Object.assign(PAL0(), STY.P, { onAcc: '#FFFFFF' });
+    return PAL0();
+  };
+  const PAL0 = () => {
     /* let globals بـcompose ما تبين على window بس تنقرا بالاسم (نفس النطاق العام) — typeof يحمي لو الصفحة مو compose */
     const acc = typeof ACC !== 'undefined' ? ACC : '#D97757', clay = typeof CLAY !== 'undefined' ? CLAY : acc;
     return { bg: typeof BG !== 'undefined' ? BG : '#F3EFEA', ink: typeof INK !== 'undefined' ? INK : '#1F1F1D', acc, clay, hi: clay, mut: typeof MUT !== 'undefined' ? MUT : '#8A847A',
@@ -286,9 +292,10 @@
     let h = FONTS.get(fam); if (h) return h.ok;
     h = { ok: false, bad: false }; FONTS.set(fam, h);
     try { if ([...document.fonts].some(f => f.family.replace(/["']/g, '') === fam && f.status === 'loaded')) { h.ok = true; h.p = Promise.resolve(); return true; } } catch (e) {}
-    const file = FONTREQ[fam]; if (!file) { h.bad = true; h.p = Promise.resolve(); return false; }
-    const face = new FontFace(fam, 'url("' + file + '")', { weight: '400', style: 'normal' });
-    h.p = face.load().then(f => { document.fonts.add(f); h.ok = true; }, () => { h.bad = true; console.error('⚠️ MV.needFont: ما لقيت ' + file + ' بمجلد الشغل (انسخه من motion/fonts)'); });
+    const files = FONTREQ[fam] ? [[FONTREQ[fam], '400']] : ((G.STYLES && G.STYLES.FONT_FILES[fam]) || []);
+    if (!files.length) { h.bad = true; h.p = Promise.resolve(); return false; }
+    h.p = Promise.all(files.map(([file, weight]) => new FontFace(fam, 'url("' + file + '")', { weight, style: 'normal' }).load().then(f => document.fonts.add(f))))
+      .then(() => { h.ok = true; }, () => { h.bad = true; console.error('⚠️ MV.needFont: ما لقيت ' + files.map(x => x[0]).join(' ') + ' بمجلد الشغل (انسخه من motion/fonts)'); });
     return false;
   }
   /* 🆕 6.0 موجة صوته: MV.env(t) = علو صوته الحقيقي عند t (0..1) من env.js (scripts/37_env.py). بلا env.js = 0 */
@@ -322,6 +329,15 @@
     G.init = function (d) { const r = orig.apply(this, arguments); inited = true; READY.splice(0).forEach(f => { try { f(); } catch (e) { console.error('⚠️ MV.ready: ' + e.message); } }); return r; };
     G.init.__mv = true;
   }
+  /* 🎨 بنك الستايلات (references/styles.md): MV.useStyle('paperCut') أو 'explainer+keynote' — مرة وحدة فوق مشاهدك.
+     يرجّع S (= MV.S): S.background/card/label/post/sig… وألوان MV.P وخطوط display/body/num تصير من الستايل. useStyle(null) يرجع لثيم compose. */
+  function useStyle(spec) {
+    if (!spec) { STY = null; return null; }
+    if (!G.STYLES) { console.error('⚠️ MV.useStyle: styles.js مو محمّل (compose.html لازم فيه <script src="styles.js">)'); return null; }
+    const brand = PAL0(); STY = G.STYLES.make(spec, { W: 1080, H: 1920, fps: 30, brand });
+    Object.values(STY.fonts).forEach(f => { if (G.STYLES.FONT_FILES[f]) needFont(f); });
+    return STY;
+  }
   function scene(name, fn, layer) { if (typeof SCENE_LIST === 'undefined') throw new Error('MV.scene: هالصفحة مو compose'); if (layer) fn.layer = layer; SCENE_LIST.push([name, fn, layer]); }
 
   const MV = {
@@ -336,6 +352,7 @@
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
     frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env,
+    useStyle, get S() { return STY; },
   };
   G.MV = MV;
 })();
