@@ -6,6 +6,7 @@
 // (rx,ry,rz بالدرجات = لفّة الجهاز · s = قرب الكاميرا · fx,fy = النقطة اللي تقرّب عليها من الشاشة 0-1)
 const puppeteer = require('puppeteer-core');
 require('../motion/vendor.js')();
+const glArgs = require('./_chrome_flags.js');   // الماك: كرت الشاشة · السحابة/الجوال: SwiftShader
 const fs = require('fs'), path = require('path'), http = require('http'), { spawn, execFileSync } = require('child_process');
 const CHROME = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/chromium', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
@@ -54,7 +55,7 @@ const srv = http.createServer((req, res) => {
   const CFG = { size: [OW, OH], device: D.device || 'phone', bg: D.bg || [theme.bg || '#0B0A12', theme.acc ? theme.acc + '66' : '#3B2A6B'],
     acc: D.acc || theme.acc || '#D97757', ink: D.ink || theme.ink || '#F0EBE0', font: D.font || theme.font || 'Cairo', metal: D.metal, fit: D.fit || 'contain', reflect: D.reflect ?? 0.25 };
   const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new',
-    args: ['--no-sandbox', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl', '--force-device-scale-factor=1'] });
+    args: ['--no-sandbox', ...glArgs(), '--force-device-scale-factor=1'] });
   const p = await b.newPage(); await p.setViewport({ width: OW, height: OH });
   p.on('pageerror', e => console.log('ERR', String(e).slice(0, 200)));
   await p.evaluateOnNewDocument(c => { window.CFG = c; }, CFG);

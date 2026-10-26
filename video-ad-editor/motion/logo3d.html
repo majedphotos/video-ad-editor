@@ -1,0 +1,107 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- شعارات 3D حقيقية (سماكة · إضاءة · انعكاس) بخلفية شفافة — يفتحه scripts/41_logo3d.js ويصوّر كل فريم PNG
+     وريل الكلام يرسمها فوق المونتاج بـMV.overlay. الفريم يعتمد على t بس (pose(t)) = نفس النتيجة بكل جهاز. -->
+<script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
+<style>html,body{margin:0;overflow:hidden;background:transparent}canvas{display:block}</style></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const C = window.CFG;                                   // يحقنه 41_logo3d.js
+const [W, H] = C.size;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, premultipliedAlpha: false });
+renderer.setPixelRatio(1); renderer.setSize(W, H); renderer.setClearColor(0x000000, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;   /* ألوان الشعار مثل ما هي (ACES يبهّت الأسود والأبيض) */ renderer.toneMappingExposure = C.exposure ?? 1.0;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;   // انعكاسات حقيقية على الحواف واللمعة
+
+const FOV = C.fov || 30, DIST = 8;
+const camera = new THREE.PerspectiveCamera(FOV, W / H, 0.1, 100); camera.position.set(0, 0, DIST); camera.lookAt(0, 0, 0);
+const VIS = 2 * DIST * Math.tan(FOV * Math.PI / 360);  // ارتفاع المشهد بالوحدات عند z=0
+const PX = VIS / H;                                      // بكسل → وحدة
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(3, 5, 7); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 10;
+Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 0.5, far: 30 });
+scene.add(key);
+const rim = new THREE.DirectionalLight(new THREE.Color(C.rim || '#D97757'), 1.1); rim.position.set(-6, 3, -4); scene.add(rim);
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+if (C.shadow !== false) {                                // ظل ناعم على «أرض» شفافة ورا الشعارات
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: C.shadowOpacity ?? 0.22 }));
+  sh.position.z = -0.9; sh.receiveShadow = true; scene.add(sh);
+}
+
+/* وجه البلاطة: كانفس بزوايا مدوّرة + الشعار متوسّط بالنسبة المطلوبة + لمعة خفيفة من فوق */
+function faceTexture(img, T) {
+  const N = 1024, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d');
+  const r = N * (T.radius ?? 0.2);
+  x.beginPath(); x.roundRect(0, 0, N, N, r); x.fillStyle = T.face || '#FFFFFF'; x.fill();
+  if (img && img.naturalWidth) {
+    const m = N * (T.logoScale ?? 0.6), ar = img.naturalWidth / img.naturalHeight, w = ar >= 1 ? m : m * ar, h = ar >= 1 ? m / ar : m;
+    x.drawImage(img, (N - w) / 2, (N - h) / 2, w, h);
+  }
+  const g = x.createLinearGradient(0, 0, 0, N * 0.55); g.addColorStop(0, 'rgba(255,255,255,0.16)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.save(); x.beginPath(); x.roundRect(0, 0, N, N, r); x.clip(); x.fillStyle = g; x.fillRect(0, 0, N, N * 0.55); x.restore();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const load = src => new Promise(res => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+
+const TILES = [];
+for (const T of C.tiles) {
+  const img = T.img ? await load(T.img) : null;
+  const d = T.depth ?? 0.2, rad = T.radius ?? 0.2;
+  const g = new THREE.Group();
+  const side = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(T.side || T.face || '#ffffff'), roughness: 0.35, metalness: 0.0, clearcoat: 0.8, clearcoatRoughness: 0.25, envMapIntensity: 0.9 });
+  const box = new THREE.Mesh(new RoundedBoxGeometry(1, 1, d, 8, rad * 0.9), side); box.castShadow = true; g.add(box);
+  /* الوجه بلونه الحقيقي (بلا إضاءة تبهّت الأسود) + طبقة لمعة فوقه تضيف الانعكاس بس (جمع) — فالشعار واضح والسطح يلمع */
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: faceTexture(img, T), transparent: true, toneMapped: false }));
+  const gc = document.createElement('canvas'); gc.width = gc.height = 256; const gt = new THREE.CanvasTexture(gc); gt.colorSpace = THREE.SRGBColorSpace;
+  const gloss = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: gt, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  gloss.position.z = d / 2 + 0.003; g.add(gloss);
+  front.position.z = d / 2 + 0.0015; g.add(front);
+  scene.add(g); TILES.push({ T, g, gc, gt, mats: [side, front.material, gloss.material] });
+}
+
+const ease = { out: k => 1 - Math.pow(1 - k, 3), inout: k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2, back: k => 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2), lin: k => k };
+function at(keys, t, name, def) {             // مفاتيح {t, x, y, s, rx, ry, rz, o, ease} — تتنقّل بنعومة بينها
+  if (!keys || !keys.length) return def;
+  const v = k => (k[name] ?? def);
+  if (t <= keys[0].t) return v(keys[0]);
+  for (let i = 0; i < keys.length - 1; i++) { const a = keys[i], b = keys[i + 1];
+    if (t <= b.t) { const k = (ease[b.ease || 'out'] || ease.out)(Math.max(0, Math.min(1, (t - a.t) / Math.max(1e-3, b.t - a.t)))); return v(a) + (v(b) - v(a)) * k; } }
+  return v(keys[keys.length - 1]);
+}
+const D2R = Math.PI / 180;
+/* لمعة تعبر الوجه (مثل أيقونات التطبيقات) — شريط مايل يمر كل ~2.4 ث، يعتمد على t بس */
+function sweep(gc, gt, T, t) {
+  const x = gc.getContext('2d'), N = 256, r = N * (T.radius ?? 0.2); x.clearRect(0, 0, N, N);
+  const per = T.shinePeriod ?? 2.4, k = ((t + (T.phase ?? 0) * 0.7) % per) / per, c = -0.4 + k * 1.8;   // مركز الشريط من برّا لبرّا
+  x.save(); x.beginPath(); x.roundRect(0, 0, N, N, r); x.clip();
+  const g = x.createLinearGradient(N * (c - 0.25), 0, N * (c + 0.25), N); const a = T.shine ?? 0.22;
+  g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,255,255,${a})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, N, N); x.restore(); gt.needsUpdate = true;
+}
+window.pose = t => {
+  for (const { T, g, gc, gt, mats } of TILES) {
+    sweep(gc, gt, T, t);
+    const K = T.keys, fl = T.float ?? 1, ph = T.phase ?? 0;
+    const s = at(K, t, 's', 1) * (T.size || 300) * PX;
+    const x = (at(K, t, 'x', T.x ?? W / 2) - W / 2) * PX, y = -(at(K, t, 'y', T.y ?? H / 2) - H / 2) * PX;
+    g.position.set(x, y + fl * 0.035 * Math.sin(t * 1.6 + ph), at(K, t, 'z', 0));
+    g.rotation.set((at(K, t, 'rx', -8) + fl * 3 * Math.sin(t * 1.1 + ph)) * D2R,
+                   (at(K, t, 'ry', 0) + fl * 9 * Math.sin(t * 0.9 + ph) + (T.spin || 0) * t * 360) * D2R,
+                   at(K, t, 'rz', 0) * D2R);
+    g.scale.setScalar(Math.max(1e-3, s));
+    const o = at(K, t, 'o', 1); g.visible = o > 0.003; for (const m of mats) { m.transparent = true; m.opacity = o; }
+  }
+  renderer.render(scene, camera);
+};
+window.READY = true;
+</script></body></html>

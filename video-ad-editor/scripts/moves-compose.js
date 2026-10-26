@@ -284,6 +284,24 @@
   function frameAt(Y, t, R) { if (G.__SAFE_FLAT) { drawHeld(Y, G.__SAFE_FLAT, R); return true; } const h = held('v', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
   function personAt(Y, t, R) { if (G.__SAFE_FLAT) return true; const h = held('p', t); if (!h.ok) return false; drawHeld(Y, h.im, R); return true; }
   personAt.ok = t => { const h = held('p', t); return h.ok || !h.bad; };   // لسا يتحمّل = نفترض موجود (settle يحسمها قبل اللقطة)
+  /* 🧊 طبقة 3D (41_logo3d.js): فريمات PNG شفافة بـthree/<name>/ ترسم فوق المونتاج — MV.overlay('logos', Y, t, R?)
+     يرجّع true لو رسم. تحميل الفريم نفس HELD فـsettle() ينتظره (الرسم حتمي). R = مستطيل بإحداثيات الكانفس (افتراضي مقاسها من 0,0). */
+  const OVL = new Map();
+  function overlayMeta(name) {
+    if (OVL.has(name)) return OVL.get(name); let m = null;
+    try { const x = new XMLHttpRequest(); x.open('GET', 'three/' + name + '/meta.json', false); x.send(); if (x.status === 200 || (x.status === 0 && x.responseText)) m = JSON.parse(x.responseText); } catch (e) {}
+    OVL.set(name, m); return m;
+  }
+  function overlay(name, Y, t, R) {
+    const m = overlayMeta(name); if (!m) return false;
+    const i = Math.floor((t - m.from) * m.fps + 1e-6); if (i < 0 || i >= m.n) return false;
+    const src = 'three/' + name + '/' + String(i + 1).padStart(5, '0') + '.png';
+    let h = HELD.get(src);
+    if (!h) { const im = new Image(); h = { im, ok: false, bad: false }; h.p = new Promise(res => { im.onload = () => { h.ok = true; res(); }; im.onerror = () => { h.bad = true; res(); }; }); im.src = src; HELD.set(src, h); }
+    if (!h.ok) return false;
+    R = R || { x: 0, y: 0, w: m.size[0], h: m.size[1] }; Y.drawImage(h.im, R.x, R.y, R.w, R.h); return true;
+  }
+  overlay.meta = overlayMeta;
   /* خط إضافي بالطلب (74 آية بسكينة: 'Amiri Quran'): MV.needFont(fam) يرجّع true لو جاهز، وإلا يبدأ التحميل من مجلد الشغل
      (04_render_frames.js و08_safe_check.js ينسخون AmiriQuran-Regular.ttf من motion/fonts لما compose.html فيه ayahCalm) ويرجّع false —
      الحركة تتخطى الرسم، وsettle() تنتظر الخط وتعيد الفريم. */
@@ -351,7 +369,7 @@
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
-    frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env,
+    frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env, overlay,
     useStyle, get S() { return STY; },
   };
   G.MV = MV;
