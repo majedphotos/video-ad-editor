@@ -66,6 +66,21 @@ Rules:
 - Keep every scene inside the reels safe zone. No text at y 0–150 or y 1620–1920 (1500–1620 is a caution band), and none at x 950–1080 while y is 1100–1750. Check with `--safe`.
 - Digits are Western. Every ctx text helper converts Arabic-Indic digits automatically, and `ctx.num()` formats with `en-US`.
 
+### 2b. Stage: a fixed frame for the whole film (`MOTION.stage`)
+A film reads as **one continuous shot** when the frame and the title never move and only the content inside a window changes. Set `"stage": "scenes/stage.js"` in `project.json` (loaded before the scenes):
+```js
+MOTION.stage({
+  window: t => t < 3.2 ? null : { x: 60, y: 350, w: 960, h: 1050, r: 34 },   // null = full frame (e.g. during an opener)
+  setup(ctx) { … },
+  under(t, lt, ctx) { … },   // painted first: background, grid, glow
+  over(t, lt, ctx) { … },    // painted last: fixed title, ctx.text.slot subtitle, frame lines, progress bar
+});
+```
+Every scene and every transition is composited into a layer and clipped to the window, then `over` is drawn on top. So a `push` between two scenes slides only inside the window while the title and the frame stay still. Scenes can read the rect with `ctx.win(t)` and should keep their content inside it. A scene that paints a full-frame background is fine, because the clip hides the rest.
+
+### Motion blur (`project.motionBlur`)
+`"motionBlur": { "samples": 8, "shutter": 0.6, "transitions": true, "ranges": [[a, b]] }` gives real motion blur: each blurred frame is the average of `samples` renders spread over the shutter (`shutter` 0.5 = 180°). It is applied during every non-cut transition (`transitions`), inside absolute `ranges`, and inside a scene's own `blur: [[lt0, lt1]]` windows (or `blur: true`). Cost is ×samples on those frames only. `render.js … --no-blur` turns it off for fast drafts.
+
 ### Transitions
 A scene's `transition` blends it in over the previous scene during the window `[start - dur/2, start + dur/2]`. In that window both scenes draw into their own layers, so `lt` of the incoming scene goes negative and `lt` of the outgoing scene exceeds its duration.
 Available types are `cut`, `crossfade`, `dip` (color), `flash`, `wipe` (dir `rtl|ltr|up|down`, `bar`, `color`), `push` (dir), `zoom`, `iris` (`at:[x,y]`, `ring`), `blinds` (`n`) and `glitch`. Add `ease: 'expoInOut'` to reshape k.
@@ -87,6 +102,8 @@ For a custom transition, set `type: (X, A, B, k, opts) => {…}`. A and B are th
 | | `text.drawLayout(X,L,x,y,{align,color,perWord:(i,word,box)=>({alpha,dx,dy,scale,rot,color,reveal,clipUp,clip,stroke,shadow,skip})})` returns the word boxes. `reveal` is an RTL wipe mask from 0 to 1. `clipUp` masks at the baseline so a word can rise out of it. |
 | | `text.kashida(X,str,targetW,{font…})` returns `{text,scaleX,count}`. It inserts tatweel only at legal joins and keeps the lam-alef ligature. `text.drawKashida(X,str,x,y,w,opts,amount0to1)` animates a line from its natural width to width `w`. |
 | | `text.fit(X,str,{family,weight,box:{w,h},min,max,maxLines})` returns `{size,layout}`. `text.typeSub(str,k)` is a typewriter substring that keeps the joining form through ZWJ. `text.westernDigits(s)`. `num(v,decimals)`. `font(family,weight,size)` gives a CSS font string. |
+| stage | `win(t)` returns the stage window `{x,y,w,h,r}` (full frame without a stage). `text.slot(X,t,[[t0,'نص'],[t1,'نص']],{x,y,size,family,weight,color,dur,stagger,instant})` is a fixed text slot: at each key the old words leave upward and the new ones rise from below, word by word, inside a clipped band. Use it for the line under a fixed title. |
+| 3D wall | `slideWall({cols,rows,hero,win,card:(X,w,h,i,isHero)=>{},times:{pop,fly,land},from:{cam,look,roll},via:{…},texW,fov,slab})` builds a wall of thick 3D cards (call it in `setup`). `wall.draw(X, lt)` flies a rolling camera across the wall, then lands it straight on the hero card so that the card covers the stage window pixel for pixel (`tone:'none'`, unlit face). Draw the hero face with the same function as the next scene's first frame and the cut is invisible (a mean diff of 2.4/255 in the example). Give the wall scene `blur: [[…]]` for the flight. |
 | 3D | `stage3D({fov,near,far,camera:[x,y,z],lookAt,background:null\|'#hex',env:'room',bloom:{strength,radius,threshold},tone:'aces'\|'agx'\|'neutral'\|'none',exposure,rgbShift,vignette,fxaa,samples})` returns `{THREE,scene,camera,composer,renderer,bloom,draw(X?,{alpha,blend,filter,exposure}),orbit(az,el,dist,target),add(obj)}` |
 | | `st.draw(X)` renders the stage and composites it at that point of your 2D code. Z-order is simply call order: 2D under, then `st.draw()`, then 2D over. All stages share one WebGLRenderer, with transparent clear and premultiplied-correct tone mapping, so bloom halos composite cleanly over 2D. |
 | | `textPlane(str,{family,weight,size,height,color,glow,lit})` makes a canvas-texture mesh. `glow>1` pushes it to HDR so bloom catches it. `extrudedText(str,{height,depth,layers,color,sideColor,sideColor2,glow})` is a stacked-layer "extruded" look. `textTexture(str,opts)`. |
@@ -139,6 +156,8 @@ MOTION.scene({ id: 'faster',
     this.bits.draw(X, lt);
   } });
 ```
+
+Working example of 2b + motion blur + the wall: `motion/examples/stage-wall/` (18.6 s). Read it to see how the pieces fit, then build your own from the script's meaning, because it is not a template.
 
 ## 6. Commands
 ```bash

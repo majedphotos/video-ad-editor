@@ -1,0 +1,24 @@
+{
+ "name": "stage-wall — مثال الستيج الثابت + جدار الشرائح 3D + موشن بلير (بلقن الفيديو بخمس سكلات)",
+ "fps": 60,
+ "width": 1080,
+ "height": 1920,
+ "bpm": 120,
+ "beatsPerBar": 4,
+ "beatOffset": 0.2,
+ "duration": 18.6,
+ "palette": { "bg": "#0A0A0A", "ink": "#F3EEE7", "acc": "#E8743B", "clay": "#B9531F", "hi": "#F6A06E", "mut": "#77716A" },
+ "fonts": { "display": "Cairo", "body": "IBM Plex Sans Arabic", "num": "Inter" },
+ "post": { "grain": 0.035, "vignette": 0.18 },
+ "motionBlur": { "samples": 8, "shutter": 0.6, "transitions": true },
+ "stage": "scenes/stage.js",
+ "scenes": [
+  { "id": "wall", "file": "scenes/wall.js", "start": 0, "end": 3.2 },
+  { "id": "reel", "file": "scenes/reel.js", "start": 3.2, "end": 5.8, "transition": { "type": "cut", "dur": 0 } },
+  { "id": "motion3d", "file": "scenes/motion3d.js", "start": 5.8, "end": 8.4, "transition": { "type": "push", "dur": 0.5 } },
+  { "id": "podcast", "file": "scenes/podcast.js", "start": 8.4, "end": 11.0, "transition": { "type": "push", "dur": 0.5 } },
+  { "id": "montage", "file": "scenes/montage.js", "start": 11.0, "end": 13.6, "transition": { "type": "push", "dur": 0.5 } },
+  { "id": "cover", "file": "scenes/cover.js", "start": 13.6, "end": 16.2, "transition": { "type": "push", "dur": 0.5 } },
+  { "id": "bank", "file": "scenes/bank.js", "start": 16.2, "end": 18.6, "transition": { "type": "zoom", "dur": 0.5 } }
+ ]
+}

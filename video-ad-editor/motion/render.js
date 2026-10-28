@@ -7,6 +7,7 @@
    node render.js <proj> serve                   → مشغّل للمعاينة بالمتصفح (سحب/تشغيل)
    خيارات: --scale 0.5 (مسودة سريعة) · --safe (تراكب المنطقة الآمنة بالمعاينة) · --workers N (صفحات متوازية، افتراضي 2)
            --fps N (تجاوز) · --crf 16 · --no-encode · --q 0.95 · --fresh (يمسح الفريمات القديمة — لازم بعد أي تعديل بالمشاهد)
+           --no-blur (يطفي الموشن بلير — مسودة أسرع)
    ⚠ الاستئناف يتخطّى أي فريم موجود: عدّلت مشهد؟ استخدم --fresh أو range على المقطع المعدّل بعد حذف فريماته. */
 const fs = require('fs'), path = require('path'), http = require('http'), { spawnSync } = require('child_process');
 require('./vendor.js')();
@@ -17,7 +18,7 @@ let puppeteer; try { puppeteer = require('puppeteer-core'); } catch (e) { puppet
 
 const argv = process.argv.slice(2);
 const flag = (n, d) => { const i = argv.indexOf('--' + n); if (i < 0) return d; const v = argv[i + 1]; return v === undefined || v.startsWith('--') ? true : v; };
-const pos = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--safe', '--no-encode', '--fresh'].includes(argv[i - 1])));
+const pos = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--safe', '--no-encode', '--fresh', '--no-blur'].includes(argv[i - 1])));
 const [projArg, mode = 'preview', ...rest] = pos;
 if (!projArg) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 9).join('\n')); process.exit(1); }
 const PROJ = path.resolve(projArg);
@@ -53,7 +54,7 @@ async function openPage(browser, port, safe) {
   page.on('console', m => { const t = m.text(); if ((m.type() === 'error' || m.type() === 'warning') && !/Failed to load resource/.test(t)) { logs.push(t); console.log('  [page ' + m.type() + '] ' + t); } });
   page.on('pageerror', e => console.log('  [page error] ' + e.message));
   page.on('response', r => { const u = r.url(); if (r.status() >= 400 && !/favicon|timeline\.json/.test(u)) console.log('  [404] ' + u); });
-  await page.goto(`http://127.0.0.1:${port}/motion/engine.html?proj=/proj/&render=1&scale=${SCALE}${safe ? '&safe=1' : ''}`, { waitUntil: 'load' });
+  await page.goto(`http://127.0.0.1:${port}/motion/engine.html?proj=/proj/&render=1&scale=${SCALE}${safe ? '&safe=1' : ''}${flag('no-blur', false) ? '&blur=0' : ''}`, { waitUntil: 'load' });
   await page.waitForFunction('window.MOTION && (MOTION.ready || MOTION.error)', { timeout: 60000 });
   const err = await page.evaluate('MOTION.error');
   if (err) throw new Error('engine boot failed:\n' + err);

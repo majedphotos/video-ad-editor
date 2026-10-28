@@ -10,3 +10,6 @@ video-ad-editor/scripts/hdr2sdr
 video-ad-editor/scripts/facetrack
 # deep-filter بايناري ينزل محلياً (--extras) — ما يدخل المستودع
 video-ad-editor/bin/
+
+# رسم أمثلة الموشن يتولّد محلياً (node render.js) — ما يدخل المستودع
+video-ad-editor/motion/examples/*/renders/
