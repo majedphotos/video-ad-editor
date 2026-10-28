@@ -11,7 +11,7 @@ MOTION.scene({
       const cx = i % n, cy = Math.floor(i / n), k = E.backOut(prog(lt, .15 + (cx + cy) * .05, .45 + (cx + cy) * .05));
       if (k <= 0) continue;
       const st = pick.has(i) ? ks : 0, x = x0 + (n - 1 - cx) * (sz + gap) + sz / 2, y = y0 + cy * (sz + gap) + sz / 2, s = k * (1 + .12 * st * Math.exp(-6 * Math.max(0, lt - 1.4)));
-      X.fillStyle = st > .5 ? P.acc : '#2E2B28'; X.beginPath(); X.roundRect(x - sz * s / 2, y - sz * s / 2, sz * s, sz * s, 10 * s); X.fill();
+      X.fillStyle = st > .5 ? P.acc : P.well; X.beginPath(); X.roundRect(x - sz * s / 2, y - sz * s / 2, sz * s, sz * s, 10 * s); X.fill();
     }
     const v = Math.round(100 * kc);
     ctx.text(X, String(v), 540, 560, { family: 'num', weight: 900, size: 150, color: P.ink, dir: 'ltr' });

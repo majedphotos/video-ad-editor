@@ -7,7 +7,9 @@ const STEPS = [[INTRO, 'ريل من فيديو كلام'], [5.8, 'موشن ثل�
 /* رسومات مشتركة بين المشاهد ووجه كرت البطل (القطع المطابق: نفس الدالة ترسم الكرت والمشهد) */
 window.DEMO = {
   WIN, INTRO, STEPS,
-  card(X, ctx, fill) { X.save(); X.fillStyle = fill || '#141414'; X.fillRect(0, 0, 1080, 1920); X.restore(); },
+  /* لون من الثيم بشفافية: a(P.ink, .2) — كل الألوان من project.palette، فأي ثيم (فاتح/غامق/عميل) يشتغل بلا تعديل */
+  a(hex, al) { const h = hex.replace('#', ''), n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${al})`; },
+  card(X, ctx, fill) { X.save(); X.fillStyle = fill || ctx.P.card; X.fillRect(0, 0, 1080, 1920); X.restore(); },
   /* المشهد 1 عند lt: موجة صوت فيها سكتات، السكتات تنشال والموجة تتلاصق */
   reel(X, ctx, lt) {
     const { P, E, prog, clamp } = ctx;
@@ -26,7 +28,7 @@ window.DEMO = {
       const x = x1 - (i + 1) * bw + xs[i] * kCut - total * kCut / 2;
       const a = gap ? 1 - kCut : 1;
       if (a <= 0) continue;
-      X.globalAlpha = a; X.fillStyle = gap ? '#3A3632' : (i % 9 === 4 ? P.acc : P.ink);
+      X.globalAlpha = a; X.fillStyle = gap ? P.well2 : (i % 9 === 4 ? P.acc : P.ink);
       X.beginPath(); X.roundRect(x + 3, cy - h / 2, bw - 6, h, 4); X.fill();
     }
     X.globalAlpha = 1;
@@ -46,7 +48,7 @@ window.DEMO = {
       const boxes = ctx.text.drawLayout(X, L, 540, 1110, { color: P.ink, perWord: (i, w, b) => {
         const a = E.expoOut(prog(lt, 1.0 + i * .06, 1.4 + i * .06));
         if (i === cur && lt > 1.15) { X.save(); X.fillStyle = P.acc; X.beginPath(); X.roundRect(b.x - 14, b.y + 6, b.w + 28, b.h - 6, 22); X.fill(); X.restore(); }
-        return { alpha: a, dy: (1 - a) * 40, color: i === cur && lt > 1.15 ? '#0A0A0A' : P.ink };
+        return { alpha: a, dy: (1 - a) * 40, color: i === cur && lt > 1.15 ? P.onAcc : P.ink };
       } });
     }
     // سطر صغير تحت
@@ -59,44 +61,39 @@ MOTION.stage({
   introEnd: INTRO + .01,
   setup(ctx) { },
   under(t, lt, ctx) {
-    const { X, P } = ctx;
+    const { X, P, E, prog } = ctx;
     X.fillStyle = P.bg; X.fillRect(0, 0, 1080, 1920);
     // شبكة نقاط خفيفة جداً (تحس عمق بلا ما تزحم)
-    X.fillStyle = 'rgba(243,238,231,.06)';
+    X.fillStyle = DEMO.a(P.ink, .07);
     for (let y = 30; y < 1920; y += 60) for (let x = 30; x < 1080; x += 60) X.fillRect(x - 1.5, y - 1.5, 3, 3);
     // توهّج برتقالي تحت النافذة يتنفس مع النبضة
-    const g = X.createRadialGradient(540, 1420, 40, 540, 1420, 620), b = .16 + .06 * ctx.beatPulse(t, 6);
-    g.addColorStop(0, `rgba(232,116,59,${b})`); g.addColorStop(1, 'rgba(232,116,59,0)');
-    X.fillStyle = g; X.fillRect(0, 700, 1080, 1220);
+    // النافذة ورقة مرفوعة: ظلها على الخلفية (يطلع مع الإطار)
+    const kS = E.cubicOut(prog(t, INTRO - .3, INTRO + .4));
+    if (kS > 0) { X.save(); X.shadowColor = DEMO.a(P.shadow, .22 * kS); X.shadowBlur = 70; X.shadowOffsetY = 28; X.fillStyle = P.card; X.beginPath(); X.roundRect(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r); X.fill(); X.restore(); }
   },
   over(t, lt, ctx) {
     const { X, P, E, prog, at } = ctx;
     // تظليل فوق عشان العنوان ينقرا فوق الجدار
     const kTop = E.cubicOut(prog(t, 1.2, 1.7));
-    if (t < INTRO + .3) { const g = X.createLinearGradient(0, 0, 0, 560); g.addColorStop(0, `rgba(10,10,10,${.97 * kTop})`); g.addColorStop(.55, `rgba(10,10,10,${.8 * kTop})`); g.addColorStop(1, 'rgba(10,10,10,0)'); X.fillStyle = g; X.fillRect(0, 0, 1080, 560); }
+    if (t < INTRO + .3) { const g = X.createLinearGradient(0, 0, 0, 560); g.addColorStop(0, DEMO.a(P.bg, .97 * kTop)); g.addColorStop(.55, DEMO.a(P.bg, .85 * kTop)); g.addColorStop(1, DEMO.a(P.bg, 0)); X.fillStyle = g; X.fillRect(0, 0, 1080, 560); }
     // العنوان الثابت
     const kT = E.expoOut(prog(t, 1.5, 2.1));
     ctx.text(X, 'بلقن الفيديو', 540, 222, { family: 'display', weight: 900, size: 64, color: P.ink, alpha: kT });
     // الخانة اللي تتبدل تحته
-    ctx.text.slot(X, t, STEPS, { x: 540, y: 316, size: 76, family: 'display', weight: 900, color: P.acc, dur: .5, stagger: .05 });
+    ctx.text.slot(X, t, STEPS, { x: 540, y: 316, size: 76, family: 'display', weight: 900, color: P.clay, dur: .5, stagger: .05 });
     // الإطار: خط يرتسم حول النافذة لما الكرت يهبط
     const kF = E.expoOut(prog(t, INTRO - .25, INTRO + .55));
     if (kF > 0) {
       const o = 14, x = WIN.x - o, y = WIN.y - o, w = WIN.w + 2 * o, h = WIN.h + 2 * o;
-      X.save(); X.strokeStyle = 'rgba(243,238,231,.22)'; X.lineWidth = 2;
+      X.save(); X.strokeStyle = DEMO.a(P.ink, .14 * kF); X.lineWidth = 2;
       X.beginPath(); X.roundRect(x, y, w, h, WIN.r + o); X.stroke();
-      // زوايا برتقالية تنفتح من الزوايا
-      X.strokeStyle = P.acc; X.lineWidth = 6; X.lineCap = 'round'; const s = 70 * kF;
-      [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]].forEach(([cx, cy, dx, dy]) => {
-        X.beginPath(); X.moveTo(cx + dx * s, cy); X.lineTo(cx + dx * 18, cy); X.quadraticCurveTo(cx, cy, cx, cy + dy * 18); X.lineTo(cx, cy + dy * s); X.stroke();
-      });
       X.restore();
       // شريط التقدّم + العدّاد
       const segs = 5, gap = 12, bw = (WIN.w - gap * (segs - 1)) / segs, by = 1440;
       for (let i = 0; i < segs; i++) {
         const s0 = STEPS[i][0], s1 = STEPS[i + 1][0], k = prog(t, s0, s1 - .25);
         const x0 = WIN.x + WIN.w - (i + 1) * bw - i * gap;              // RTL: يبدأ من اليمين
-        X.globalAlpha = kF; X.fillStyle = 'rgba(243,238,231,.14)'; X.beginPath(); X.roundRect(x0, by, bw, 8, 4); X.fill();
+        X.globalAlpha = kF; X.fillStyle = DEMO.a(P.ink, .1); X.beginPath(); X.roundRect(x0, by, bw, 8, 4); X.fill();
         X.fillStyle = P.acc; X.beginPath(); X.roundRect(x0 + bw * (1 - k), by, bw * k, 8, 4); X.fill();
       }
       X.globalAlpha = 1;

@@ -10,7 +10,7 @@ MOTION.scene({
   setup(ctx) {
     const { P, WIN } = { P: ctx.P, WIN: DEMO.WIN };
     this.wall = ctx.slideWall({
-      cols: 6, rows: 5, hero: 14, win: WIN, texW: 720,
+      cols: 6, rows: 5, hero: 14, win: WIN, texW: 720, slab: P.slab,
       times: { pop: [-0.45, 0.75], fly: [0, 2.2], land: [2.05, 3.2] },
       from: { cam: [-11, 6.5, 17.5], look: [1.6, -1.6, 0], roll: -.24 },
       via: { cam: [6.2, -3.4, 14.5], look: [-2.6, 1.2, 0], roll: .1 },
@@ -18,17 +18,17 @@ MOTION.scene({
         const s = w / WIN.w;
         if (hero) { X.scale(s, s); X.translate(-WIN.x, -WIN.y); DEMO.reel(X, ctx, 0); return; }
         const [word, kind] = FACES[(i > 14 ? i - 1 : i) % FACES.length];
-        const bg = kind === 'acc' ? P.acc : kind === 'ink' ? P.ink : '#151515';
-        const fg = kind === 'acc' ? '#0A0A0A' : kind === 'ink' ? '#0A0A0A' : P.ink;
+        const bg = kind === 'acc' ? P.acc : kind === 'ink' ? P.ink : P.card;
+        const fg = kind === 'acc' ? P.onAcc : kind === 'ink' ? P.bg : P.ink;
         const r = WIN.r * s;
         X.fillStyle = bg; X.beginPath(); X.roundRect(0, 0, w, h, r); X.fill();
-        if (kind === 'dark') { X.strokeStyle = 'rgba(243,238,231,.12)'; X.lineWidth = 3; X.beginPath(); X.roundRect(1.5, 1.5, w - 3, h - 3, r); X.stroke(); }
+        if (kind === 'dark') { X.strokeStyle = DEMO.a(P.ink, .08); X.lineWidth = 3; X.beginPath(); X.roundRect(1.5, 1.5, w - 3, h - 3, r); X.stroke(); }
         // تفاصيل صغيرة: رقم الكرت فوق ونقطة برتقالية — عشان الجدار يبين «شرائح» مو مربعات
-        ctx.text(X, String(i + 1).padStart(2, '0'), w * .09, h * .1, { family: 'num', weight: 600, size: w * .05, color: kind === 'dark' ? P.mut : 'rgba(10,10,10,.55)', dir: 'ltr', align: 'left' });
-        X.fillStyle = kind === 'acc' ? '#0A0A0A' : P.acc; X.beginPath(); X.arc(w * .9, h * .085, w * .018, 0, 6.283); X.fill();
+        ctx.text(X, String(i + 1).padStart(2, '0'), w * .09, h * .1, { family: 'num', weight: 600, size: w * .05, color: kind === 'dark' || kind === 'num' ? P.mut : DEMO.a(fg, .6), dir: 'ltr', align: 'left' });
+        X.fillStyle = kind === 'acc' ? P.onAcc : P.acc; X.beginPath(); X.arc(w * .9, h * .085, w * .018, 0, 6.283); X.fill();
         const num = kind === 'num';
         ctx.text(X, word, w / 2, h * .56, { family: num ? 'num' : 'display', weight: 900, size: w * (num ? .26 : .2), color: num ? P.acc : fg, maxWidth: w * .82, dir: num ? 'ltr' : undefined });
-        X.fillStyle = kind === 'dark' || num ? 'rgba(243,238,231,.18)' : 'rgba(10,10,10,.25)';
+        X.fillStyle = kind === 'dark' || num ? DEMO.a(P.ink, .12) : DEMO.a(fg, .3);
         X.fillRect(w * .3, h * .66, w * .4, h * .008);
       },
     });
@@ -36,6 +36,7 @@ MOTION.scene({
   draw(t, lt, ctx) {
     const { X, P } = ctx;
     X.fillStyle = P.bg; X.fillRect(0, 0, 1080, 1920);
+    X.fillStyle = DEMO.a(P.ink, .07); for (let y = 30; y < 1920; y += 60) for (let x = 30; x < 1080; x += 60) X.fillRect(x - 1.5, y - 1.5, 3, 3);
     this.wall.draw(X, lt);
   },
 });

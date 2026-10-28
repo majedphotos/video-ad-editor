@@ -8,10 +8,10 @@ MOTION.scene({
     // خطوط النبضة (RTL: الوقت يمشي من اليمين لليسار)
     for (let i = 0; i <= n; i++) {
       const x = tx1 - i * seg, hit = Math.exp(-10 * Math.max(0, lt - (.25 + i * beat * .55)));
-      X.fillStyle = `rgba(243,238,231,${.18 + .6 * (lt > .25 + i * beat * .55 ? hit : 0)})`; X.fillRect(x - 2, ty - 120, 4, 240);
+      X.fillStyle = DEMO.a(P.ink, .12 + .6 * (lt > .25 + i * beat * .55 ? hit : 0)); X.fillRect(x - 2, ty - 120, 4, 240);
     }
     // المقاطع تطيح وتلصق
-    const cols = [P.acc, '#3A3632', P.ink, '#2B2825', P.acc, '#3A3632', P.ink, '#2B2825'];
+    const cols = [P.acc, P.well2, P.ink, P.well, P.acc, P.well2, P.ink, P.well];
     for (let i = 0; i < n; i++) {
       const s = .1 + i * beat * .55, k = E.springK(prog(lt, s, s + .45)); if (k <= 0) continue;
       const x = tx1 - (i + 1) * seg + 6, y = ctx.lerp(ty - 420, ty - 70, k);
@@ -25,7 +25,7 @@ MOTION.scene({
     const bi = Math.max(0, Math.floor((lt - .1) / (beat * .55))), pk = Math.exp(-9 * ((lt - .1) % (beat * .55)));
     const c = cols[Math.min(n - 1, bi)], pw = 560 * (1 + .05 * pk), ph2 = 315 * (1 + .05 * pk);
     X.fillStyle = c; X.beginPath(); X.roundRect(540 - pw / 2, 650 - ph2 / 2, pw, ph2, 24); X.fill();
-    ctx.text(X, String(Math.min(n, bi + 1)).padStart(2, '0'), 540, 690, { family: 'num', weight: 900, size: 120, color: c === P.ink || c === P.acc ? '#0A0A0A' : P.ink, dir: 'ltr' });
+    ctx.text(X, String(Math.min(n, bi + 1)).padStart(2, '0'), 540, 690, { family: 'num', weight: 900, size: 120, color: c === P.ink ? P.bg : c === P.acc ? P.onAcc : P.ink, dir: 'ltr' });
     ctx.text(X, 'على النبضة', 540, 1310, { family: 'body', weight: 700, size: 40, color: P.mut, alpha: E.expoOut(prog(lt, .4, .9)) });
   },
 });
