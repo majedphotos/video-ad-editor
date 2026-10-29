@@ -82,7 +82,7 @@ const $=s=>document.querySelector(s);
 const FPS=30; let ST=null, T=0, PX=60, playing=false, lastFrame=-1;
 const F=$('#frame'), AU=$('#au');
 const RN={R_FULL:'ملء الشاشة',R_DOWN:'لوحة فوق ووجه تحت',R_LOWER:'وجه صغير تحت',R_OFF:'بلا وجه (شرح)'};   /* الكولاج شغل كلود بالمحرّك الكامل (قرار ماجد 17 سبتمبر) */
-const STYLES={card:'كرت بلون الهوية',shadow:'كبير بلا خلفية',big:'كلمة وحدة ضخمة',underline:'خط تحت الكلمة',bar:'شريط بلون التمييز',type:'ماكينة كاتبة'};
+const STYLES={card:'كرت بلون الهوية',shadow:'كبير بلا خلفية',big:'كلمة وحدة ضخمة',underline:'خط تحت الكلمة',bar:'شريط بلون التمييز',type:'ماكينة كاتبة',chunk:'قطع قصيرة بكبسولة'};
 const FXN={'':'',drop:'طيحة',shake:'اهتزاز',crack:'انكسار',type:'كتابة',pulse:'نبضة',stretch:'تمدد',slam:'ضربة'};
 const SFXN={whoosh_up:'ووش صاعد',whoosh_down:'ووش نازل',thud:'ضربة',tap:'نقرة'};
 const fmt=t=>{const m=Math.floor(t/60),s=(t%60).toFixed(2).padStart(5,'0');return String(m).padStart(2,'0')+':'+s;};

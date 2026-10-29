@@ -40,6 +40,8 @@ def default_scenes(total):
         for m in re.finditer(r"\{s:([\d.]+),e:([\d.]+),m:(R_[A-Z]+)([^}]*)\}", src[i:j]):
             d = {"s": float(m.group(1)), "e": min(float(m.group(2)), total + 5), "m": m.group(3)}
             if 'nocap:true' in m.group(4): d["nocap"] = True
+            mt = re.search(r"tr:([\d.]+)", m.group(4))   # 6.1: مدة انتقال خاصة بالمشهد (tr:0.001) تنقل مع الاستوديو
+            if mt: d["tr"] = float(mt.group(1))
             out.append(d)
         if out: return out
     except Exception: pass

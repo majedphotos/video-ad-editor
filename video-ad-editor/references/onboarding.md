@@ -43,7 +43,7 @@ python3 scripts/00_onboard.py theme <work>      # يكتب <work>/theme.json + �
 | `identity.mode:"url"` + `url` | أنت تطلّعها (تحت) ثم `theme.json` | `theme` يكتب الباقي وينبّهك إن الألوان ناقصة. بعد ما تكتبها: `00_onboard.py onacc <work>` |
 | `identity.logo` | `<work>/logo.<ext>` + `theme.logo` | |
 | `font` | `theme.font` | الثمانية كلها من قوقل فونتس وتنرسم بالمحرّك (فحص 28 سبتمبر). لو خط ما تحمّل، الرسم يطبع «⚠️ الخط … ما اكتمل تحميله» |
-| `capStyle` | `theme.capStyle` | نفس أسماء المحرّك: `card` · `shadow` · `big` · `underline` · `bar` · `type` (`references/word-fx.md`) |
+| `capStyle` | `theme.capStyle` | نفس أسماء المحرّك: `card` · `shadow` · `big` · `underline` · `bar` · `type` · `chunk` (`references/word-fx.md`) |
 | `pace:"calm"` | `theme.pace:"calm"` | يشتغل بالمحرّك (`03_cut_zoom.py`) |
 | `pace:"fast"` | لا شي | = الإيقاع العادي |
 | `pace:"hyper"` | **أنت، بالمشاهد** | ما له مفتاح بالمحرّك: `hookZoom` + تبديل الوضع كل 1.5-2 ث + حركات كلمة (`slam`/`drop`) أكثر. المؤثرات تبقى تحت 15 بالدقيقة (القاعدة 1) |

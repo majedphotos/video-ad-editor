@@ -69,7 +69,7 @@ def split_small(txt):
     return best[1], best[2]
 
 
-CAP_STYLES = {"card", "shadow", "big", "underline", "bar", "type"}
+CAP_STYLES = {"card", "shadow", "big", "underline", "bar", "type", "chunk"}
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 

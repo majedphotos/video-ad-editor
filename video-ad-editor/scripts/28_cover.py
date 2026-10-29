@@ -211,9 +211,27 @@ def main():
             fc += "[2:a]aresample=48000[s];[0:a]aresample=48000[a];[c][s][v][a]concat=n=2:v=1:a=1[ov][oa]"; maps = ["-map", "[ov]", "-map", "[oa]", "-c:a", "aac", "-b:a", "192k"]
         else:
             fc += "[c][v]concat=n=2:v=1:a=0[ov]"; maps = ["-map", "[ov]"]
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", first, "-loop", "1", "-t", f"{hold}", "-framerate", "30", "-i", cj,
-                        "-f", "lavfi", "-t", f"{hold}", "-i", "anullsrc=r=48000:cl=stereo", "-filter_complex", fc, *maps,
-                        "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], check=True)
+        base = ["ffmpeg", "-v", "error", "-y", "-i", first, "-loop", "1", "-t", f"{hold}", "-framerate", "30", "-i", cj,
+                "-f", "lavfi", "-t", f"{hold}", "-i", "anullsrc=r=48000:cl=stereo", "-filter_complex", fc, *maps,
+                "-c:v", "libx264", "-pix_fmt", "yuv420p"]
+        # 6.1 الحجم (ريل «1000$ بيوم» 124 ث: CRF 18 طلّعه فوق 60 ميقا): هذا ملف التسليم — لازم تحت 30 ميقا.
+        # أطول من 90 ث أو الناتج أكبر من MAXMB (افتراضي 29) ← ترميز بمرحلتين بمعدل محسوب من المدة، من النسخة العالية (مرة وحدة)
+        maxmb = float(os.environ.get("MAXMB", 29))
+        dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", first],
+                                   capture_output=True, text=True).stdout.strip() or 0) + hold
+        two = dur > 90
+        if not two:
+            subprocess.run(base + ["-crf", "18", "-preset", "medium", "-movflags", "+faststart", out], check=True)
+            two = os.path.getsize(out) > maxmb * 1048576
+        if two:
+            vb = max(600, min(6000, int((maxmb * 8388608 / dur - 192000) * 0.97 / 1000)))   # صوت 192k + هامش الحاوية 3٪
+            lg = os.path.join(W, ".x264cover")
+            rc = ["-preset", "slow", "-b:v", f"{vb}k", "-maxrate", f"{vb * 2}k", "-bufsize", f"{vb * 4}k", "-passlogfile", lg]
+            subprocess.run(base + rc + ["-pass", "1", "-f", "null", "-"], check=True)
+            subprocess.run(base + rc + ["-pass", "2", "-movflags", "+faststart", out], check=True)
+            for f in (lg + "-0.log", lg + "-0.log.mbtree"):
+                if os.path.exists(f): os.remove(f)
+            msg += f" · بمرحلتين {vb}k ({os.path.getsize(out) / 1048576:.1f} ميقا)"
         msg += f" · والكفر صار أول فريم ← {os.path.basename(out)}"
     print(msg + (f" · تيك توك: الثانية {t:.2f}" if t >= 0 and not photo else ""))
 

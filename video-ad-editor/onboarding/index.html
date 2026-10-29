@@ -162,6 +162,9 @@ h2{font-size:18px;margin:0;font-weight:700}
 .cap-bar .cap{color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.55)}
 .cap-bar .w{padding:0 4px;border-radius:5px}
 .cap-bar .w.a{background:var(--p-acc);color:var(--p-on);text-shadow:none}
+/* chunk (6.1): كبسولة بسطر واحد، المنطوقة بلون التمييز، بلا قفز */
+.cap-chunk .cap{left:0;right:0;width:max-content;max-width:88%;margin:0 auto;flex-wrap:nowrap;background:var(--p-bg);border-radius:99px;padding:4px 10px;color:var(--p-ink)}
+.cap-chunk .w{opacity:.45}.cap-chunk .w.p{opacity:1}.cap-chunk .w.a{opacity:1;color:var(--p-acc)}
 /* type */
 .cap-type .cap{color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.6)}
 .cap-type .w{display:none}.cap-type .w.p,.cap-type .w.a{display:inline-block}
@@ -465,6 +468,7 @@ const CAPS_ST=[  /* نفس أسماء المحرّك: theme.json ← capStyle */
   {v:'underline',n:'خط تحت',   d:'خط بلونك تحت الكلمة'},
   {v:'bar',      n:'شريط',     d:'شريط بلونك ورا الكلمة'},
   {v:'type',     n:'كتابة',    d:'تنكتب قدامك بمؤشر'},
+  {v:'chunk',    n:'قطع',      d:'4 كلمات بكبسولة هادية'},
 ];
 const CAP_WORDS=['كلامك','يطلع','كلمة','كلمة'];
 const PACES=[
