@@ -23,7 +23,7 @@ header small{display:block;color:var(--mut);font-size:11px;font-weight:600}
 #tm{direction:ltr;font-family:ui-monospace,monospace;font-size:13px;color:var(--acc);font-weight:700;flex:1;text-align:center}
 body.bigprev #tlWrap,body.bigprev #tabs{display:none}
 body.bigprev #prev{flex:1}
-#tlWrap{background:var(--panel);border-top:1px solid var(--line);position:relative;height:300px;overflow:hidden}
+#tlWrap{background:var(--panel);border-top:1px solid var(--line);position:relative;height:376px;overflow:hidden}
 #tl{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 #tlIn{position:relative;height:100%}
 .ruler{position:absolute;top:0;height:18px;font-size:10px;color:var(--mut);border-right:1px solid var(--line);padding-right:3px;line-height:18px}
@@ -64,14 +64,36 @@ label.sw{display:flex;align-items:center;justify-content:space-between;backgroun
 #log{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut);white-space:pre-wrap;max-height:150px;overflow:auto;background:var(--bg);border-radius:10px;padding:8px;direction:rtl}
 .cm{background:var(--bg);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px}
 .cm b{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px}
+.mvcats{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px}
+.mvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.mv{background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;position:relative}
+.mv.on{border-color:var(--acc)}
+.mv video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block;background:#000}
+.mv .nm{padding:6px 8px 8px;font-size:13px;font-weight:800;line-height:1.35}
+.mv .nm small{display:block;color:var(--mut);font-size:11px;font-weight:600}
+.mv .need{position:absolute;top:6px;left:6px;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:800}
+.mv .need.c{background:#7A2323;color:#FFD0D0}.mv .need.m{background:#5A4A1E;color:#FFE6A8}
+.warn{border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:13px;line-height:1.6}.warn.c{background:#3A1A1A;color:#FFC9C9}.warn.m{background:#33291A;color:#FFE2A0}
+.mv .no{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);border-radius:99px;padding:1px 8px;font-size:11px;font-weight:800;direction:ltr}
+#drag{position:absolute;inset:0;display:none;cursor:grab;touch-action:none;z-index:4;outline:2px dashed rgba(212,175,55,.75);outline-offset:-2px}
+#drag.on{display:block}#drag:active{cursor:grabbing}
+#drag span{position:absolute;top:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;font-size:11px;font-weight:800;border-radius:99px;padding:2px 10px;white-space:nowrap;pointer-events:none}
+#sheet.compact{max-height:42vh}
+body.dragmode #tlWrap,body.dragmode #tabs{display:none}
+body.dragmode #app{padding-bottom:42vh}
+.nt{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin-bottom:8px;font-size:14px;line-height:1.6}
+.nt b{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px;margin-left:6px}
+.nt .st{float:left;font-size:11px;font-weight:800;border-radius:99px;padding:1px 8px;background:#2A2B31;color:var(--mut)}
+.nt .st.done{background:#1F3B2E;color:#3DAA7A}.nt .st.pending{background:#3B331F;color:var(--acc)}
+.nt .rp{color:var(--mut);font-size:12px;margin-top:4px}
 </style></head><body>
 <div id="app">
  <header><div><h1 id="ttl">الاستوديو</h1><small id="sub">…</small></div><div class="row" style="margin:0"><button class="btn alt" id="undo" disabled title="Cmd+Z">↶ تراجع</button><button class="btn alt" id="big" title="كبّر المعاينة">⤢</button><div class="pill" id="saved">محفوظ</div></div></header>
- <div id="prev"><div id="frameWrap"><iframe id="frame" src="/compose.html"></iframe><video id="cmp" playsinline controls></video><div id="safe"><div style="top:0;left:0;right:0;height:7.8%"></div><div style="bottom:0;left:0;right:0;height:15.6%"></div><div style="right:0;top:57%;height:34%;width:16.7%"></div></div></div><div id="toast"></div></div>
+ <div id="prev"><div id="frameWrap"><iframe id="frame" src="/compose.html"></iframe><video id="cmp" playsinline controls></video><div id="drag"><span>اسحب الحركة · عجلة الماوس أو إصبعين للحجم</span></div><div id="safe"><div style="top:0;left:0;right:0;height:7.8%"></div><div style="bottom:0;left:0;right:0;height:15.6%"></div><div style="right:0;top:57%;height:34%;width:16.7%"></div></div></div><div id="toast"></div></div>
  <div id="transport"><button id="pp" title="مسافة">▶</button><button id="bk">‹5</button><div id="tm">00:00.00 / 00:00.00</div><button id="fw">5›</button><button id="zoomOut">－</button><button id="zoomIn">＋</button></div>
  <div id="tlWrap"><div id="tl"><div id="tlIn"><div id="ph"></div></div></div></div>
  <div id="tabs">
-  <button data-t="scenes" class="on">المشاهد</button><button data-t="caps">الكابشن</button><button data-t="stick">النصوص</button><button data-t="broll">بي رول</button><button data-t="theme">الهوية</button><button data-t="safe">مناطق الأمان</button><button data-t="export">تصدير</button>
+  <button data-t="pick">✨ اختيار بالمعاينة</button><button data-t="scenes" class="on">المشاهد</button><button data-t="moves">الحركات</button><button data-t="notes">📝 لكلود</button><button data-t="caps">الكابشن</button><button data-t="stick">النصوص</button><button data-t="broll">بي رول</button><button data-t="theme">الهوية</button><button data-t="safe">مناطق الأمان</button><button data-t="export">تصدير</button>
  </div>
  <div id="sheet"><div class="hd"><b id="shT">—</b><button class="btn alt" id="shX">إغلاق</button></div><div class="bd" id="shB"></div></div>
 </div>
@@ -88,7 +110,7 @@ const SFXN={whoosh_up:'ووش صاعد',whoosh_down:'ووش نازل',thud:'ضر
 const fmt=t=>{const m=Math.floor(t/60),s=(t%60).toFixed(2).padStart(5,'0');return String(m).padStart(2,'0')+':'+s;};
 function toast(m){const x=$('#toast');x.textContent=m;x.style.opacity=1;clearTimeout(x._t);x._t=setTimeout(()=>x.style.opacity=0,1900);}
 function dur(){return ST.caps.total+ST.outro;}
-async function load(keepT){const t0=keepT?T:0; ST=await (await fetch('/api/state')).json(); lastFrame=-1;
+async function load(keepT){const t0=keepT?T:0; ST=await (await fetch('/api/state')).json(); lastFrame=-1; if(!MOVES.length)MOVES=await (await fetch('/api/moves')).json(); NOTES=await (await fetch('/api/notes')).json();
   $('#sub').textContent=ST.caps.cards.length+' جملة · '+fmt(dur())+' · '+(STYLES[ST.theme.capStyle||'card']); await initFrame(); buildTL(); seek(Math.min(t0,dur()));}
 function initFrame(){return new Promise(res=>{const go=()=>{const w=F.contentWindow; if(!w||!w.init){setTimeout(go,120);return;}
   if(!w.document.getElementById('mfit')){const st=w.document.createElement('style');st.id='mfit';st.textContent='html,body{margin:0;overflow:hidden;background:#000}#cv{width:100vw!important;height:100vh!important;display:block}';w.document.head.appendChild(st);}
@@ -126,11 +148,13 @@ $('#zoomIn').onclick=()=>{PX=Math.min(240,PX*1.4);buildTL();seek(T);}; $('#zoomO
 /* ---------- التايم لاين ---------- */
 function buildTL(){const In=$('#tlIn'); In.innerHTML='<div id="ph"></div>'; const D=dur(); In.style.width=(D*PX+140)+'px';
   for(let s=0;s<=D;s+=PX>=100?1:PX>=45?2:5){const r=document.createElement('div');r.className='ruler';r.style.right=(s*PX+64)+'px';r.textContent=fmt(s).slice(0,5);In.appendChild(r);}
-  const tracks=[['فيديو',24,'v'],['المشاهد',62,'s'],['الكابشن',100,'c'],['النصوص',138,'x'],['بي رول',176,'r'],['الصوت',214,'a'],['ورا الراس',252,'b']];
+  const tracks=[['فيديو',24,'v'],['المشاهد',62,'s'],['الحركات',100,'m'],['الكابشن',138,'c'],['النصوص',176,'x'],['بي رول',214,'r'],['الصوت',252,'a'],['ورا الراس',290,'b'],['لكلود',328,'n']];
   tracks.forEach(([n,y,k])=>{const tr=document.createElement('div');tr.className='track';tr.style.top=y+'px';tr.innerHTML='<span class="lbl">'+n+'</span>';In.appendChild(tr);
     if(k==='v'){let acc=0;(ST.cut.keep||[[0,ST.caps.total]]).forEach((seg,i)=>{const L=seg[1]-seg[0];clip(tr,acc,acc+L,'مقطع '+(i+1),'#2E6B4F',{k:'v',i});acc+=L;}); clip(tr,ST.caps.total,D,'كرت النهاية','#3A3A44');}
     if(k==='s') ST.studio.scenes.forEach((sc,i)=>{const c=clip(tr,sc.s,Math.min(sc.e,D),RN[sc.m]||sc.m,sc.m==='R_COLLAGE'?'#8A5A1E':'#4F3FB8',{k:'s',i});c.innerHTML='<span class="h l"></span>'+c.innerHTML+'<span class="h r"></span>';handles(c,sc,i,false);});
-    if(k==='c') ST.caps.cards.forEach((cd,i)=>clip(tr,cd.s,cd.e,cd.w.map(w=>(w.hot?'•':'')+w.t).join(' '),'#8A5A1E',{k:'c',i}));
+    if(k==='m') (ST.studio.moves||[]).forEach((mv,i)=>{const c=clip(tr,mv.s,mv.e,mvLabel(mv.id),'#B8572F',{k:'m',i});c.innerHTML='<span class="h l"></span>'+c.innerHTML+'<span class="h r"></span>';handles(c,mv,i,true);});
+    if(k==='n') (NOTES||[]).forEach((n,i)=>{const m=document.createElement('div');m.className='mark';m.style.right=(n.t*PX+64-10)+'px';m.style.background=n.status==='done'?'#2E6B4F':'#C9A227';m.textContent='📝';m.title=n.text;m.onclick=ev=>{ev.stopPropagation();seek(n.t);notesSheet(n.id);};tr.appendChild(m);});
+    if(k==='c') ST.caps.cards.forEach((cd,i)=>clip(tr,cd.s,cd.e,(cd.hide?'🚫 ':cd.dy?(cd.dy<0?'⬆️ ':'⬇️ '):'')+cd.w.map(w=>(w.hot?'•':'')+w.t).join(' '),cd.hide?'#3A3A44':'#8A5A1E',{k:'c',i}));
     if(k==='x') ST.studio.stickers.forEach((st,i)=>{const c=clip(tr,st.s,st.e,(st.i||'')+' '+(st.t||''),'#2B5E9E',{k:'x',i});c.innerHTML='<span class="h l"></span>'+c.innerHTML+'<span class="h r"></span>';handles(c,st,i,true);});
     if(k==='r') ST.studio.brollClips.forEach((b,i)=>{const c=clip(tr,b.s,b.e,(b.mode==='card'?'كرت · ':'ملء · ')+b.k,'#1E7A7A',{k:'r',i});c.innerHTML='<span class="h l"></span>'+c.innerHTML+'<span class="h r"></span>';handles(c,b,i,true);});
     if(k==='a') Object.entries(ST.studio.sfx||{}).forEach(([name,arr])=>(arr||[]).forEach((t,j)=>{const m=document.createElement('div');m.className='mark';m.style.right=(t*PX+64-10)+'px';m.title=SFXN[name]||name;m.textContent='♪';m.onclick=ev=>{ev.stopPropagation();if(confirm('احذف الصوت «'+(SFXN[name]||name)+'» عند '+fmt(t)+'؟')){ST.studio.sfx[name].splice(j,1);mark();buildTL();}};tr.appendChild(m);}));
@@ -154,9 +178,9 @@ async function job(url,body,label){await save(); const r=await (await fetch(url,
 async function pollOnce(){const p=await (await fetch('/api/progress')).json(); const lg=$('#log'); if(lg)lg.textContent=(p.log||'—').split('\n').filter(Boolean).slice(-7).join('\n'); const dl=$('#dl'); if(dl&&p.kind==='render'){dl.innerHTML=p.done?'<a class="btn" href="/'+p.done+'?v='+Date.now()+'" download>⬇️ نزّل الفيديو</a> <a class="btn alt" href="/'+p.done+'?v='+Date.now()+'" target="_blank">شغّله</a>':(p.err?'<span class="note">❌ '+p.err+'</span>':'');} return p;}
 async function poll(){const p=await pollOnce(); if(p.running){setTimeout(poll,2500);return;} $('#saved').className='pill ok'; $('#saved').textContent='محفوظ ✓'; if(p.err){toast('❌ '+p.err.slice(0,60));return;} if(p.reload){await load(true);toast('اتحدّث');} else if(p.kind==='render')toast('الفيديو جاهز ✓');}
 /* ---------- الأوراق ---------- */
-const sheet=$('#sheet'); $('#shX').onclick=()=>sheet.classList.remove('open');
-function open(title,html){snapOnce();$('#shT').textContent=title;$('#shB').innerHTML=html;sheet.classList.add('open');}
-function openFor(ref){({v:videoSheet,s:sceneSheet,c:capSheet,x:stickSheet,r:brollSheet,b:behindSheet})[ref.k](ref.i);}
+const sheet=$('#sheet'); $('#shX').onclick=()=>{sheet.classList.remove('open'); dragOff();};
+function open(title,html){snapOnce(); dragOff();$('#shT').textContent=title;$('#shB').innerHTML=html;sheet.classList.add('open');}
+function openFor(ref){({v:videoSheet,s:sceneSheet,m:moveSheet,c:capSheet,x:stickSheet,r:brollSheet,b:behindSheet})[ref.k](ref.i);}
 function videoSheet(i){const keep=ST.cut.keep; const seg=keep[i]; const prevEnd=i>0?keep[i-1][1]:0, nextStart=i<keep.length-1?keep[i+1][0]:ST.srcDur; const gapB=(seg[0]-prevEnd).toFixed(2), gapA=(nextStart-seg[1]).toFixed(2);
   open('مقطع '+(i+1)+' · بالمصدر '+fmt(seg[0])+' → '+fmt(seg[1]),
   '<div class="note">قبله سكتة محذوفة '+gapB+' ث · بعده '+gapA+' ث. رجّع أو اقصّ بخطوات نص ثانية، ثم «طبّق القص».</div>'+
@@ -182,10 +206,18 @@ function capSheet(i){const cd=ST.caps.cards[i]; const inBehind=ST.behind&&(ST.be
   '<textarea id="ctx">'+cd.w.map(w=>w.t).join(' ')+'</textarea><div class="row"><button class="btn" id="apply">طبّق النص</button><span class="note">لو تغيّر عدد الكلمات تتوزّع الأوقات بالتساوي.</span></div>'+
   '<div class="note">اضغط الكلمة عشان تدور: عادي ← ساخنة ← طيحة ← اهتزاز ← انكسار ← كتابة ← نبضة ← تمدد ← ضربة (وتشوفها فوراً):</div><div id="hot">'+cd.w.map((w,j)=>'<span class="chip '+(w.hot?'hot':'')+'" data-j="'+j+'">'+w.t+(w.fx?'<small>'+FXN[w.fx]+'</small>':'')+'</span>').join('')+'</div>'+
   '<div class="note" style="margin-top:10px">🔊 صوت عند بداية الجملة — اضغط ▶ تسمعه، و＋ تضيفه:</div><div class="row">'+Object.entries(SFXN).map(([k,v])=>'<span class="chip">'+v+' <button class="btn alt" style="padding:2px 8px" data-p="'+k+'">▶</button><button class="btn" style="padding:2px 8px" data-a="'+k+'">＋</button></span>').join('')+'</div>'+
+  '<div class="row"><span class="note" style="width:70px">مكانها</span><button class="btn alt" id="cUp">⬆️ فوق</button><button class="btn alt" id="cDn">⬇️ تحت</button><button class="btn alt" id="cRe">رجّع</button><button class="btn alt" id="cAll">نفس المكان لكل الجمل</button></div>'+
+  '<label class="sw">اخفِ هالجملة (الصوت يبقى)<input type="checkbox" id="cHide" '+(cd.hide?'checked':'')+'></label>'+
+  '<div class="note" style="margin-bottom:8px">✋ أو اسحب الكابشن على المعاينة فوق وتحت.</div>'+
   '<div class="row"><button class="btn alt" id="splitCap">قسّم عند المؤشر</button>'+(i<ST.caps.cards.length-1?'<button class="btn alt" id="mergeCap">ادمج مع اللي بعدها</button>':'')+'</div>'+
   '<div class="row"><button class="btn" id="behindBtn" '+(inBehind?'disabled':'')+'>'+(inBehind?'يمرّ ورا الراس ✓':'خلّه يمرّ ورا الراس')+'</button><button class="btn danger" id="dropCap">احذف الجملة من الفيديو</button></div>'+
   '<div class="note">«ورا الراس» يقصّ الشخص على الجهاز (10 إلى 30 ثانية) — للجمل القصيرة (4 كلمات أو أقل). الحذف يعيد بناء الفيديو (~5 دقايق).</div>');
   $('#hot').querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const w=cd.w[+ch.dataset.j]; let k=CYCLE.findIndex(c=>c.hot===!!w.hot&&(c.fx||'')===(w.fx||'')); k=(k+1)%CYCLE.length; w.hot=CYCLE[k].hot; if(CYCLE[k].fx)w.fx=CYCLE[k].fx; else delete w.fx; capSheet(i); save().then(()=>playRange(Math.max(0,w.s-0.3),Math.min(cd.e,w.e+0.9)));});
+  dragOn({k:'c',i});
+  const nudge=d=>{cd.dy=Math.round((cd.dy||0)+d); if(!cd.dy)delete cd.dy; drawT(T); mark();};
+  $('#cUp').onclick=()=>nudge(-60); $('#cDn').onclick=()=>nudge(60); $('#cRe').onclick=()=>{delete cd.dy; drawT(T); mark();};
+  $('#cAll').onclick=()=>{ST.caps.cards.forEach(c=>{if(cd.dy)c.dy=cd.dy; else delete c.dy;}); drawT(T); mark(); toast('كل الجمل بنفس المكان');};
+  $('#cHide').onchange=e=>{if(e.target.checked)cd.hide=true; else delete cd.hide; buildTL(); drawT(T); mark();};
   $('#apply').onclick=()=>{const ws=$('#ctx').value.trim().split(/\s+/).filter(Boolean); if(!ws.length)return;
     if(ws.length===cd.w.length) ws.forEach((t,j)=>cd.w[j].t=t); else {const L=(cd.e-cd.s)/ws.length; cd.w=ws.map((t,j)=>({t,s:+(cd.s+j*L).toFixed(3),e:+(cd.s+(j+1)*L).toFixed(3),hot:false}));}
     mark();buildTL();capSheet(i);toast('تم');};
@@ -218,6 +250,9 @@ function behindSheet(i){const l=ST.behind.lines[i]; const off=ST.studio.behindOf
 }
 /* ---------- التبويبات ---------- */
 $('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#tabs').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const t=b.dataset.t; const cmp=$('#cmp'); cmp.style.display='none';cmp.pause();$('#frame').style.visibility='visible';
+  if(t==='pick'){location.href='/pick';return;}
+  if(t==='moves'){bankSheet(null);return;}
+  if(t==='notes'){notesSheet();return;}
   if(t==='scenes'){open('المشاهد','<div class="note">اضغط أي مشهد بالتايم لاين لتغيير شكله (ملء الشاشة · لوحة · وجه صغير · بلا وجه)، واسحب أطرافه لتغيير مدته. اضغط أي مقطع بمسار الفيديو للتحكم بالقص.</div><div class="row" style="margin-top:8px"><button class="btn" id="addSplit">قسّم المشهد الحالي عند المؤشر</button></div>'); $('#addSplit').onclick=()=>{const i=ST.studio.scenes.findIndex(s=>T>=s.s&&T<s.e); if(i<0)return; const sc=ST.studio.scenes[i]; if(T<=sc.s+0.3||T>=sc.e-0.3){toast('قرّب المؤشر لوسط المشهد');return;} ST.studio.scenes.splice(i+1,0,{s:T,e:sc.e,m:sc.m}); sc.e=T; mark();buildTL();sceneSheet(i+1);};}
   if(t==='caps'){const cur=ST.theme.capStyle||'card'; open('ستايل الكابشن','<div class="mode">'+Object.entries(STYLES).map(([k,v])=>'<button data-s="'+k+'" class="'+(cur===k?'on':'')+'">'+v+'</button>').join('')+'</div><div class="note" style="margin-top:8px">الستايل ينطبق على الفيديو كله. اضغط أي جملة بالتايم لاين لتعديل كلماتها، أو اضغط الكلمة عشان تسخّنها أو تعطيها مؤثراً (طيحة · اهتزاز · كتابة · نبضة).</div>'); $('#shB').querySelectorAll('[data-s]').forEach(x=>x.onclick=async()=>{ST.theme.capStyle=x.dataset.s;$('#sub').textContent=ST.caps.cards.length+' جملة · '+fmt(dur())+' · '+STYLES[x.dataset.s];$('#shB').querySelectorAll('[data-s]').forEach(y=>y.classList.toggle('on',y===x)); await save(); const c=ST.caps.cards.find(c=>T>=c.s&&T<c.e)||ST.caps.cards[Math.min(1,ST.caps.cards.length-1)]; playRange(c.s,c.e);});}
   if(t==='stick'){open('النصوص والملصقات','<div class="row"><button class="btn" id="addSt">+ ملصق عند المؤشر</button></div><div class="note">كبسولة فوق الراس بأيقونة ونص، تطلع ثانيتين وتختفي. اسحب أطرافها بالتايم لاين.</div>'); $('#addSt').onclick=()=>{ST.studio.stickers.push({s:+T.toFixed(2),e:+Math.min(dur(),T+2).toFixed(2),i:'⭐',t:'',y:300}); mark();buildTL();stickSheet(ST.studio.stickers.length-1);};}
@@ -240,5 +275,103 @@ $('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#tabs').query
 $('#brFile').onchange=async e=>{const f=e.target.files[0]; if(!f)return; await save(); toast('أرفع '+f.name+'…'); $('#saved').textContent='أرفع…'; $('#saved').className='pill busy';
   const r=await fetch('/api/broll',{method:'POST',headers:{'X-Name':encodeURIComponent(f.name)},body:f}); const j=await r.json(); if(!j.ok){toast('فيه عملية شغالة');return;}
   (async function w(){const p=await pollOnce(); if(p.running){setTimeout(w,2000);return;} if(p.err){toast('❌ '+p.err.slice(0,60));return;} const d=JSON.parse(p.done||'{}'); const L=Math.min(4,(d.frames||60)/30); const t0=T; await load(true); ST.studio.brollClips.push({k:d.key,s:+t0.toFixed(2),e:+Math.min(dur(),t0+L).toFixed(2),mode:'full'}); mark(); buildTL(); toast('اللقطة انضافت'); brollSheet(ST.studio.brollClips.length-1);})(); e.target.value='';};
+
+/* ---------- 🎞️ بنك الحركات (motion/moves.js) — الحركة تنحفظ بـstudio.json ← moves:[{id,s,e,o,nocap?}] والمحرّك يرسمها ---------- */
+let MOVES=[], NOTES=[];
+/* حركات ما تكتمل من الاستوديو: c = تحتاج كلود (صورة مصدر، رسم، تتبع الوجه أو الكف، أو قصّ لازم) · m = تشتغل، بس أحلى مع قصّ الشخص (ماك) */
+const NEEDS={shine:'c',greenScreen:'c',palmHold:'c',speechBubble:'c',punchCut:'c',bodyFollow:'c',motionEcho:'c',stickerFreeze:'c',cloneTrio:'c',rimOutline:'c',
+  orbit:'m',couchWall:'m',uiWorld:'m',frameBreak:'m',headlineWall:'m',doodleBoil:'m',coverStory:'m',paperCut:'m',lightRays:'m'};
+const NEEDT={c:'يحتاج كلود',m:'أحلى مع القص'};
+const NEEDW={c:'⚠️ هالحركة ما تكتمل من الاستوديو — تحتاج شي يجهّزه كلود (صورة أو مقطع للمصدر، رسم، أو تتبّع الوجه/الكف). أرسل له وش تبي يطلع فيها من «📝 اطلب من كلود».',
+  m:'💡 تشتغل الحين، بس بقصّ جسمك من الخلفية (ماك) تطلع أحلى — اطلب من كلود يقصّك لهالمدى.'};
+const CATN={all:'الكل',text:'نصوص',card:'كروت',camera:'كاميرا',transition:'انتقالات'};
+const mvOf=id=>MOVES.find(m=>m.id===id)||{n:'?',name:id,cat:''};
+const mvLabel=id=>{const m=mvOf(id);return (NEEDS[id]==='c'?'⚠️ ':'')+String(m.n).padStart(2,'0')+' '+m.name;};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function capAt(t){return ST.caps.cards.find(c=>t>=c.s&&t<=c.e)||ST.caps.cards.find(c=>c.s>=t)||ST.caps.cards[0];}
+/* افتراضي ذكي من سطر المدخلات بالتعليق: النص من الجملة اللي عند المؤشر، والانتقالات/الكاميرا تاخذ الفيديو الحي */
+function mvDefaults(m,t){const h=m.opts||'', cd=capAt(t), txt=cd?cd.w.map(w=>w.t).join(' '):'', o={};
+  const has=k=>new RegExp('(^|[{,\\s])'+k+'\\b').test(h);
+  if(has('text'))o.text=txt; else if(has('title'))o.title=txt; else if(has('query'))o.query=txt; else if(has('line'))o.text=txt;
+  if(has('items')&&!o.text)o.items=txt.split(' ').slice(0,3);
+  if(m.cat==='transition'||(has('A')&&has('B'))){o.A=true;o.B=true;}
+  if(has('video')&&m.cat==='camera')o.video=true; if(has('draw'))o.draw=true;
+  if(/person/.test(h)&&m.cat!=='text')o.person=true;
+  if(/face/.test(h))o.face=true; if(/palm/.test(h))o.palm=true;
+  /* مفاتيح بلا افتراضي بالتعليق (مثل old, now, label بالسعر) تطلع حقول فاضية يعبّيها — الأرقام ترجع أرقام وقت الكتابة */
+  const SKIP=/^(s|out|video|draw|person|A|B|face|palm|line|at|dur|stagger|step|every|tap|period|x|y|w|size|color|accent|pill|stroke|bg|cps|pick)$/;
+  const body=(h.match(/^\{([^}]*)\}/)||[,''])[1];
+  body.split(',').map(x=>x.trim()).forEach(k=>{ const m=k.match(/^([A-Za-z_]\w*)\s*$/); if(m&&!SKIP.test(m[1])&&!(m[1] in o)) o[m[1]]=''; });
+  return o;}
+function mvLen(m){return m.cat==='transition'?1.2:m.cat==='rule'?0:3;}
+function bankSheet(replaceIdx,cat){cat=cat||'all';
+  const list=MOVES.filter(m=>m.ok&&m.cat!=='rule'&&(cat==='all'||m.cat===cat));
+  const cur=replaceIdx!=null?ST.studio.moves[replaceIdx].id:null;
+  open(replaceIdx!=null?'بدّل الحركة':'بنك الحركات · '+list.length,
+   '<div class="mvcats">'+Object.entries(CATN).map(([k,v])=>'<button class="btn '+(k===cat?'':'alt')+'" data-c="'+k+'">'+v+'</button>').join('')+'</div>'+
+   '<div class="note" style="margin-bottom:8px">'+(replaceIdx!=null?'اختر حركة بدالها — نفس الوقت والنص.':'اضغط حركة تنضاف عند المؤشر ('+fmt(T)+') بنص الجملة اللي هناك. مرّر فوقها تشوف المعاينة.')+'</div>'+
+   '<div class="mvgrid">'+list.map(m=>'<div class="mv '+(m.id===cur?'on':'')+'" data-id="'+m.id+'"><span class="no">'+m.n+'</span>'+(NEEDS[m.id]?'<span class="need '+NEEDS[m.id]+'">'+NEEDT[NEEDS[m.id]]+'</span>':'')+'<video muted loop playsinline preload="none" src="/mv/'+String(m.n).padStart(2,'0')+'.mp4"></video><div class="nm">'+esc(m.name)+'<small>'+esc(m.sub||'')+'</small></div></div>').join('')+'</div>');
+  $('#shB').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>bankSheet(replaceIdx,b.dataset.c));
+  const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target.querySelector('video'); if(e.isIntersecting){v.preload='auto';v.play().catch(()=>{});} else v.pause();}),{root:$('#shB')});
+  $('#shB').querySelectorAll('.mv').forEach(el=>{io.observe(el); el.onclick=()=>{const m=mvOf(el.dataset.id);
+    if(replaceIdx!=null){const mv=ST.studio.moves[replaceIdx]; const txt=mv.o&&(mv.o.text||mv.o.title||mv.o.query); mv.id=m.id; mv.o=mvDefaults(m,mv.s); if(txt){for(const k of ['text','title','query'])if(k in mv.o)mv.o[k]=txt;} mark();buildTL();moveSheet(replaceIdx);toast('تبدّلت لـ'+m.name);return;}
+    const s=+T.toFixed(2), e=+Math.min(dur(),T+mvLen(m)).toFixed(2); ST.studio.moves.push({id:m.id,s,e,o:mvDefaults(m,T)}); mark(); buildTL(); moveSheet(ST.studio.moves.length-1); toast(NEEDS[m.id]==='c'?'انضافت — بس تحتاج كلود ⚠️':'انضافت «'+m.name+'»');}; });
+}
+function moveSheet(i){const mv=ST.studio.moves[i], m=mvOf(mv.id), o=mv.o||(mv.o={});
+  { const d=mvDefaults(m,mv.s); for(const k in d) if(d[k]===''&&!(k in o)) o[k]=''; }   /* حركة قديمة بلا مدخلات: تطلع حقولها فاضية */
+  const fields=Object.entries(o).filter(([k,v])=>typeof v==='string'||(Array.isArray(v)&&v.every(x=>typeof x==='string'))||typeof v==='number');
+  open(mvLabel(mv.id)+' · '+fmt(mv.s)+' → '+fmt(mv.e),
+   (NEEDS[mv.id]?'<div class="warn '+NEEDS[mv.id]+'">'+NEEDW[NEEDS[mv.id]]+'</div>':'')+
+   '<div class="note">'+esc(m.desc||'')+'</div>'+
+   fields.map(([k,v])=>'<div class="row"><span class="note" style="width:70px">'+k+'</span>'+(Array.isArray(v)?'<textarea data-k="'+k+'" data-arr="1" style="flex:1;min-height:60px">'+esc(v.join('\n'))+'</textarea>':'<input type="text" data-k="'+k+'" '+(typeof v==='number'?'data-num="1"':'')+' value="'+esc(v)+'" style="flex:1">')+'</div>').join('')+
+   '<details style="margin:6px 0 10px"><summary class="note">متقدم: كل المدخلات (JSON)</summary><div class="note" style="direction:ltr;text-align:left;margin:6px 0">'+esc(m.opts||'')+'</div><textarea id="mvJson" style="direction:ltr;text-align:left;min-height:110px;font-family:ui-monospace,monospace;font-size:12px">'+esc(JSON.stringify(o,null,1))+'</textarea><button class="btn alt" id="mvJsonApply">طبّق JSON</button></details>'+
+   (canDrag(m)?'<div class="row"><span class="note" style="width:70px">الحجم</span><input type="range" id="mvK" min="0.4" max="2.5" step="0.05" value="'+(mv.k||1)+'" style="flex:1"><button class="btn alt" id="mvReset">رجّع مكانها</button></div><div class="note" style="margin-bottom:8px">✋ اسحبها على المعاينة فوق لمكانها اللي تبيه.</div>':'')+
+   '<label class="sw">بلا كابشن وقت الحركة (لما الحركة تكتب الكلام)<input type="checkbox" id="mvNocap" '+(mv.nocap?'checked':'')+'></label>'+
+   '<div class="row"><button class="btn" id="mvPlay">▶ شغّلها</button><button class="btn alt" id="mvSwap">بدّل الحركة</button><button class="btn alt" id="mvAsk">📝 اطلب من كلود</button><button class="btn danger" id="mvDel">احذف</button></div>'+
+   '<div class="note">اسحب أطرافها بمسار «الحركات» لتغيير وقتها. أي تعديل يبين فوراً بالمعاينة.</div>');
+  $('#shB').querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{const k=el.dataset.k; o[k]=el.dataset.arr?el.value.split('\n').map(x=>x.trim()).filter(Boolean):(el.dataset.num||/^-?\d+(\.\d+)?$/.test(el.value.trim()))?(+el.value||0):el.value; mark(); $('#mvJson').value=JSON.stringify(o,null,1);});
+  $('#mvJsonApply').onclick=()=>{try{mv.o=JSON.parse($('#mvJson').value);mark();moveSheet(i);toast('تم');}catch(e){toast('JSON فيه غلط');}};
+  $('#mvNocap').onchange=e=>{if(e.target.checked)mv.nocap=true; else delete mv.nocap; mark();};
+  $('#mvPlay').onclick=()=>save().then(()=>playRange(Math.max(0,mv.s-0.2),mv.e));
+  $('#mvSwap').onclick=()=>bankSheet(i,m.cat||'all');
+  $('#mvAsk').onclick=()=>notesSheet(null,{t:mv.s,ref:{k:'move',i,id:mv.id},pre:'بالحركة «'+m.name+'»: '});
+  $('#mvDel').onclick=()=>{ST.studio.moves.splice(i,1);mark();buildTL();sheet.classList.remove('open');dragOff();toast('انحذفت');};
+  if(canDrag(m)){ dragOn({k:'m',i});
+    $('#mvK').oninput=e=>{mv.k=+e.target.value; livePush();}; $('#mvK').onchange=()=>mark();
+    $('#mvReset').onclick=()=>{delete mv.dx;delete mv.dy;delete mv.k;$('#mvK').value=1;livePush();mark();}; }
+}
+/* ---------- ✋ سحب الحركة على المعاينة: dx,dy بالبكسل (إحداثيات 1080×1920) و k للحجم ---------- */
+const canDrag=m=>m&&(m.cat==='text'||m.cat==='card');
+let DRAG=null; const DG=$('#drag');
+function dragObj(){return !DRAG?null:DRAG.k==='c'?ST.caps.cards[DRAG.i]:ST.studio.moves[DRAG.i];}
+function dragOn(d){DRAG=d; DG.classList.add('on'); sheet.classList.add('compact'); document.body.classList.add('dragmode');
+  DG.querySelector('span').textContent=d.k==='c'?'اسحب الكابشن فوق وتحت':'اسحب الحركة · عجلة الماوس أو إصبعين للحجم';
+  const o=dragObj(); if(T<o.s||T>o.e) seek(Math.min(o.e-0.05,o.s+(d.k==='c'?0.3:0.8)));}
+function dragOff(){DRAG=null; DG.classList.remove('on'); sheet.classList.remove('compact'); if(document.body.classList.contains('dragmode')){document.body.classList.remove('dragmode'); setTimeout(()=>{buildTL();seek(T);},50);}}
+function livePush(){const w=F.contentWindow; if(w&&w.setStudioMoves) w.setStudioMoves(ST.studio.moves); drawT(T);}
+const PTS=new Map(); let pinch0=null;
+DG.onpointerdown=e=>{if(DRAG==null)return; DG.setPointerCapture(e.pointerId); PTS.set(e.pointerId,{x:e.clientX,y:e.clientY}); snapOnce();
+  if(PTS.size===2&&DRAG.k==='m'){const [a,b]=[...PTS.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),k:dragObj().k||1};}};
+DG.onpointermove=e=>{if(DRAG==null||!PTS.has(e.pointerId))return; const mv=dragObj(), p=PTS.get(e.pointerId), sc=1080/DG.clientWidth;
+  if(PTS.size===1){ if(DRAG.k==='m') mv.dx=Math.round((mv.dx||0)+(e.clientX-p.x)*sc); mv.dy=Math.round((mv.dy||0)+(e.clientY-p.y)*sc);}
+  PTS.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(PTS.size===2&&pinch0){const [a,b]=[...PTS.values()]; mv.k=Math.max(0.4,Math.min(2.5,+(pinch0.k*Math.hypot(a.x-b.x,a.y-b.y)/pinch0.d).toFixed(2))); const r=$('#mvK'); if(r)r.value=mv.k;}
+  livePush();};
+DG.onpointerup=DG.onpointercancel=e=>{PTS.delete(e.pointerId); if(PTS.size<2)pinch0=null; if(!PTS.size&&DRAG!=null)mark();};
+DG.onwheel=e=>{if(DRAG==null||DRAG.k!=='m')return; e.preventDefault(); const mv=dragObj(); mv.k=Math.max(0.4,Math.min(2.5,+((mv.k||1)*(1-e.deltaY*0.0015)).toFixed(2))); const r=$('#mvK'); if(r)r.value=mv.k; livePush(); clearTimeout(DG._t); DG._t=setTimeout(mark,400);};
+/* ---------- 📝 ملاحظات لكلود — تنحفظ بـnotes.json بمجلد الشغل، وكلود يقراها ويعدّل ويرد ---------- */
+async function notesSheet(focusId,pre){pre=pre||{}; NOTES=await (await fetch('/api/notes')).json();
+  const list=NOTES.slice().reverse();
+  open('📝 ملاحظات لكلود',
+   '<div class="note">اكتب اللي تبيه بكلامك عند هاللحظة ('+fmt(pre.t!=null?pre.t:T)+') — كلود يقراها ويعدّل ويعيد البناء. مثال: «الحركة هني هادية، عطني شي يصدم» · «الكابشن قريب من وجهي».</div>'+
+   '<textarea id="ntx" placeholder="شنو تبي يتغير؟">'+esc(pre.pre||'')+'</textarea><div class="row"><button class="btn" id="nSend">أرسل لكلود</button></div>'+
+   (list.length?list.map(n=>'<div class="nt" '+(n.id===focusId?'style="border-color:var(--acc)"':'')+'><span class="st '+n.status+'">'+(n.status==='done'?'تم ✓':'بانتظار كلود')+'</span><b>'+fmt(n.t)+'</b>'+esc(n.text)+(n.reply?'<div class="rp">كلود: '+esc(n.reply)+'</div>':'')+'</div>').join(''):'<div class="note">ما فيه ملاحظات بعد.</div>'));
+  $('#nSend').onclick=async()=>{const text=$('#ntx').value.trim(); if(!text)return; const t=pre.t!=null?pre.t:T;
+    const r=await (await fetch('/api/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t,text,ref:pre.ref||null})})).json();
+    if(r.ok){toast('وصلت لكلود ✓'); NOTES=await (await fetch('/api/notes')).json(); buildTL(); notesSheet();}};
+}
+setInterval(async()=>{ if(!ST)return; try{const ns=await (await fetch('/api/notes')).json(); const was=(NOTES||[]).filter(n=>n.status==='done').length, now=ns.filter(n=>n.status==='done').length;
+  if(now>was){NOTES=ns; toast('كلود خلّص ملاحظة ✓'); await load(true);} else NOTES=ns;}catch(e){} },6000);
+
 load();
 </script></body></html>

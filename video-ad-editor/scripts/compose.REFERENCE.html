@@ -52,7 +52,8 @@ function init(d){
     if(Array.isArray(st.stickers)) STICK=st.stickers;
     BEHIND_OFF=Array.isArray(st.behindOff)?st.behindOff:[];
     if(st.brNeed&&typeof BR_NEED==='object'){ for(const k in st.brNeed) BR_NEED[k]=st.brNeed[k]; }
-    if(Array.isArray(st.gen)) GEN=st.gen.map(g=>({...g})); if(st.genFrames) GEN_FR=st.genFrames; }
+    if(Array.isArray(st.gen)) GEN=st.gen.map(g=>({...g})); if(st.genFrames) GEN_FR=st.genFrames;
+    STUDIO_MOVES=Array.isArray(st.moves)?st.moves:[]; window.STUDIO_HOOK(); }
   if(t.stack&&typeof t.stack==='object') STK={...STK,...t.stack};   /* «طبقات» — theme.json ← stack:{fill,shade,accent,font,weight} */
   return Promise.all([preloadBroll(),preloadGen(),preloadStack(),fontReady()]);   /* يرجّع Promise — المحرّك ينتظر تحميل لقطات البي-رول وأقنعة «طبقات» (إن وُجدت) */
 }
@@ -1063,6 +1064,36 @@ function draw(t){
   for(const sc of SCENE_LIST) if((sc[2]||sc[1].layer)==='afterPerson') safe(sc[1],t,sc[0]);
   safe(caption,t,'caption'); safe(outro,t,'outro');
 }
+/* 🎞️ حركات البنك من الاستوديو: studio.json ← moves:[{id,s,e,o,nocap?}] — كل وحدة FX[id](MV,t,o) بنافذتها.
+   o.s = بداية الحركة (افتراضي s). المدخلات اللي ما تنكتب بـJSON تتعبّى هني: video/draw = الفيديو الحي، person = القصّ،
+   A = فريم بداية الحركة و B = الفيديو الحي (للانتقالات)، face/palm من التتبع لو موجود. nocap = يطفي الكابشن بنافذتها. */
+let STUDIO_MOVES=[];
+function studioMoves(t){
+  if(!window.FX||!window.MV) return;
+  for(const m of STUDIO_MOVES){ const f=FX[m.id]; if(!f||t<m.s-0.05||t>m.e) continue;
+    const o={...(m.o||{})}; if(o.s==null) o.s=m.s;
+    if(o.video===true||(o.video==null&&m.video)) o.video=Y=>MV.video(Y);
+    if(o.draw===true) o.draw=Y=>MV.video(Y);
+    if(o.person===true) o.person=MV.person;
+    if(o.A===true) o.A=Y=>(MV.frameAt(Y,m.s)||MV.video(Y)); if(o.B===true) o.B=Y=>MV.video(Y);
+    if(o.face===true) o.face=MV.faceAt; if(o.palm===true) o.palm=MV.palmAt;
+    X.save(); try{
+      /* مكان وحجم من الاستوديو (سحب بالإصبع): dx,dy إزاحة بالبكسل، k مقياس حول نقطة الحركة (o.x,o.y) */
+      if(m.dx||m.dy||(m.k&&m.k!==1)){ const cx=+(o.x!=null?o.x:540), cy=+(o.y!=null?o.y:960), k=m.k||1;
+        X.translate((m.dx||0)+cx,(m.dy||0)+cy); X.scale(k,k); X.translate(-cx,-cy); }
+      f(MV,t,o); }finally{ X.restore(); } }
+}
+window.setStudioMoves=a=>{ STUDIO_MOVES=Array.isArray(a)?a:[]; };   /* الاستوديو يحدّث الحركات وقت السحب بلا init كامل */
+studioMoves.layer='scene';
+window.STUDIO_HOOK=()=>{ if(STUDIO_MOVES.length&&!SCENE_LIST.some(x=>x[0]==='studioMoves')) SCENE_LIST.push(['studioMoves',studioMoves]);
+};
+/* الكابشن من الاستوديو: الحركة nocap تطفيه بنافذتها · الجملة بـcaps.json ← hide:true تختفي · dy يطلّعها فوق/تحت (بالبكسل) */
+(function(){ const orig=window.caption; window.caption=t=>{
+  if(STUDIO_MOVES.some(m=>m.nocap&&t>=m.s&&t<m.e)) return;
+  const c=(typeof CAPS!=='undefined'&&CAPS||[]).find(c=>t>=c.s&&t<c.e);
+  if(c&&c.hide) return;
+  if(c&&c.dy){ X.save(); X.translate(0,c.dy); try{ return orig(t); }finally{ X.restore(); } }
+  return orig(t); }; })();
 window.draw=draw;window.init=init;window.vrect=vrect;
 window.setFrame=src=>{ /* decode() بعد إسناد المصدر = ضمان إن هذي الصورة بالذات جاهزة */
   VF.src=src; return (VF.decode?VF.decode():Promise.resolve()).catch(()=>{}); };

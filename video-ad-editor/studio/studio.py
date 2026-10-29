@@ -5,6 +5,7 @@
    الصفحة: /m · الحالة: GET /api/state · الحفظ: POST /api/save · الرسم: POST /api/render · التقدّم: GET /api/progress
    القص: POST /api/recut {keep} · حذف جمل: POST /api/drop {cards} · ورا الراس: POST /api/behind {cards}
    قصّ الشخص لمدى: POST /api/cutout {from,to} · بي-رول: POST /api/broll (الملف بالجسم + X-Name) · تعليقات: /api/comments · صفحة العميل: /share
+   اختيار بالمعاينة: /pick (6 خطوات على مقطعك، الاقتراحات من pick.json بمجلد الشغل) · بنك الحركات: GET /api/moves (الكتالوج + مدخلات كل حركة) · معايناتها /mv/NN.mp4 · ملاحظات لكلود: POST /api/note {t,text,ref} · GET /api/notes · POST /api/note_done {id}
    ما فيه محرّك جديد: نفس compose.html ونفس الراسم — الاستوديو يكتب studio.json وcaps.json وtheme.json وsfx.json بس."""
 import http.server, json, os, sys, subprocess, threading, socket, time, shutil, re, urllib.parse
 
@@ -13,6 +14,7 @@ PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8792
 HERE = os.path.dirname(os.path.abspath(__file__))           # مجلد الاستوديو (ملفاته)
 S = os.path.join(os.path.dirname(HERE), 'scripts')            # سكربتات السكل الأساسية — الاستوديو يستدعيها ولا يعدّلها
 PY = sys.executable
+MOT = os.path.join(os.path.dirname(HERE), 'motion')         # بنك الحركات: motion/moves.js + moves/catalog.json + moves/previews
 JOB = {"running": False, "kind": "", "log": "", "done": None, "err": None, "started": 0, "reload": False}
 
 def P(*a): return os.path.join(W, *a)
@@ -45,11 +47,36 @@ def default_scenes(total):
     except Exception: pass
     return [{"s": 0, "e": total + 5, "m": "R_FULL"}]
 
+_MOVES = None
+def moves_catalog():
+    """الكتالوج + سطر المدخلات (o: {...}) من تعليق كل حركة بـmoves.js — الصفحة تعرضه وتعبّي منه الافتراضي."""
+    global _MOVES
+    if _MOVES is not None: return _MOVES
+    try: cat = json.load(open(os.path.join(MOT, 'moves', 'catalog.json'), encoding='utf-8'))['moves']
+    except Exception: cat = []
+    src = ''
+    try: src = open(os.path.join(MOT, 'moves.js'), encoding='utf-8').read()
+    except Exception: pass
+    for m in cat:
+        i = src.find('FX.' + m['id'] + ' =')
+        if i < 0: i = src.find('FX.' + m['id'] + '=')
+        com = src[src.rfind('/*', 0, i):src.rfind('*/', 0, i)] if i > 0 else ''
+        j = com.find('o: {'); m['opts'] = re.sub(r'\s+', ' ', com[j + 3:]).strip() if j >= 0 else ''
+        m['ok'] = i >= 0
+    _MOVES = cat; return cat
+
+def add_note(d):
+    ns = rd('notes.json', [])
+    n = {"id": int(time.time() * 1000), "t": round(float(d.get('t') or 0), 2), "ref": d.get('ref'), "text": (d.get('text') or '').strip()[:2000],
+         "at": time.strftime('%Y-%m-%d %H:%M'), "status": "pending"}
+    if not n["text"]: return None
+    ns.append(n); wr('notes.json', ns); return n
+
 def state():
     caps = rd('caps.json', {"cards": [], "total": 0}); theme = rd('theme.json', {}); cut = rd('cut.json', {})
     sfx = rd('sfx.json', {"outro": 3.5}); behind = rd('behind.json'); studio = rd('studio.json') or {}
     if not studio.get('scenes'): studio['scenes'] = default_scenes(caps.get('total', 0))
-    for k, v in (('stickers', []), ('behindOff', []), ('brollClips', []), ('brNeed', {})): studio.setdefault(k, v)
+    for k, v in (('stickers', []), ('behindOff', []), ('brollClips', []), ('brNeed', {}), ('moves', [])): studio.setdefault(k, v)
     studio['sfx'] = {k: v for k, v in sfx.items() if k != 'outro'}
     nvf = len(os.listdir(P('vfr'))) if os.path.isdir(P('vfr')) else 0
     final = [f for f in ('ad-master.mp4', 'ad-final.mp4') if os.path.exists(P(f))]
@@ -210,12 +237,21 @@ class H(http.server.SimpleHTTPRequestHandler):
         p = self.path.split('?')[0]
         if p in ('/', '/m', '/m/'): return self._html('studio-mobile.html')
         if p == '/share': return self._html('studio-share.html')
+        if p in ('/pick', '/pick/'): return self._html('studio-pick.html')   # اختيار بالمعاينة (اقتراحات pick.json)
         if p.startswith('/sfx_prev/'):
             f = os.path.join(HERE, 'sfx_prev', os.path.basename(p))
             if os.path.exists(f):
                 b = open(f, 'rb').read(); self.send_response(200); self.send_header('Content-Type', 'audio/wav'); self.send_header('Content-Length', str(len(b))); self.end_headers(); self.wfile.write(b); return
         if p.startswith('/api/state'): return self._json(200, state())
         if p.startswith('/api/comments'): return self._json(200, rd('comments.json', []))
+        if p.startswith('/api/moves'): return self._json(200, moves_catalog())
+        if p.startswith('/api/notes'): return self._json(200, rd('notes.json', []))
+        if p.startswith('/mv/') or (p in ('/moves.js', '/moves-compose.js') and not os.path.exists(P(p[1:]))):
+            f = os.path.join(MOT, 'moves', 'previews', os.path.basename(p)) if p.startswith('/mv/') else \
+                (os.path.join(MOT, 'moves.js') if p == '/moves.js' else os.path.join(os.path.dirname(HERE), 'scripts', 'moves-compose.js'))
+            if not os.path.exists(f): return self.send_error(404)
+            b = open(f, 'rb').read(); self.send_response(200)
+            self.send_header('Content-Type', 'video/mp4' if f.endswith('.mp4') else 'application/javascript'); self.send_header('Content-Length', str(len(b))); self.end_headers(); self.wfile.write(b); return
         if p.startswith('/api/progress'):
             return self._json(200, {"running": JOB["running"], "kind": JOB["kind"], "log": JOB["log"][-1800:], "done": JOB["done"], "err": JOB["err"], "reload": JOB["reload"], "elapsed": round(time.time() - JOB["started"]) if JOB["started"] else 0})
         return self._ranged() if self._wants_range() else super().do_GET()
@@ -250,6 +286,15 @@ class H(http.server.SimpleHTTPRequestHandler):
                 st = data['studio']; sfx = st.pop('sfx', None); wr('studio.json', st)
                 if sfx is not None: cur = rd('sfx.json', {"outro": 3.5}); wr('sfx.json', {"outro": cur.get('outro', 3.5), **{k: v for k, v in sfx.items() if v}})
             return self._json(200, {"ok": True})
+        if p.startswith('/api/note_done'):
+            ns = rd('notes.json', [])
+            for n in ns:
+                if n['id'] == data.get('id'): n['status'] = data.get('status') or 'done'; n['reply'] = data.get('reply') or n.get('reply')
+            wr('notes.json', ns); return self._json(200, {"ok": True})
+        if p.startswith('/api/note'):
+            n = add_note(data)
+            if n: print(f"📝 ملاحظة لكلود عند {n['t']} ث: {n['text']}", flush=True)
+            return self._json(200 if n else 400, {"ok": bool(n), "note": n})
         if p.startswith('/api/comment'):
             cs = rd('comments.json', []); cs.append({"t": data.get('t'), "who": (data.get('who') or 'عميل')[:40], "text": (data.get('text') or '')[:500], "at": time.strftime('%Y-%m-%d %H:%M')}); wr('comments.json', cs); return self._json(200, {"ok": True})
         if p.startswith('/api/render'):  ok = job('render', lambda: do_render(data.get('range')))
