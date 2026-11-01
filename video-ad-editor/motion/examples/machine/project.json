@@ -1,0 +1,11 @@
+{
+ "name": "machine — مثال «اشرح لي شلون يشتغل…»: الآلة ترتسم بالحبر ثم تشتغل (استشوار + مايكرويف)",
+ "fps": 60, "width": 1080, "height": 1920, "bpm": 150, "beatsPerBar": 4, "beatOffset": 0,
+ "palette": { "bg": "#F0EBE0", "ink": "#1B1A17", "acc": "#D97757", "clay": "#C15F3C", "hi": "#E8A283", "mut": "#8A847A" },
+ "fonts": { "display": "Readex Pro", "body": "IBM Plex Sans Arabic", "num": "Inter" },
+ "post": { "grain": 0.03, "vignette": 0.18 },
+ "scenes": [
+  { "id": "dryer", "file": "scenes/dryer.js", "start": 0,   "end": 7.2 },
+  { "id": "micro", "file": "scenes/micro.js", "start": 7.2, "end": 14.6, "transition": { "type": "push", "dir": "up", "dur": 0.5, "ease": "expoInOut" } }
+ ]
+}

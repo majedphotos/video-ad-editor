@@ -26,6 +26,7 @@ description: يمنتج فيديو كلام للكاميرا إلى ريل أو 
 | حلقة كاملة «بالعرض» أو «لليوتيوب» | بودكاست 16:9 | `references/podcast.md` (قسم «الحلقة كاملة بالعرض») |
 | حلقة ساعة ← عدة ريلات | ريلات من حلقة | `references/landscape.md` (قسم «حلقة كاملة») |
 | نص أو فكرة، بلا شخص | شرح بالموشن | `references/motion-mode.md` |
+| «اشرح لي شلون يشتغل …» (جهاز، آلة) | الجهاز كآلة ترتسم وتشتغل | `references/machine-explainer.md` |
 | رابط موقع أو «اشرح التطبيق» | شرح موقع/تطبيق | `references/motion-mode.md` |
 
 لو فيه سكل منفصل لهالوضع منصّب (`motion-video` أو `podcast-video` أو `montage-video`)، هو أولى.

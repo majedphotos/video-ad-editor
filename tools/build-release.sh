@@ -27,7 +27,7 @@ full = ('description: يمنتج فيديو كلام للكاميرا إلى ر�
         'وفيه مونتاج مقاطع بلا كلام وبودكاست بكاميرتين. Use when user says "منتج هذا المقطع"، "سو من هذا الفيديو إعلان"، "شيّل السكتات"، '
         '"حوّل الفيديو لريل"، "ركّب كابشن عربي"، "اقص الصمت"، "مونتاج من هالمقاطع"، "بودكاست"، "كاميرتين"، or sends a talking video/clip folder. '
         'Also a no-person 3D motion-graphics explainer from text: "فيديو موشن"، "شرح بالموشن"، "سو فيديو من هالنص"، "موشن قرافيكس"، '
-        '"اشرح هالموقع/التطبيق بفيديو". Also a full 16:9 YouTube podcast edit from raw multi-camera files ("الحلقة كاملة بالعرض"). '
+        '"اشرح هالموقع/التطبيق بفيديو"، "اشرح لي شلون يشتغل [جهاز]" (cutaway machine drawn in ink, then runs). Also a full 16:9 YouTube podcast edit from raw multi-camera files ("الحلقة كاملة بالعرض"). '
         'Not for carousels or video covers.')
 lines = s.split("\n"); i = next(k for k, l in enumerate(lines) if l.startswith("description:"))
 lines[i] = full; open(p, "w", encoding="utf-8").write("\n".join(lines))
