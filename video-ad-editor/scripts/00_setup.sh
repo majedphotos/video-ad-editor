@@ -96,6 +96,10 @@ have ffmpeg  && OK+=("ffmpeg")  || MISS+=("ffmpeg")
 have ffprobe && OK+=("ffprobe") || MISS+=("ffprobe")
 "$PY" -c "import whisper" 2>/dev/null && OK+=("whisper") || MISS+=("whisper")
 "$PY" -c "import numpy"   2>/dev/null && OK+=("numpy")   || MISS+=("numpy")
+# 6.4: سكل مراجعة المنتج يتتبع القطع ويرسم فريمات الفحص
+"$PY" -c "import cv2"     2>/dev/null && OK+=("opencv")  || MISS+=("opencv")
+"$PY" -c "import scipy"   2>/dev/null && OK+=("scipy")   || MISS+=("scipy")
+"$PY" -c "import PIL"     2>/dev/null && OK+=("pillow")  || MISS+=("pillow")
 
 # كروم: نفس ترتيب البحث اللي بالسكربتات
 find_chrome(){
@@ -145,6 +149,9 @@ for m in "${MISS[@]}"; do
     whisper) line "⏬ openai-whisper… (الموديل ينزل أول تشغيل، 1.4 قيقا)"
       pipi openai-whisper || NOTE+=("whisper فشل") ;;
     numpy)   pipi numpy || NOTE+=("numpy فشل") ;;
+    opencv)  pipi opencv-python-headless || NOTE+=("opencv فشل") ;;
+    scipy)   pipi scipy || NOTE+=("scipy فشل") ;;
+    pillow)  pipi pillow || NOTE+=("pillow فشل") ;;
     puppeteer-core) line "⏬ puppeteer-core…"
       ( cd "$SKILL" && npm i --silent puppeteer-core ) || NOTE+=("puppeteer-core فشل") ;;
     chrome) NOTE+=("كروم مو منصّب — نزّله من google.com/chrome أو حدّد CHROME_PATH") ;;

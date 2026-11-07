@@ -60,3 +60,8 @@
 ## ملفات مجلد الشغل
 `src.mov` · `spec.json` (حلقة ← ريل) · `a.json` (وِسبر) · `fixes.json` · `cut.json` · `caps.json` · `theme.json` · `studio.json` · `sfx.json` · `behind.json` · `safe.json` (اختياري) · `hook-card.js` + `hook_sheet.jpg` (الهوك) · `vfr/` (فريمات المصدر) · `out/` (فريمات الرسم) · `prev/` (معاينة) · `ad-final.mp4` · `ad-master.mp4/.srt/.txt`.
 **احفظ `caps.json` و`cut.json`** — أي تعديل لاحق ما يحتاج إعادة تفريغ.
+
+## ريل مراجعة المنتج
+- `scripts/review/review.py`: فحص المواد، الصوت، التتبع، فريمات التجربة، الرسم، التسليم، والكفر.
+- `scripts/review/overlay.html` + `render_overlay.js`: طبقة الموشن من `plan.json`.
+- `scripts/review/stage.py` + `cover.html` + `cover_render.js`: كفر المنتج المقصوص.

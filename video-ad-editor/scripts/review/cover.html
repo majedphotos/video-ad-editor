@@ -1,0 +1,16 @@
+<!doctype html><meta charset=utf-8><style>
+*{box-sizing:border-box}html,body{margin:0}
+#p{position:relative;overflow:hidden;background:#070a24}.bg{position:absolute;left:50%;transform:translateX(-50%);height:1920px}
+#fg{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:0 0}
+.it{position:absolute;filter:drop-shadow(0 0 3px rgba(205,225,255,.7)) drop-shadow(0 14px 18px rgba(0,0,0,.5))}
+.sh{position:absolute;left:30px;top:1050px;width:1040px;height:90px;background:radial-gradient(closest-side,rgba(0,0,0,.7),rgba(0,0,0,0))}
+.tab{position:absolute;left:50%;top:262px;transform:translateX(-50%);background:#fff;border-radius:26px;padding:14px 30px;display:flex;align-items:center;gap:26px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.tab img{display:block;height:92px}.tab img+i+img{height:50px}.tab i{width:3px;height:70px;background:#d7d9de}
+.pill{position:absolute;display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;font-family:Lz;direction:rtl}
+.a{left:172px;top:1036px;width:800px;height:214px;transform:rotate(-4deg);border-radius:40px;font-size:96px;padding-top:16px;box-shadow:inset 0 3px 0 rgba(255,255,255,.5),inset 0 -5px 0 rgba(0,0,0,.18),0 12px 22px rgba(0,0,0,.38);text-shadow:0 4px 0 rgba(0,0,0,.28),0 7px 12px rgba(0,0,0,.3)}
+.b{left:66px;top:1252px;width:716px;height:196px;transform:rotate(.8deg);border-radius:36px;background:linear-gradient(95deg,#727276,#48484c 33%,#616166 34%,#505055 60%,#3f3f43 61%,#5c5c60);box-shadow:inset 0 3px 0 rgba(255,255,255,.26),inset 0 -6px 0 rgba(0,0,0,.34),0 12px 22px rgba(0,0,0,.45);font-size:112px;padding-top:18px;text-shadow:0 4px 0 rgba(0,0,0,.5)}
+</style><div id=p><img class=bg id=bg><div id=fg><div class=sh></div><div id=items></div><div class=tab id=tab></div><div class="pill a" id=pa></div><div class="pill b" id=pb></div></div></div>
+<script>window.setup=async c=>{const f=new FontFace('Lz',`url(file://${c.fontdir}/Lalezar-Regular.ttf)`);await f.load();document.fonts.add(f);
+bg.src=c.bg;for(const it of c.items){const i=new Image();i.src=it.src;i.className='it';i.style.cssText=`left:${it.x}px;top:${it.y}px;width:${it.w}px;transform:rotate(${it.rot||0}deg)`;items.append(i)}
+tab.innerHTML=c.logos.map(s=>`<img src="${s}">`).join('<i></i>');if(!c.logos.length)tab.remove();pa.textContent=c.top;pb.textContent=c.bottom;pa.style.background=`linear-gradient(100deg,${c.light},${c.accent})`;
+p.style.width=c.w+'px';p.style.height=c.h+'px';const s=c.s||1;fg.style.transform=`translate(${c.x||0}px,${c.y||0}px) scale(${s})`;bg.style.top=(c.by||0)+'px';await Promise.all([...document.images].map(i=>i.decode()));return 1}</script>

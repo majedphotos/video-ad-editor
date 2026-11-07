@@ -28,10 +28,10 @@ let BG='#F3EFEA',INK='#1F1F1D',ACC='#D97757',CLAY='#BD5D3A',MUT='#8A847A',FONT='
 let CARD_TOP=null, CARD_ZOOM=1;   /* studio.json ← cardTop (23_headcrop.py) · theme.json ← cardZoom */
 let FACE_ANCH=0.30;   /* أين يقع وجه المتحدث داخل كرت الفيديو: 0 = فوق · 1 = تحت (theme.json ← faceAnchor) */
 let GRID=true;        /* شبكة خفيفة بالخلفية (theme.json ← grid:false يوقفها) */
-let CAP_STILL=false;  /* كابشن بلا حركة (theme.json ← capStill:true — ماجد 17 أكتوبر، إعلان فخم): الكرت يدخل ويطلع بالشفافية بس،
+let CAP_STILL=false;  /* كابشن بلا حركة (theme.json ← capStill:true — المستخدم 17 أكتوبر، إعلان فخم): الكرت يدخل ويطلع بالشفافية بس،
                          والكلمة ما تقفز ولا تنبض. تلوين الكلمة المنطوقة والكبسولة يبقى. الافتراضي = الحركة كما هي */
 let BAR=true;         /* شريط التقدّم (theme.json ← bar:false يشيله) */
-let BADGE_UNTIL=0;    /* ⛔ شارة الحساب مطفية (قرار ماجد ٢ سبتمبر): اسمه ظاهر بالمنصة نفسها
+let BADGE_UNTIL=0;    /* ⛔ شارة الحساب مطفية (قرار المستخدم ٢ سبتمبر): اسمه ظاهر بالمنصة نفسها
                          وبكرت النهاية، وفوق الشاشة مساحة للرسم. theme.json ← badgeUntil:3 تعيدها */
 let CAPS=[],VEND=0,OUTRO=0,DUR=0;
 let THEME_RAW=null;
@@ -137,7 +137,7 @@ let BROLL=[];   /* لقطات بي-رول من الاستوديو: {k,s,e,mode:'
    كل مشهد يمرّ عبر safe(): لو سقط يتخطّى ويطبع سطر خطأ (04_render_frames.js يطبعه بالطرفية).
    أمثلة جاهزة للقراءة: scripts/compose.EXAMPLES.js (ما يتحمّل افتراضياً — شوف راس الملف). */
 const SCENE_LIST=[];
-/* 🎬 زوم الهوك (ماجد 27 سبتمبر): theme.json ← hookZoom: <نهاية الهوك بالثواني> (0 = مطفي، الافتراضي)
+/* 🎬 زوم الهوك (المستخدم 27 سبتمبر): theme.json ← hookZoom: <نهاية الهوك بالثواني> (0 = مطفي، الافتراضي)
    أول نص ثانية: دخول ناعم 1.00→1.08 ويثبت · آخر 0.18 ث من الهوك: دخول سريع لـ1.30 · بعد اللحمة: يرجع 1.00 بـ0.3 ث.
    بملء الشاشة بس (يعيد رسم فريم الفيديو مكبّراً حول الوجه) · الووش الخفيف معه: sfx.json ← soft */
 let HOOK_END=0;
@@ -166,7 +166,7 @@ const R_OFF={x:350,y:1920,w:380,h:520,r:32,off:true};
 let SCENES=[{s:0,e:99,m:R_FULL}];   /* الافتراضي: ملء الشاشة طول الفيديو. تخطيط المشاهد يجي من studio.json ← scenes أو تكتبه هني لمشروعك.
                                        (تخطيط المثال القديم صار بـcompose.EXAMPLES.js ← EXAMPLE_LAYOUT) */
 const TR=0.42;
-/* 6.1 (ماجد 20 أكتوبر — «الموشن يخلص مع صوتي ويختفي على طول… أتوقع يكون له شوي حاصل»): الطلعة الهادية 0.4 ث (eio) بدل 0.2.
+/* 6.1 (المستخدم 20 أكتوبر — «الموشن يخلص مع صوتي ويختفي على طول… أتوقع يكون له شوي حاصل»): الطلعة الهادية 0.4 ث (eio) بدل 0.2.
    panelIn: الطلعة تخلص عند e — فحط e = آخر كلمة بجملته + 0.45 (references/motion-rules.md §3)، مو آخر كلمة حاف.
    الملصقات والمشاهد المولّدة (e من البيانات = آخر كلمة): تقعد لين e وتطلع بعده. */
 const HOLD_OUT=0.4;
@@ -209,7 +209,7 @@ function drawVideo(t){
   if(R.r>0.5){sh(70,26,0.26);X.fillStyle='#000';rr(R.x,R.y,R.w,R.h,R.r);X.fill();nsh();}
   rr(R.x,R.y,R.w,R.h,R.r);X.clip();
   if(T.k<1&&T.a!==T.b&&CARD_TOP!=null){
-    /* 🎞️ انتقال ناعم (ماجد 17 أكتوبر: «أصعد وأنزل، المفروض تكون سموذ»): كان kc ينحسب من المستطيل المتحرّك، فالقصّ يقفز لفوق
+    /* 🎞️ انتقال ناعم (المستخدم 17 أكتوبر: «أصعد وأنزل، المفروض تكون سموذ»): كان kc ينحسب من المستطيل المتحرّك، فالقصّ يقفز لفوق
        بأول 300 بكسل من التصغير والكرت بعده ينزل ← الوجه ينزل ويطلع وينزل. الحين مكان الصورة (مقياس + إزاحة) لكل مشهد ثابت،
        ونمزجهم بنفس تسهيل المستطيل ← كل نقطة بالصورة تمشي بخط واحد. الصورة تغطي المستطيل دايماً (كل الحدود خطية بـk). */
     const A=vcrop(T.a,sw,shh), B=vcrop(T.b,sw,shh), sc=lerp(A.sc,B.sc,T.k);
@@ -292,7 +292,7 @@ function layout(ws){X.font='800 '+FS+'px '+FONT;
   for(const i of it){const add=c.length?i.w+GAP:i.w;
     if(cw+add>MAXW&&c.length){L.push({items:c,w:cw});c=[i];cw=i.w;}else{c.push(i);cw+=add;}}
   if(c.length)L.push({items:c,w:cw});return L;}
-/* 🆕 6.0 (ريل بوبيان): «طبقات» أو «ورا الراس» لجزء من الجملة (stack 21:1-3) — بعد ما يخلص كان الكابشن يرجع يكتب
+/* 🆕 6.0 (ريل بنك): «طبقات» أو «ورا الراس» لجزء من الجملة (stack 21:1-3) — بعد ما يخلص كان الكابشن يرجع يكتب
    الجملة كاملة فالمشاهد يقرا نفس الكلام مرتين. الحين الكابشن يكتب بس الكلمات اللي ما طلعت بالتأثير:
    قبل التأثير = الكلمات اللي قبله · بعده = تكملة الجملة (تدخل من نهاية التأثير) · كل الجملة بالتأثير = بلا كابشن.
    لو التأثير ما انرسم (مو ملء الشاشة بوقته، أو مطفي من الاستوديو) الكابشن يبقى كامل. */
@@ -308,7 +308,7 @@ function _capRest(c,t){
   if(!part.length) return null;
   return t<L.s?{...c,w:part,e:Math.min(c.e,L.s)}:{...c,w:part,s:Math.max(c.s,L.e)};
 }
-/* 🆕 6.1 ستايل «chunk» (ريل «1000$ بيوم» — ماجد 20 أكتوبر: «وصل مستوى ثاني»): قطع قصيرة لين 4 كلمات بسطر واحد،
+/* 🆕 6.1 ستايل «chunk» (ريل «1000$ بيوم» — المستخدم 20 أكتوبر: «وصل مستوى ثاني»): قطع قصيرة لين 4 كلمات بسطر واحد،
    كبسولة بلون الخلفية، والكلمة المنطوقة بلون التمييز — بلا قفز ولا تكبير (الكبسولة تطلع وتختفي بالشفافية بس).
    القطعة تنقطع عند: 4 كلمات · سكتة أطول من 0.45 ث · مدة أطول من 2 ث · علامة ترقيم (، . ؟ !) · أو فاصل يدوي:
      window.CHUNK_BREAK={48:[3]}  ← الجملة 48 (من صفر، ترتيب caps.json) تبدأ قطعة جديدة عند كلمتها 3 (من صفر)
@@ -321,7 +321,7 @@ function _chunks(){ const out=[], BR=window.CHUNK_BREAK||{};
       if(cur.length&&((BR[ci]||[]).includes(i)||cur.length>=CHUNK_MAX||gap>0.45||w.e-cur[0].s>2.0)) push();
       cur.push(w); if(/[،.؟!]$/.test(w.t)&&cur.length>=2) push(); });
     push(); });
-  out.forEach((a,i)=>{ const b=out[i+1]; a.end=b?(b.s-a.e<0.8?b.s:a.e+0.45):a.e+0.6; });   /* ماجد 20 أكتوبر: يقعد 0.45 ث لو بعده سكتة */
+  out.forEach((a,i)=>{ const b=out[i+1]; a.end=b?(b.s-a.e<0.8?b.s:a.e+0.45):a.e+0.6; });   /* المستخدم 20 أكتوبر: يقعد 0.45 ث لو بعده سكتة */
   return out; }
 function capChunk(t){
   const ch=_chunks().find(c=>t>=c.s-0.04&&t<c.end); if(!ch) return;
@@ -425,7 +425,7 @@ function caption(t){
       if(cc.length)L2.push({items:cc,w:cw});
       LL=L2; if(LL.length<=MAXLINES||FS2<=58) break; FS2=Math.round(FS2*0.9); }
     const LH2=Math.round(FS2*1.33); const bh2=LL.length*LH2;
-    /* ⛔ قاعدة ماجد (23 سبتمبر): الكابشن ما ينكتب على وجهه أبداً. الستايلات بلا كرت كانت تثبّت عند 1400
+    /* ⛔ قاعدة المستخدم (23 سبتمبر): الكابشن ما ينكتب على وجهه أبداً. الستايلات بلا كرت كانت تثبّت عند 1400
        مهما كان وضع الفيديو، فبوضع الكرت (R_DOWN/R_LOWER) تطيح الكلمات على وجهه. الحين تطلع فوق الكرت. */
     const _Rc=vtarget(t), by2=(_Rc.y>700&&!_Rc.off)?Math.max(200,_Rc.y-46-bh2):(1400-bh2);
     X.save();X.globalAlpha=a;X.translate(540,by2+bh2/2+dy);X.scale(sc,sc);X.translate(-540,-(by2+bh2/2));
@@ -551,7 +551,7 @@ function behindText(t){
   BW.forEach((w,i)=>{
     const k=cl((t-w.s)/0.30,0,1); if(k<=0) return;
     const y=top+i*LH, a=ease(k), sp=_span(y,FS0*0.9);
-    /* 🧵 (17 سبتمبر — ملاحظة ماجد): الحروف ما تروح ورا الراس أبداً؛ الكشيدة وحدها تغطي عرض الراس + هامش،
+    /* 🧵 (17 سبتمبر — ملاحظة المستخدم): الحروف ما تروح ورا الراس أبداً؛ الكشيدة وحدها تغطي عرض الراس + هامش،
        وتطول ببطء وبنعومة (بالبكسل لا بعدد الحروف) طول مدة الجملة. الخط يصغر لو ما كفى العرض. */
     const gap=36, headL=sp?sp.L:440, headR=sp?sp.R:640;
     const grow=ease(cl((t-w.s)/Math.max(0.8,(L.e-L.s)),0,1));           /* تمدد بطيء من 1.0 إلى 1.22 عرض الراس */
@@ -594,7 +594,7 @@ function sh2(b,y,a){X.shadowColor=cINK(a);X.shadowBlur=b;X.shadowOffsetY=y;}
 function _behindLine(t){ if(!BEHIND||!PRS_OK||!Array.isArray(BEHIND.lines)) return null;
   return BEHIND.lines.find(l=>t>=l.s&&t<=l.e&&!BEHIND_OFF.includes(l.card))||null; }
 
-/* ═══ «طبقات» (stack) — 28 سبتمبر 2026، من مرجع ماجد ═══
+/* ═══ «طبقات» (stack) — 28 سبتمبر 2026، من مرجع المستخدم ═══
    الجملة تنقسم وحدها لثلاث طبقات بعمق:
      1) كلمة فوق الراس — ضخمة وممدودة بالكشيدة بعرض الشاشة كامل
      2) كلمة أو ثنتين ورا الراس/الرقبة — الحروف على الجانبين والكشيدة وحدها تمرّ ورا الشخص
@@ -609,7 +609,7 @@ function _behindLine(t){ if(!BEHIND||!PRS_OK||!Array.isArray(BEHIND.lines)) retu
    font:null (= خط الثيم), weight:900, maxBehind:2} — الافتراضي أبيض/أسود محايد، مو هوية أحد. */
 let STK={fill:'#FFFFFF',shade:'#000000',accent:false,font:null,weight:900,maxBehind:2,above:1};
 /* 🆕 6.0 ترتيب الكلمات: theme.json ← stack:{above:2, behind:1} = أول كلمتين فوق الراس (فوق بعض) وكلمة وحدة ورا الراس
-   تبدأ من قمته (الكشيدة بس تمرّ وراه) — مثل «بنك / بوبيان / يشتغل» بريل بوبيان. behind = نفس maxBehind. الافتراضي above:1. */
+   تبدأ من قمته (الكشيدة بس تمرّ وراه) — مثل «بنك / الخليج / يشتغل» بريل بنك. behind = نفس maxBehind. الافتراضي above:1. */
 const _stkB=()=>Math.max(0,(STK.behind!==undefined?+STK.behind:+STK.maxBehind)||0), _stkA=()=>Math.max(1,+STK.above||1);
 const STK_M=44, STK_TOP=170, STK_THR=13;   /* هامش الحواف · أعلى نص (حزام انستقرام فوق) · عتبة قناع الجمع (5٪ من الفريمات) */
 const STK_FBOT=1490, STK_FBOT2=1600;        /* آخر حد للنص القدّامي: فوق حزام الأسفل الحذر (1500) · وبالضيق داخل الحزام (المنطقة الممنوعة من 1620) */
@@ -797,7 +797,7 @@ function _stkLayout(L){ if(L._lay!==undefined) return L._lay;
   lay=_stkRestack(L,lay,P);                                      /* 6.0: above>1 ← كلمات «ورا» الأولى تطلع فوق الراس */
   if(!_stkFontOK()) return lay||null;                            /* الخط ما اكتمل — لا تحفظ، أعد الحساب بالفريم الجاي */
   return (L._lay=lay||null); }
-/* 6.0: above>1 — نفس فكرة لفّة بوبيان (_stkLayout): أول (above-1) من سطور «ورا» تنرفع فوق الراس بعرض الشاشة (فوق بعض)،
+/* 6.0: above>1 — نفس فكرة لفّة البنك (_stkLayout): أول (above-1) من سطور «ورا» تنرفع فوق الراس بعرض الشاشة (فوق بعض)،
    والباقي ورا الراس يبدأ من قمته. يصغّر الكل لين أعلى سطر يدخل تحت حزام انستقرام فوق (STK_TOP). */
 function _stkBest(w,fs){ let G=null,bd=1e9; for(const pt of _pts(w)){ const g=_skGlyph(w,fs,pt); if(!g.stretch) continue; const d=Math.abs(g.rw-g.lw); if(d<bd){bd=d;G=g;} } return G||_skGlyph(w,fs,null); }
 function _stkRestack(L,Y,P){
@@ -945,7 +945,7 @@ function panelIn(t,s,e,fn){ if(t<s+TR-0.1||t>e)return; const k=ease(pr(t,s+TR-0.
 /* ملاحظة: اللوحة تبدأ بعد TR (0.42ث) — تنتظر الفيديو يخلص نزوله حتى ما ترتسم فوق وجهه */
 
 /* ================= SCENE GRAPHICS ================= */
-/* 🎥 حركة الكادر مع مؤثر الكلمة (ملاحظة ماجد 17 سبتمبر): طيحة = دفعة صغيرة لتحت عند الهبوط · اهتزاز/انكسار = رجّة خفيفة */
+/* 🎥 حركة الكادر مع مؤثر الكلمة (ملاحظة المستخدم 17 سبتمبر): طيحة = دفعة صغيرة لتحت عند الهبوط · اهتزاز/انكسار = رجّة خفيفة */
 function _fxWords(t,win){ const out=[]; for(const c of CAPS){ if(t<c.s-0.1||t>c.e+1) continue; for(const w of c.w){ if(w.fx&&t>=w.s&&t<w.s+win) out.push(w); } } return out; }
 function videoShift(t){ let x=0,y=0;
   for(const w of _fxWords(t,0.6)){ const k=(t-w.s);
@@ -967,7 +967,7 @@ function brollClips(t){ for(const b of BROLL){ if(t<b.s||t>=b.e) continue; const
     X.restore(); } }
 /* ================= 🖼️ مشاهد مولّدة (v3.2) =================
    صورة أو مقطع مولّد بالذكاء الاصطناعي (17_gen_scenes.py يجيبها لمجلد gen/) يدخل كمشهد، والمحرّك يرسم فوقه بالكود.
-   الفكرة (ماجد 18 سبتمبر): الصورة تعطي «الجو» اللي الرسم ما يقدر عليه، والرسم فوقها يعطي الحركة والمعلومة.
+   الفكرة (المستخدم 18 سبتمبر): الصورة تعطي «الجو» اللي الرسم ما يقدر عليه، والرسم فوقها يعطي الحركة والمعلومة.
    تُعرَّف بـstudio.json ← gen:[{s,e,k,mode,kb,draw:[...]}]
      s/e   : ثوانٍ، أو "w:كلمة" = لحظة نطق الكلمة (يلتصق بالكلمة لا بتوقيت تقريبي) · "w:كلمة+" = نهاية نطقها
      k     : اسم الأصل: gen/<k>.jpg صورة، أو gen/<k>_0001.jpg… فريمات مقطع (genFrames[k] = عددها)
