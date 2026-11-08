@@ -54,16 +54,24 @@
     });
   };
 
-  /* 3 طلعة متتابعة — الكلمات تطلع من خط مخفي. o: {text, s, x=540, y=880, size=190, stagger=.13, out(time), accent:[i], underline=true} */
+  /* 3 طلعة متتابعة — الكلمات تطلع من خط مخفي تحتها وحدة ورا الثانية، وبالطلعة تختفي بخط فوقها. القناع من قياس الخط نفسه ويروح لما توصل (6.5).
+     o: {text, s, x=540, y=880, size=190, stagger=.13, out(time), accent:[i], underline=true, lineHeight=1.2,
+         blur (تطلع من غباش لوضوح) · bounce (ترتد شوي لما توصل) · shine (لمعة بلون الهوية تعبر كلمة التمييز)} — الإضافات الثلاث اختيارية (مطفية افتراضياً) */
   FX.riseUp = (ctx, t, o) => {
     const { X, P, at } = ctx, size = o.size || 190, st = pick(o, 'stagger', 0.13), x = pick(o, 'x', 540), y = pick(o, 'y', 880);
-    const L = ctx.text.layout(X, o.text, { family: 'display', size, maxWidth: o.maxWidth || 900, lineHeight: 1.05 });
-    ctx.text.drawLayout(X, L, x, y, { perWord: (i) => {
-      const kin = at(t, o.s + i * st, o.s + 0.7 + i * st, 'expoOut'), kout = o.out ? at(t, o.out + i * 0.07, o.out + 0.55 + i * 0.07, 'expoIn') : 0;
-      return { clipUp: 1, dy: (1 - kin) * size * 1.2 - kout * size * 1.2, color: (o.accent || []).includes(i) ? P.acc : (o.color || P.ink) };
+    const L = ctx.text.layout(X, o.text, { family: 'display', size, maxWidth: o.maxWidth || 900, lineHeight: o.lineHeight || 1.2 });
+    ctx.text.drawLayout(X, L, x, y, { perWord: (i, w, box) => {
+      const t0 = o.s + i * st, kin = at(t, t0, t0 + 0.7, o.bounce ? 'backOut' : 'expoOut'), kout = o.out ? at(t, o.out + i * 0.07, o.out + 0.55 + i * 0.07, 'expoIn') : 0;
+      const entering = t < t0 + 0.7, leaving = kout > 0, acc = (o.accent || []).includes(i);
+      let color = acc ? P.acc : (o.color || P.ink);
+      if (o.shine && acc && box) { const s0 = t0 + 0.75, p = (t - s0) / 0.6; if (p > -0.2 && p < 1.2) {   // لمعة تعبر الكلمة من اليمين لليسار (عربي)
+        const g = X.createLinearGradient(box.x + box.w, 0, box.x, 0), c = Math.max(0, Math.min(1, p)), wdt = 0.16;
+        g.addColorStop(0, P.acc); if (c - wdt > 0) g.addColorStop(c - wdt, P.acc); g.addColorStop(c, '#FFF4EA'); if (c + wdt < 1) g.addColorStop(c + wdt, P.acc); g.addColorStop(1, P.acc); color = g; } }
+      return { clipUp: entering ? 'in' : (leaving ? 'out' : null), dy: (1 - kin) * size * 1.2 - kout * size * 1.2, color,
+        blur: o.blur ? (entering ? 14 * (1 - Math.min(1, kin)) : 0) + (leaving ? 10 * kout : 0) : 0 };
     } });
     if (o.underline !== false) { const lw = Math.min(900, L.width) * at(t, o.s + 0.75, o.s + 1.35, 'expoOut') * (1 - (o.out ? at(t, o.out + 0.1, o.out + 0.5, 'expoIn') : 0));
-      X.fillStyle = P.acc; X.fillRect(x - lw / 2, y + L.height - size * 0.55, lw, 10); }
+      X.fillStyle = P.acc; X.fillRect(x - lw / 2, y + L.height - size * 0.55 + size * 0.12, lw, 10); }
   };
 
   /* 4 كلمة تتبدّل — الجملة ثابتة والكلمة تلف بعجلة. o: {lead, words[], s, every=.95, y=800, size=170} */

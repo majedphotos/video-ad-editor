@@ -180,10 +180,17 @@
         if (st.clip || st.reveal != null || st.clipUp != null) {
           X.beginPath();
           if (st.reveal != null) { const rw = (box.w + 20) * clamp(st.reveal); X.rect(box.x + box.w + 10 - rw, box.y - L.size * .3, rw, box.h + L.size * .6); }
-          else if (st.clipUp != null) { const ext = L.size * .75 * Math.max(0, Math.min(1, 1 - (st.dy || 0) / (L.size * .6))); X.rect(box.x - 20, box.y - L.size * .3, box.w + 40, box.h + L.size * .3 + ext); }   // وهي طالعة: القناع على السطر (طلعة نظيفة). لما توصل: ينزل تحت السطر فتكمل ذيول ج ي ع ونقاط الياء بلا حد ينشاف
+          else if (st.clipUp != null) {   /* 🛠️ 6.5 (بلاغ ماجد): القناع من قياس الكلمة الحقيقي (فوق وتحت الحروف + هامش) — داخلة = تطلع من خط مخفي تحتها،
+             طالعة = تختفي بخط مخفي فوقها، واقفة = بلا قناع (النقاط والذيول ج ي ع كاملة). clipUp:'in'|'out' — أو رقم (قديم): الاتجاه من dy */
+          const ph = (st.clipUp === 'in' || st.clipUp === 'out') ? st.clipUp : ((st.dy || 0) > 0.5 ? 'in' : (st.dy || 0) < -0.5 ? 'out' : null);
+          if (ph) { const mm = X.measureText(w.text), pad = L.size * 0.14, asc = (mm.actualBoundingBoxAscent || L.size * 0.95) + pad, des = (mm.actualBoundingBoxDescent || L.size * 0.4) + pad, hx = L.size * 0.5;
+            if (ph === 'in') X.rect(box.x - hx, box.base - asc - L.size * 3, box.w + hx * 2, asc + des + L.size * 3);
+            else X.rect(box.x - hx, box.base - asc, box.w + hx * 2, asc + des + L.size * 3); }
+          else X.rect(-1e4, -1e4, 2e4, 2e4); }
           else X.rect(st.clip.x, st.clip.y, st.clip.w, st.clip.h);
           X.clip();
         }
+        if (st.blur > 0.3) X.filter = 'blur(' + (+st.blur).toFixed(1) + 'px)';
         X.translate(box.cx + (st.dx || 0), box.cy + (st.dy || 0)); if (st.rot) X.rotate(st.rot); if (st.scale != null) X.scale(st.scale, st.scaleY ?? st.scale);
         X.translate(-box.cx, -box.cy);
         if (st.shadow) { X.shadowColor = st.shadow.color || 'rgba(0,0,0,.3)'; X.shadowBlur = st.shadow.blur || 20; X.shadowOffsetY = st.shadow.y || 8; }
