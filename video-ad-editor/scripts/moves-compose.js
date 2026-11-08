@@ -27,6 +27,7 @@
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
      MV.cue(k, t, o?)       🔊 صوت مربوط بالحركة (6.5) — 04_render_frames.js cues ← cues.json ← 05_sfx.py
+     MV.findWord(key, from) أول نطق لكلمة (6.5 — 101 قائمة تنكشف) · MV.json(name) ملف json من مجلد الشغل
      MV.ready(fn)           يشغّل fn بعد init (لما caps.json يوصل) — أي wordTime/lineSpan/hideCaption برّا الرسم يكون داخله
    أدوات النص والتوقيت أدناه منقولة من motion/engine.js (نفس السلوك) — أي تعديل هناك انقله هني. */
 (function () {
@@ -306,12 +307,12 @@
   /* خط إضافي بالطلب (74 آية بسكينة: 'Amiri Quran'): MV.needFont(fam) يرجّع true لو جاهز، وإلا يبدأ التحميل من مجلد الشغل
      (04_render_frames.js و08_safe_check.js ينسخون AmiriQuran-Regular.ttf من motion/fonts لما compose.html فيه ayahCalm) ويرجّع false —
      الحركة تتخطى الرسم، وsettle() تنتظر الخط وتعيد الفريم. */
-  const FONTREQ = { 'Amiri Quran': 'AmiriQuran-Regular.ttf' }, FONTS = new Map();
+  const FONTREQ = { 'Amiri Quran': 'AmiriQuran-Regular.ttf', 'Aref Ruqaa': [['ArefRuqaa-Bold.ttf', '700'], ['ArefRuqaa-Regular.ttf', '400']] }, FONTS = new Map();
   function needFont(fam) {
     let h = FONTS.get(fam); if (h) return h.ok;
     h = { ok: false, bad: false }; FONTS.set(fam, h);
     try { if ([...document.fonts].some(f => f.family.replace(/["']/g, '') === fam && f.status === 'loaded')) { h.ok = true; h.p = Promise.resolve(); return true; } } catch (e) {}
-    const files = FONTREQ[fam] ? [[FONTREQ[fam], '400']] : ((G.STYLES && G.STYLES.FONT_FILES[fam]) || []);
+    const files = FONTREQ[fam] ? (Array.isArray(FONTREQ[fam]) ? FONTREQ[fam] : [[FONTREQ[fam], '400']]) : ((G.STYLES && G.STYLES.FONT_FILES[fam]) || []);
     if (!files.length) { h.bad = true; h.p = Promise.resolve(); return false; }
     h.p = Promise.all(files.map(([file, weight]) => new FontFace(fam, 'url("' + file + '")', { weight, style: 'normal' }).load().then(f => document.fonts.add(f))))
       .then(() => { h.ok = true; }, () => { h.bad = true; console.error('⚠️ MV.needFont: ما لقيت ' + files.map(x => x[0]).join(' ') + ' بمجلد الشغل (انسخه من motion/fonts)'); });
@@ -362,6 +363,16 @@
      و05_sfx.py يخلطها تحت صوتك. الأنواع: tick hit impact air swish whip pen paper pop ding clink (references/depth.md §7). */
   const CUES = G.__CUES || (G.__CUES = {});
   function cue(k, t, o) { o = o || {}; const id = o.id || (k + '@' + (+t).toFixed(2)); if (!CUES[id]) CUES[id] = { k, t: +(+t).toFixed(3), d: o.d == null ? null : +o.d, g: o.g == null ? null : +o.g }; }
+  /* 🆕 6.5 (101 قائمة تنكشف): MV.findWord(key, from) = أول نطق لكلمة بعد ثانية from (بلا تشكيل ولا كشيدة، والواو/ال قبلها عادي) أو null ·
+     MV.json(name) = ملف json من مجلد الشغل (البنود وكلماتها) */
+  const NRM = s => String(s || '').replace(/[\u064B-\u0652\u0640\u2066-\u2069]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+  function findWord(key, from) { const k = NRM(key); if (!k || typeof CAPS === 'undefined') return null;
+    let best = null; for (const c of CAPS) for (const w of (c.w || [])) { if (w.s < (from || 0)) continue; const n = NRM(w.t); if ((n === k || n.includes(k)) && (best == null || w.s < best)) best = w.s; }
+    return best; }
+  const JS = {};
+  function json(name) { if (name in JS) return JS[name]; let d = null;
+    try { const x = new XMLHttpRequest(); x.open('GET', name, false); x.send(); if (x.status === 200 || (x.status === 0 && x.responseText)) d = JSON.parse(x.responseText); } catch (e) { console.error('⚠️ MV.json: ما انقرى ' + name + ' — ' + e.message); }
+    return (JS[name] = d); }
   function scene(name, fn, layer) { if (typeof SCENE_LIST === 'undefined') throw new Error('MV.scene: هالصفحة مو compose'); if (layer) fn.layer = layer; SCENE_LIST.push([name, fn, layer]); }
 
   const MV = {
@@ -376,7 +387,7 @@
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
     frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env, overlay,
-    useStyle, get S() { return STY; }, cue,
+    useStyle, get S() { return STY; }, cue, findWord, json,
   };
   G.MV = MV;
 })();

@@ -2241,5 +2241,75 @@
     if (useP) o.person(X);
   };
 
+  /* 101 قائمة تنكشف (6.5 — طلب ماجد) — كرت أبيض بإطار مرسوم باليد تحت الوجه وفوق منطقة الكابشن: عنوان بخط يدوي (رقعة) وتحته خط،
+     وتحته 3–5 بنود مبكسلة (مربعات). لما تنطق كلمة البند: البكسلة تروح عنه وينمسح وراه شريط هايلايت بلون الهوية (P.acc من الثيم)،
+     والبنود اللي قبله تبقى مكشوفة والهايلايت ينتقل للجديد. الكشف بأي ترتيب: كل بند على أول نطق لكلمته (توقيت الكلمات).
+     o: {title, items:[{text, key, at}], s, out, y=900 (أعلى الكرت), w=880, size=56, titleSize=78, pixel=size×0.36, ink='#141414', paper='#FFFFFF'}
+     at لكل بند (ثانية) — وإلا key: أول نطق للكلمة من o.s (ctx.findWord — بريل الكلام MV.findWord). البنود بملف json: MV.json('pixel_list.json'). */
+  const PXC = {};
+  const pxCan = k => { let c = PXC[k]; if (!c) { c = PXC[k] = document.createElement('canvas'); } return c; };
+  FX.pixelList = (ctx, t, o) => {
+    const { X, P, at } = ctx; if (t < o.s - 0.05) return;
+    const ko = o.out != null ? at(t, o.out, o.out + 0.35, 'cubicIn') : 0; if (ko >= 1) return;
+    const items = (o.items || []).slice(0, 6), size = o.size || 56, ts = o.titleSize || 78, w = o.w || 880, x0 = 540 - w / 2, x1 = 540 + w / 2;
+    const rowH = Math.round(size * 1.55), head = Math.round(ts * 1.55), h = 46 + head + 18 + rowH * items.length + 30;
+    const y0 = Math.min(pick(o, 'y', 900), 1480 - h), ink = o.ink || '#141414', paper = o.paper || '#FFFFFF', acc = o.color || P.acc;
+    const kin = at(t, o.s, o.s + 0.38, 'backOut'), alpha = cl(at(t, o.s, o.s + 0.18)) * (1 - ko);
+    if (alpha <= 0.003) return;
+    /* وقت كشف كل بند: at أو أول نطق لكلمته (بأي ترتيب) */
+    if (!o._T) o._T = items.map(it => it.at != null ? +it.at : (ctx.findWord && it.key ? ctx.findWord(it.key, o.s - 0.3) : null));
+    const T = o._T, rev = T.map(v => v != null && t >= v), last = T.reduce((m, v, i) => (v != null && t >= v && (m < 0 || v >= T[m]) ? i : m), -1);
+    const jit = (i, k) => (ctx.hash01(i * 7 + 3, k) - 0.5) * 2;                      // رجفة ثابتة (مو كل فريم — ما تتعب العين)
+    const rough = (Y, ax, ay, bx, by, seed) => { const n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / 26));
+      for (let i = 1; i <= n; i++) { const u = i / n; Y.lineTo(ax + (bx - ax) * u + jit(seed, i) * 1.6, ay + (by - ay) * u + jit(seed + 1, i) * 1.6); } };
+    X.save(); X.globalAlpha *= alpha;
+    const sc = 0.9 + 0.1 * kin, rot = (-2.2 + 1.4 * kin) * Math.PI / 180, cy = y0 + h / 2;
+    X.translate(540, cy); X.rotate(rot); X.scale(sc, sc); X.translate(-540, -cy);
+    /* الكرت: أبيض بظل، وإطار أسود مرسوم باليد (خطين خفيفين متراكبين) */
+    X.save(); X.shadowColor = 'rgba(0,0,0,0.28)'; X.shadowBlur = 30; X.shadowOffsetY = 10; X.fillStyle = paper;
+    X.beginPath(); X.moveTo(x0, y0); rough(X, x0, y0, x1, y0, 1); rough(X, x1, y0, x1, y0 + h, 2); rough(X, x1, y0 + h, x0, y0 + h, 3); rough(X, x0, y0 + h, x0, y0, 4); X.closePath(); X.fill(); X.restore();
+    X.save(); X.strokeStyle = ink; X.lineJoin = 'round'; X.lineCap = 'round';
+    [[4.2, 0, 11], [1.6, 2.4, 21]].forEach(([lw, off, sd]) => { X.lineWidth = lw; X.beginPath(); X.moveTo(x0 - off, y0 + off);
+      rough(X, x0 - off, y0 + off, x1 + off, y0 - off, sd); rough(X, x1 + off, y0 - off, x1 - off, y0 + h + off, sd + 1); rough(X, x1 - off, y0 + h + off, x0 + off, y0 + h - off, sd + 2); rough(X, x0 + off, y0 + h - off, x0 - off, y0 + off, sd + 3); X.stroke(); });
+    X.restore();
+    /* العنوان بخط يدوي (رقعة لو محمّل) وتحته خط يرتسم */
+    const ruq = ctx.needFont ? ctx.needFont('Aref Ruqaa') : hasFace('Aref Ruqaa');
+    const tf = ruq ? `700 ${ts}px "Aref Ruqaa"` : ctx.font('display', 800, ts * 0.9);
+    X.save(); X.font = tf; X.fillStyle = ink; X.textAlign = 'center'; X.textBaseline = 'alphabetic'; X.direction = 'rtl';
+    const ty = y0 + 46 + ts * 0.95, tw = Math.min(w - 120, X.measureText(o.title || '').width); X.fillText(o.title || '', 540, ty); X.restore();
+    const ku = at(t, o.s + 0.18, o.s + 0.62, 'cubicOut'); if (ku > 0) {
+      X.save(); X.strokeStyle = ink; X.lineWidth = 4.5; X.lineCap = 'round'; X.beginPath(); const ux0 = 540 + tw / 2 + 14, ux1 = 540 - tw / 2 - 14, uy = ty + ts * 0.32;
+      X.moveTo(ux0, uy); const n = 18; for (let i = 1; i <= n * ku; i++) { const u = i / n; X.lineTo(ux0 + (ux1 - ux0) * u, uy + Math.sin(u * 9.4 + 0.6) * 3.2 + jit(31, i) * 1.2); } X.stroke(); X.restore(); }
+    /* البنود */
+    const bf = ctx.font('body', 700, size), xr = x1 - 92;
+    items.forEach((it, i) => {
+      const ry = y0 + 46 + head + 18 + rowH * i + rowH / 2, tR = T[i];
+      const kr = tR == null ? 0 : at(t, tR, tR + 0.34, 'cubicOut');                    // البكسلة تروح
+      const kh = tR == null ? 0 : at(t, tR + 0.06, tR + 0.42, 'cubicInOut') * (i === last ? 1 : 1 - at(t, T[last], T[last] + 0.3)); // الهايلايت ينتقل للجديد
+      const kin2 = at(t, o.s + 0.25 + i * 0.07, o.s + 0.55 + i * 0.07, 'cubicOut'); if (kin2 <= 0) return;
+      X.save(); X.globalAlpha *= kin2; X.font = bf; const tw2 = Math.min(w - 170, X.measureText(it.text).width);
+      /* الدائرة جنب البند (مرسومة باليد) — تتعبّى لما ينكشف */
+      X.strokeStyle = ink; X.lineWidth = 3; X.beginPath(); for (let a = 0; a <= 6.4; a += 0.4) { const r = 13 + jit(40 + i, a * 10) * 1.3, px = x1 - 50 + Math.cos(a) * r, py = ry + Math.sin(a) * r; a ? X.lineTo(px, py) : X.moveTo(px, py); } X.stroke();
+      if (kr > 0) { X.fillStyle = acc; X.beginPath(); X.arc(x1 - 50, ry, 9 * kr, 0, 6.2832); X.fill(); }
+      /* شريط الهايلايت: ينمسح من اليمين (عربي) ورا الكلمة، بحواف قلم تحديد */
+      if (kh > 0) { const hw = (tw2 + 26) * Math.min(1, kh * 1.0001), hy = ry - size * 0.12, hh = size * 0.72;
+        X.save(); X.globalAlpha *= 0.55 * Math.min(1, kh * 3); X.fillStyle = acc; X.beginPath(); X.moveTo(xr + 13, hy - hh / 2 + jit(50 + i, 1) * 2);
+        X.lineTo(xr + 13 - hw, hy - hh / 2 + jit(50 + i, 2) * 3); X.lineTo(xr + 13 - hw - 6, hy + hh / 2 + jit(50 + i, 3) * 3); X.lineTo(xr + 13 + 4, hy + hh / 2 + jit(50 + i, 4) * 2); X.closePath(); X.fill(); X.restore(); }
+      /* الكلام: مبكسل (مربعات) لين ينقال، ثم تذوب البكسلة لوضوح */
+      const cw = Math.ceil(tw2 + 30), ch = Math.ceil(size * 1.6), c = pxCan('a'), yy = c.getContext('2d');
+      const px = Math.max(1, (o.pixel || Math.round(size * 0.36)) * (1 - kr));
+      c.width = cw; c.height = ch; yy.font = bf; yy.fillStyle = ink; yy.textAlign = 'right'; yy.textBaseline = 'middle'; yy.direction = 'rtl';
+      if (px > 1.4) { yy.filter = 'blur(' + (px * 0.28).toFixed(1) + 'px)'; yy.strokeStyle = ink; yy.lineWidth = size * 0.12; yy.strokeText(it.text, cw - 15, ch / 2); }   // الحبر ينتشر قبل البكسلة = مربعات رمادية متصلة (كلام مخفي) مو نقاط متفرقة
+      yy.fillText(it.text, cw - 15, ch / 2); yy.filter = 'none';
+      if (px > 1.4) { const c2 = pxCan('b'), y2 = c2.getContext('2d'); c2.width = Math.max(1, Math.ceil(cw / px)); c2.height = Math.max(1, Math.ceil(ch / px));
+        y2.imageSmoothingEnabled = true; y2.clearRect(0, 0, c2.width, c2.height); y2.drawImage(c, 0, 0, c2.width, c2.height);
+        X.imageSmoothingEnabled = false; X.drawImage(c2, xr - cw + 15, ry - ch / 2, cw, ch); X.imageSmoothingEnabled = true; }
+      else X.drawImage(c, xr - cw + 15, ry - ch / 2);
+      X.restore();
+      if (ctx.cue && tR != null) { ctx.cue('pen', tR + 0.06, { d: 0.36, id: 'pl' + i + '@' + tR, g: 0.03 }); ctx.cue('tick', tR, { id: 'plt' + i + '@' + tR, g: 0.04 }); }
+    });
+    X.restore();
+  };
+
   G.FX = FX;
 })();

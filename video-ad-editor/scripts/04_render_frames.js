@@ -47,6 +47,8 @@ function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
   for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); }
   /* 74 آية بسكينة: الخط العثماني يتحمّل من مجلد الشغل (MV.needFont) */
   const QF=path.join(__dirname,'..','motion','fonts','AmiriQuran-Regular.ttf'); if(h.includes('ayahCalm')&&!fs.existsSync(W+'AmiriQuran-Regular.ttf')&&fs.existsSync(QF)){ fs.copyFileSync(QF,W+'AmiriQuran-Regular.ttf'); console.log('🎞️ نسخت خط Amiri Quran لمجلد الشغل'); }
+  /* 101 قائمة تنكشف: عنوانها بخط الرقعة (Aref Ruqaa) من مجلد الشغل */
+  if(fs.readdirSync(W).some(f=>/\.(html|js)$/.test(f)&&!/^moves/.test(f)&&fs.readFileSync(W+f,'utf8').includes('pixelList'))){ for(const f of ['ArefRuqaa-Bold.ttf','ArefRuqaa-Regular.ttf']){ const src=path.join(__dirname,'..','motion','fonts',f); if(!fs.existsSync(W+f)&&fs.existsSync(src)) fs.copyFileSync(src,W+f); } }
   /* 🎨 بنك الستايلات: MV.useStyle يحمّل خطوط الستايل من مجلد الشغل */
   if(h.includes('useStyle')){ const FD=path.join(__dirname,'..','motion','fonts'); for(const f of fs.readdirSync(FD).filter(f=>/\.ttf$/.test(f)&&!/Quran/.test(f))) if(!fs.existsSync(W+f)) fs.copyFileSync(path.join(FD,f),W+f); } }
 async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV&&window.STYLES))) return;
