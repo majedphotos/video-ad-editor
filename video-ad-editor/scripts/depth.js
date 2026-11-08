@@ -65,6 +65,7 @@
   const vis = (o, t) => o.a != null ? o.a : (pr(t, o.t, o.t + (o.inD || 0.10)) * (1 - eio(pr(t, o.e - (o.outD || 0.24), o.e))));
   const val = (v, t, d) => typeof v === 'function' ? v(t) : (v == null ? d : v);   // x/y/light/glowAmt تقبل رقم أو دالة بالوقت (القياس وقت الرسم بعد ما يتحمّل الخط)
   function drawWord(Y, o, t) {
+    if (o.draw === false) return;   // draw:false = ضوء الكلمة بس (والكلمة نفسها ترسمها حركة من البنك)
     const v = vis(o, t); if (v <= 0) return;
     const k = eo(pr(t, o.t, o.t + (o.popD || 0.2))), out = eio(pr(t, o.e - (o.outD || 0.24), o.e));
     let sc = 1, dy = 0, dx = 0;
