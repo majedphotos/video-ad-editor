@@ -40,21 +40,18 @@
 | `33_thumb.py` | ثمبنيل يوتيوب 16:9 بثلاث أفكار (وجه كبير + هوك ≥120 بكسل + تحت يمين فاضي) → 3840×2160 و1280×720 + `thumbs_sheet.jpg` | الكفر |
 | `34_phone_preview.py` | معاينة الكفر/الثمبنيل بحجمه الحقيقي بالجوال (تبويب الريلز · البروفايل · من بعيد · يوتيوب) | الكفر |
 | `40_capcut.py` | مونتاج داخل كاب كت: خطة من التفريغ ← موشن ProRes شفاف + مؤثرات ← يكتب مشروع كاب كت قابل للتعديل (`projects` · `skeleton` · `check` · `stills` · `render` · `sfx` · `write` · `all`) | كاب كت |
-| `41_review.py` + `review.TEMPLATE.html` | صفحة مراجعة الحلقة: كل الريلات والكاروسيل بصفحة وحدة (ملاحظة · اعتمد · تحميل) تنتشر خاصة على claude.ai — `references/review-page.md` | بودكاست |
+| `41_review.py` + `review.TEMPLATE.html` | صفحة مراجعة الحلقة: كل الريلات والكاروسيل بصفحة وحدة (ملاحظة · اعتمد · تحميل) تنتشر خاصة على claude.ai — `references/review-page.md` · 🆕 6.5 الملاحظة بوقتها على الفريم · `taste show/add/drop` = ملف الذوق | بودكاست |
 | `29_handtrack.py` + `handpose.swift` | تتبّع الكف (Vision) → `palm.js` منعّم: عنصر يمشي مع الإيد | مشترك (ماك) |
 | `36_facetrack.py` + `facetrack.swift` | تتبّع الوجه (Vision) → `face.js` منعّم: `MV.faceAt(t)` لحركات المعرض 85 و86 (`references/moves.md` 3د) | مشترك (ماك) |
 | `37_env.py` | علو صوته لكل فريم ← `env.js` (`window.ENV`): `MV.env(t)` لموجة/نبض يتحرك مع كلامه الحقيقي (`references/moves.md` 3و) | مشترك |
 | `22b_hook_center.py` | مركز زوم الهوك = وجهه → `theme.hookCenter` | الخفيف (ماك) |
 | `30_demo.js` | ديمو سينمائي: تسجيل شاشة/لقطات موقع داخل إطار جوال/متصفح + زوم على نقطة + ميلان 3D + علامة ضغط + عنوان | مشترك |
 | `31_device3d.js` + `motion/device3d.html` | آيفون/ماك بوك ثلاثي الأبعاد حقيقي (three.js، معدن وزجاج وظل) بنفس `demo.json` | مشترك |
-| `_onsets.py` | 🆕 6.5 توقيت الكلمة على موجة الصوت: بداية كل كلمة على أول ارتفاع (يناديه `02_captions.py` — `--no-snap` يوقفه) | مشترك |
-| `42_storyboard.py` | 🆕 6.5 ستوري بورد: لقطة لكل سطر قبل الرسم الكامل ← `storyboard_N.jpg` + صفحة تمام/ملاحظة | الخفيف |
-| `43_textbox.py` + `textfind.swift` | 🆕 6.5 مربع بالضبط على المعلومة: يقرأ الكتابة على المنتج بكل فريم (Vision) ويلحقها ← `tb.js` (`TB.at`) + `tb_<اسم>.jpg` | الخفيف (ماك) |
+| `43_textbox.py` | 🆕 6.5 مربع بالضبط على المعلومة: يقرأ الكتابة على المنتج بكل فريم (Vision) ويلحقها ← `tb.js` (`TB.at`) + `tb_<اسم>.jpg` | الخفيف (ماك) |
 | `44_matte.py` | 🆕 6.5 قصّ الشخص ببيريف نت (حواف شعر ناعمة) + تنظيف لون الغرفة من الأطراف + لون الغرفة ← `depth.json` (يناديه `11_behind_text.js` — `MATTE=apple` للماك) | مشترك |
-| `45_taste.py` | 🆕 6.5 ملف الذوق: الملاحظات اللي نجحت قواعد دايمة (`show` أول كل شغل · `add` · `drop`) | مشترك |
 | `depth.js` | 🆕 6.5 العمق: الغرفة ← كلام ورا ← الشخص ← كلام قدام + كاميرا بين الطبقات + كلمة مضيئة تنوّر + لون الغرفة + `DEPTH.box` — `references/depth.md` | الخفيف |
-| `sfx/bank.npz` | 🆕 6.5 بنك 46 مؤثر CC0 (tick hit impact air swish paper pop ding clink) — `05_sfx.py` + `MV.cue` + `04_render_frames.js cues` — `references/sfx.md` | مشترك |
-| `32_midframes.py` | فحص قبل التصدير: لقطة من نص كل مشهد → أوراق `mid_N.jpg` | الخفيف |
+| `sfx/bank.npz` | 🆕 6.5 بنك 46 مؤثر CC0 (tick hit impact air swish paper pop ding clink) — `05_sfx.py` + `MV.cue` + `04_render_frames.js cues` — `references/depth.md` §7 | مشترك |
+| `32_midframes.py` | فحص قبل التصدير: لقطة من نص كل مشهد → أوراق `mid_N.jpg` · 🆕 6.5 `--story`: ستوري بورد لقطة لكل سطر قبل الرسم الكامل | الخفيف |
 | `25_scopes.py` | فحص الإضاءة والألوان → `scopes.json` + تصحيح مقاس (`grade:"auto"` بموافقته) | مشترك |
 | `26_find_shots.py` | البحث بالمعنى داخل المقاطع (SigLIP2) — `references/find-shots.md` | مشترك |
 | `compose.REFERENCE.html` | المحرّك: الفيديو · الكابشن · ورا الراس · بي-رول · مولّد · ملصقات · كرت النهاية | الخفيف |

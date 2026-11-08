@@ -342,7 +342,7 @@ python3 scripts/29_handtrack.py <work> <من> <إلى>
 ### 8) المؤثرات الصوتية
 
 **🆕 6.5:** بنك 46 صوت حقيقي (CC0) بتسع أنواع + قلم وسوط مولّدين، وكل صوت مربوط بحركة على الشاشة (`MV.cue`)،
-وتحت صوته تلقائياً ← `references/sfx.md`:
+وتحت صوته تلقائياً ← `references/depth.md` §7:
 ```bash
 node scripts/04_render_frames.js <work> cues     # يجمع أصوات الحركات ← cues.json
 ```
@@ -434,9 +434,9 @@ python3 scripts/09_srt.py <work> ad-master
 
 **🆕 6.5 ستوري بورد — قبل الرسم الكامل، إلزامي:** صورة لكل سطر من كلامه بشكله النهائي، يعتمدها قبل 1000 فريم:
 ```bash
-python3 scripts/42_storyboard.py <work>            # ← storyboard_1.jpg … + storyboard/index.html (تمام/ملاحظة لكل سطر)
+python3 scripts/32_midframes.py <work> --story     # ← storyboard_1.jpg … + storyboard/index.html (تمام/ملاحظة لكل سطر)
 ```
-أرسل الأوراق واسأل سؤال واحد: «تمام نرسم؟ ولا فيه سطر تبي يتغيّر؟». صلّح السطر وأعد `--lines <رقمه>` بس.
+أرسل الأوراق واسأل سؤال واحد: «تمام نرسم؟ ولا فيه سطر تبي يتغيّر؟». صلّح السطر وأعد `--story --lines <رقمه>` بس.
 
 **قبل الرسم الكامل** — لقطة من **نص كل مشهد** (مو 6 عشوائية):
 
