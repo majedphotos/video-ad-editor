@@ -93,7 +93,7 @@
     const L = [];
     for (const o of WORDS) { if (!o.glow || t < o.t || t > o.e) continue; const a = vis(o, t) * cl(val(o.light, t, 1)); if (a <= 0.01) continue;
       const Lt = sh ? T(sh, t, DF[o.at] || 1) : { s: 1, x: 0, y: 0, fx: 0, fy: 0 }, p = mapPt(Lt, val(o.x, t, 540), val(o.y, t, 400));
-      L.push({ x: p[0], y: p[1], c: o.glow, a, r: o.lightR || 1100 }); }
+      L.push({ x: p[0], y: p[1], c: o.glow, a, r: o.lightR || 1100, back: o.at === 'back' }); }
     return L;
   }
   function lightRoom(Y, L) {   // الضوء على الجدار والمكان ورا (قبل ما ترسم أنت)
@@ -104,16 +104,19 @@
   }
   function lightPerson(Y, L, drawP, pc) {   // على وجهك وجسمك: لون الكلمة ينقص بشكلك + حافة مضيئة من جهتها
     if (!L.length) return;
+    /* ⛔ ماجد 8 نوفمبر: الكلمة ورا راسك = الضوء من وراك — يطلع حافة على شعرك وكتوفك وعلى الجدار بس، مو لون على وجهك.
+       الإضاءة على الوجه (من قدام) للكلمة القدّامية بس. */
+    const F = L.filter(l => !l.back);
     const [c1, y1] = CV('lp');
-    for (const l of L) { const g = y1.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r); g.addColorStop(0, rgba(l.c, 0.95 * l.a)); g.addColorStop(0.5, rgba(l.c, 0.45 * l.a)); g.addColorStop(1, rgba(l.c, 0));
+    for (const l of F) { const g = y1.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r); g.addColorStop(0, rgba(l.c, 0.95 * l.a)); g.addColorStop(0.5, rgba(l.c, 0.45 * l.a)); g.addColorStop(1, rgba(l.c, 0));
       y1.fillStyle = g; y1.fillRect(0, 0, W, H); }
-    y1.globalCompositeOperation = 'destination-in'; drawP(y1);
-    Y.save(); Y.globalCompositeOperation = 'soft-light'; Y.drawImage(c1, 0, 0); Y.globalCompositeOperation = 'screen'; Y.globalAlpha = 0.42; Y.drawImage(c1, 0, 0); Y.restore();
+    if (F.length) { y1.globalCompositeOperation = 'destination-in'; drawP(y1);
+      Y.save(); Y.globalCompositeOperation = 'soft-light'; Y.drawImage(c1, 0, 0); Y.globalCompositeOperation = 'screen'; Y.globalAlpha = 0.42; Y.drawImage(c1, 0, 0); Y.restore(); }
     for (const l of L) {   // الحافة: شكلك ناقص نسخة منه مزاحة بعيد عن الضوء = شريط بالجهة اللي تواجه الكلمة
       const [c2, y2] = CV('rim'); const dx = l.x - pc[0], dy = l.y - pc[1], n = Math.hypot(dx, dy) || 1;
       drawP(y2); y2.globalCompositeOperation = 'destination-out'; y2.filter = 'blur(4px)'; y2.translate(-dx / n * 10, -dy / n * 10); drawP(y2);
       y2.setTransform(1, 0, 0, 1, 0, 0); y2.filter = 'none'; y2.globalCompositeOperation = 'source-in'; y2.fillStyle = rgba(l.c, 1); y2.fillRect(0, 0, W, H);
-      Y.save(); Y.globalCompositeOperation = 'lighter'; Y.globalAlpha = 0.32 * l.a; Y.drawImage(c2, 0, 0); Y.restore();
+      Y.save(); Y.globalCompositeOperation = 'lighter'; Y.globalAlpha = (l.back ? 0.5 : 0.32) * l.a; Y.drawImage(c2, 0, 0); Y.restore();   // من ورا: الحافة هي الأثر الوحيد — أقوى شوي
     }
   }
   /* ── لون الغرفة ── */
