@@ -65,7 +65,7 @@ for k, i in enumerate(ids):
     F = estimate_foreground_ml(im, a.astype(np.float64)) if estimate_foreground_ml else im
     Image.fromarray((a * 255).clip(0, 255).astype(np.uint8)).save(os.path.join(MASK, i + ".png"))
     rgba = np.dstack([(F * 255).clip(0, 255), a[..., None] * 255]).astype(np.uint8)
-    Image.fromarray(rgba, "RGBA").save(os.path.join(PERS, i + ".png"))
+    Image.fromarray(rgba).save(os.path.join(PERS, i + ".png"))
     if k % 10 == 0:   # 4) لون الغرفة حولك (حلقة برّا حدودك) — للخلفية الجديدة: لون قريب منه ما يطلّع هالة (ملاحظة ماجد)
         sm = a[::4, ::4]; out = sm < 0.02
         from numpy.lib.stride_tricks import sliding_window_view as _sw
