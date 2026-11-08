@@ -1,7 +1,7 @@
 #!/bin/bash
 # فحص وتجهيز الأدوات.  ./00_setup.sh          → يفحص ويقول وش ناقص
 #                      ./00_setup.sh --install → ينزّل الناقص (بعد إذن المستخدم)
-#                      ./00_setup.sh --extras  → الإضافات الاختيارية: تنظيف صوت ذكي · نبض · بحث بالمعنى
+#                      ./00_setup.sh --extras  → الإضافات الاختيارية: تنظيف صوت ذكي · نبض · بحث بالمعنى · قصّ الشعر الناعم (بيريف نت)
 # ✏️ معدّل ليشتغل على ويندوز وماك ولينكس. الأصل الماكي محفوظ بـ00_setup.sh.mac-orig
 . "$(dirname "$0")/_compat.sh"
 INSTALL=0; [ "$1" = "--install" ] && INSTALL=1
@@ -64,6 +64,7 @@ extras_status(){
   local e=()
   { [ -x "$SKILL/bin/deep-filter" ] || [ -x "$SKILL/bin/deep-filter.exe" ] || have deep-filter; } && e+=("تنظيف-الصوت✅") || e+=("تنظيف-الصوت—")
   "$PY" -c "import transformers,PIL" 2>/dev/null && e+=("البحث-بالمعنى✅") || e+=("البحث-بالمعنى—")
+  "$PY" -c "import rembg,pymatting" 2>/dev/null && e+=("قص-الشعر-الناعم✅") || e+=("قص-الشعر-الناعم—")
   echo "${e[*]}"
 }
 if [ "$1" = "--extras" ]; then
@@ -88,6 +89,8 @@ if [ "$1" = "--extras" ]; then
   fi
   "$PY" -c "import torch" 2>/dev/null || { line "⏬ torch (أساس الموديلات)…"; pipx2 torch; }
   "$PY" -c "import transformers,PIL" 2>/dev/null || { line "⏬ البحث بالمعنى (transformers — الموديل ~1.5 قيقا ينزل أول بحث)…"; pipx2 "transformers>=4.49" pillow sentencepiece protobuf || line "   ⚠️ فشل"; }
+  # 🆕 6.5 قصّ الشخص بحواف شعر ناعمة (44_matte.py — بيريف نت، الموديل ~970 ميقا ينزل أول قصّ)
+  "$PY" -c "import rembg,pymatting" 2>/dev/null || { line "⏬ قصّ الشعر الناعم (rembg + onnxruntime + pymatting)…"; pipx2 rembg onnxruntime pymatting || line "   ⚠️ فشل — يبقى قصّ الماك"; }
   line "الإضافات: $(extras_status)"
   exit 0
 fi
