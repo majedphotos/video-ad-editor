@@ -58,6 +58,15 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid va
 .st.done{background:var(--okbg); color:var(--ok)}
 .reqs .txt{white-space:pre-line; overflow-wrap:anywhere}
 .reqs .rep{display:block; color:var(--mut); font-size:12.5px}
+/* 🆕 6.5 ملاحظة على الفريم: الوقت يتسجّل مع الملاحظة، ونقاط الملاحظات على شريط تحت الفيديو */
+[hidden]{display:none!important}
+.tl{direction:ltr; position:relative; height:14px; margin-top:8px; border-radius:99px; background:var(--line); cursor:pointer}
+.tl i{position:absolute; top:2px; width:10px; height:10px; margin-inline-start:-5px; border-radius:50%; background:var(--clay); border:2px solid var(--card)}
+.tl i.done{background:var(--ok)}
+.tl b{position:absolute; top:0; bottom:0; inset-inline-start:0; border-radius:99px; background:color-mix(in srgb,var(--acc) 35%,transparent); pointer-events:none}
+.at{display:inline-flex; align-items:center; gap:6px; font-family:var(--disp); font-weight:800; font-size:12px; padding:2px 10px; border-radius:99px; background:var(--infobg); color:var(--info); border:0; cursor:pointer; font-variant-numeric:tabular-nums}
+.at[hidden]{display:none}
+.pin{font-size:12.5px; padding:5px 12px}
 .ideas{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:0 28px; margin:0; padding:0; list-style:none}
 .ideas li{display:grid; grid-template-columns:34px 1fr; gap:6px; padding:10px 0; border-bottom:1px solid var(--line)}
 .ideas .n{font-family:var(--disp); font-weight:900; color:var(--acc); font-variant-numeric:tabular-nums}
@@ -100,14 +109,18 @@ $("how").textContent=D.how||`شوف كل ريل وكاروسيل: اكتب مل�
 
 function card(it){
   const media = it.kind==="reel"
-    ? `<div class="media"><video controls playsinline preload="none" poster="${esc(it.poster)}" src="${esc(it.video)}" aria-label="${esc(it.title)}"></video></div>`
+    ? `<div class="media"><video id="v-${esc(it.id)}" controls playsinline preload="metadata" poster="${esc(it.poster)}" src="${esc(it.video)}" aria-label="${esc(it.title)}"></video>
+        <div class="tl" id="tl-${esc(it.id)}" title="نقاط ملاحظاتك — اضغط وحدة يروح لها"><b id="tlp-${esc(it.id)}"></b></div></div>`
     : `<div class="strip">${(it.slides||[]).map((s,i)=>`<img src="${esc(s)}" alt="شريحة ${i+1}" loading="lazy">`).join("")}</div>`;
   return `<article class="item${it.kind==="carousel"?" wide":""}" id="it-${esc(it.id)}">${media}
   <div class="body">
     <h3>${esc(it.title)}</h3><div class="row"><span>${esc(it.id)}</span><span>${esc(it.dur||"")}</span></div>
     <div><label for="cap-${esc(it.id)}">الكابشن (عدّله هني لو تبي — ينحفظ مع طلبك)</label><textarea class="capt" id="cap-${esc(it.id)}">${esc(it.cap)}</textarea></div>
     <div><label for="note-${esc(it.id)}">ملاحظة للتعديل</label>
-      <textarea id="note-${esc(it.id)}" rows="3" placeholder="مثال: عند 0:23 قص كلمة… أو غيّر عنوان الشريحة 3"></textarea></div>
+      ${it.kind==="reel"?`<div class="btns" style="margin-bottom:6px"><button type="button" class="pin" data-pin="${esc(it.id)}">⏸ وقّف واكتب على هاللحظة</button>
+        <button type="button" class="at" id="at-${esc(it.id)}" data-seek="${esc(it.id)}" hidden></button>
+        <button type="button" class="at" id="atx-${esc(it.id)}" data-clear="${esc(it.id)}" aria-label="شيل الوقت" hidden>✕</button></div>`:""}
+      <textarea id="note-${esc(it.id)}" rows="3" placeholder="${it.kind==="reel"?"وقّف الفيديو على اللحظة واكتب: شنو تبي يتغيّر هني؟":"مثال: غيّر عنوان الشريحة 3"}"></textarea></div>
     <div class="btns">
       <button class="main" type="button" data-send="note" data-id="${esc(it.id)}">أرسل الملاحظة</button>
       <button class="go" type="button" data-send="approve" data-id="${esc(it.id)}">${esc(APPROVE)}</button>
@@ -125,22 +138,48 @@ if((D.ideas||[]).length){ $("sec-ideas").hidden=false; $("ideas").innerHTML=D.id
 
 function flash(id,msg,bad){ const f=$("fl-"+id); f.textContent=msg; f.style.color=bad?"var(--clay)":"var(--ok)"; f.hidden=false; setTimeout(()=>f.hidden=true,3500); }
 function render(by){
-  let ok=0;
+  window.__lastBy=by; let ok=0;
   ITEMS.forEach(it=>{
     const L=by[it.id]||[]; const approved=L.some(r=>r.kind==="approve"); if(approved) ok++;
     $("it-"+it.id).classList.toggle("ok",approved);
     $("rq-"+it.id).innerHTML=L.map(r=>{ const s=ST[r.status]||ST.new;
       const what=r.kind==="note"?esc(r.text||""):esc(APPROVE);
-      return `<li><span class="st ${s[0]}">${s[1]}</span><div class="txt"><b>${KIND[r.kind]||""}</b> — ${what}${r.reply?`<span class="rep">↩︎ ${esc(r.reply)}</span>`:""}</div></li>`; }).join("");
+      const at=(r.kind==="note"&&typeof r.t==="number")?`<button type="button" class="at" data-seek="${esc(it.id)}" data-t="${r.t}">⏱ ${fmt(r.t)}</button> `:"";
+      return `<li><span class="st ${s[0]}">${s[1]}</span><div class="txt">${at}<b>${KIND[r.kind]||""}</b> — ${what}${r.reply?`<span class="rep">↩︎ ${esc(r.reply)}</span>`:""}</div></li>`; }).join("");
+    marks(it, L.filter(r=>r.kind==="note"&&typeof r.t==="number"));
   });
   $("tally").innerHTML=ITEMS.length?`<span class="st ${ok===ITEMS.length?"done":"work"}">معتمد ${ok} من ${ITEMS.length}</span>`:"";
 }
 function makeDoc(id,kind){
   const doc={item:id, kind, status:"new", at:Date.now(), caption:$("cap-"+id).value.trim()};
-  if(kind==="note"){ const t=$("note-"+id).value.trim(); if(!t){ flash(id,"اكتب الملاحظة أول",true); return null; } doc.text=t; }
+  if(kind==="note"){ const t=$("note-"+id).value.trim(); if(!t){ flash(id,"اكتب الملاحظة أول",true); return null; } doc.text=t;
+    if(typeof AT[id]==="number") doc.t=Math.round(AT[id]*100)/100; }   // 🆕 6.5 الثانية اللي وقّفت عليها — تنحفظ مع الملاحظة
   return doc;
 }
-function done(id,kind){ if(kind==="note") $("note-"+id).value=""; flash(id, kind==="note"?"وصلت الملاحظة ✓":"انعتمد ✓"); }
+function done(id,kind){ if(kind==="note"){ $("note-"+id).value=""; delete AT[id]; showAt(id); } flash(id, kind==="note"?"وصلت الملاحظة ✓":"انعتمد ✓"); }
+
+/* 🆕 6.5 ملاحظة على الفريم: «وقّف واكتب» (أو تكتب والفيديو شغّال) = الفيديو يوقف والثانية تنمسك وتطلع جنب الملاحظة.
+   الضغط على الوقت يرجّعك لنفس الفريم. والملاحظات القديمة نقاط على الشريط تحت الفيديو. */
+const AT={};
+const fmt=t=>{ const m=Math.floor(t/60), s=t-60*m; return m+":"+(s<10?"0":"")+s.toFixed(1); };
+function showAt(id){ const b=$("at-"+id), x=$("atx-"+id); if(!b) return; const t=AT[id]; b.hidden=x.hidden=typeof t!=="number"; if(!b.hidden){ b.dataset.t=t; b.textContent="⏱ الملاحظة عند "+fmt(t); } }
+function grab(id){ const v=$("v-"+id); if(!v) return; v.pause(); AT[id]=v.currentTime||0; showAt(id); }
+function marks(it,L){ const tl=$("tl-"+it.id), v=$("v-"+it.id); if(!tl||!v) return;
+  const d=v.duration||parseFloat(it.dur_s)||0; tl.querySelectorAll("i").forEach(x=>x.remove()); if(!d) return;
+  L.forEach(r=>{ const i=document.createElement("i"); i.style.insetInlineStart=(100*Math.min(1,r.t/d))+"%"; if(r.status==="done") i.className="done";
+    i.title=fmt(r.t)+" — "+(r.text||""); i.dataset.seek=it.id; i.dataset.t=r.t; tl.appendChild(i); }); }
+document.addEventListener("click",e=>{
+  const p=e.target.closest("[data-pin]"); if(p){ grab(p.dataset.pin); $("note-"+p.dataset.pin).focus(); return; }
+  const c=e.target.closest("[data-clear]"); if(c){ delete AT[c.dataset.clear]; showAt(c.dataset.clear); return; }
+  const s=e.target.closest("[data-seek]"); if(s){ const id=s.dataset.seek, v=$("v-"+id); if(!v) return;
+    v.currentTime=parseFloat(s.dataset.t)||0; v.pause(); v.scrollIntoView({block:"nearest"}); return; }
+  const tl=e.target.closest(".tl"); if(tl){ const id=tl.id.slice(3), v=$("v-"+id); if(!v||!v.duration) return;
+    const r=tl.getBoundingClientRect(), k=(e.clientX-r.left)/r.width;   /* الشريط بنفس اتجاه شريط الفيديو (يسار ← يمين) */ v.currentTime=Math.max(0,Math.min(1,k))*v.duration; v.pause(); }
+});
+document.addEventListener("focusin",e=>{ const n=e.target.closest&&e.target.closest("textarea[id^='note-']"); if(!n) return;
+  const id=n.id.slice(5), v=$("v-"+id); if(v&&!v.paused) grab(id); else if(v&&typeof AT[id]!=="number"&&v.currentTime>0) grab(id); });
+document.addEventListener("timeupdate",e=>{ const v=e.target; if(!v.id||!v.id.startsWith("v-")) return; const b=$("tlp-"+v.id.slice(2)); if(b&&v.duration) b.style.width=(100*v.currentTime/v.duration)+"%"; },true);
+document.addEventListener("loadedmetadata",e=>{ if(e.target.id&&e.target.id.startsWith("v-")&&window.__lastBy) render(window.__lastBy); },true);
 
 /* تحميل: داخل claude.ai عبر downloads (تأكيد من المشاهد) — وبالجهاز رابط عادي */
 let downloads=null;
@@ -179,7 +218,7 @@ document.addEventListener("click",e=>{
   const L=localLoad(); L.unshift(doc); localSave(L); localRender(); done(b.dataset.id,b.dataset.send);
 });
 $("copyAll").addEventListener("click",()=>{
-  const txt="طلباتي على صفحة المراجعة «"+(D.title||"")+"»:\n"+JSON.stringify(localLoad().map(({item,kind,text,caption})=>({item,kind,text,caption})),null,1);
+  const txt="طلباتي على صفحة المراجعة «"+(D.title||"")+"»:\n"+JSON.stringify(localLoad().map(({item,kind,text,caption,t})=>({item,kind,t,text,caption})),null,1);
   const ok=()=>{ const f=$("fl-local"); f.textContent="انسخت ✓ ألصقها بالمحادثة"; f.hidden=false; setTimeout(()=>f.hidden=true,3000); };
   try{ navigator.clipboard.writeText(txt).then(ok,()=>prompt("انسخ:",txt)); }catch(_){ prompt("انسخ:",txt); }
 });

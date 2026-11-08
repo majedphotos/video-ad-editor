@@ -26,6 +26,7 @@
      MV.panel(Y, fn?)       يعبّي Y بلون الخلفية ثم fn(Y) — مشهد B جاهز للانتقال
      MV.hideCaption(s, e)   يطفي كابشن المحرّك بنافذة (لما FX.caption يرسم الكابشن بداله)
      MV.scene(name, fn, layer?)  = SCENE_LIST.push بنفس safe() — fn(t) تُنادى كل فريم
+     MV.cue(k, t, o?)       🔊 صوت مربوط بالحركة (6.5) — 04_render_frames.js cues ← cues.json ← 05_sfx.py
      MV.ready(fn)           يشغّل fn بعد init (لما caps.json يوصل) — أي wordTime/lineSpan/hideCaption برّا الرسم يكون داخله
    أدوات النص والتوقيت أدناه منقولة من motion/engine.js (نفس السلوك) — أي تعديل هناك انقله هني. */
 (function () {
@@ -356,6 +357,11 @@
     Object.values(STY.fonts).forEach(f => { if (G.STYLES.FONT_FILES[f]) needFont(f); });
     return STY;
   }
+  /* 🔊 6.5 صوت مربوط بحركة: MV.cue('pen', t0, {d:0.4, g:0.03, id:'box1'}) داخل المشهد عند لحظة الحركة نفسها.
+     عادي يُنادى كل فريم (يتسجّل مرة وحدة بالمفتاح id). `node 04_render_frames.js <work> cues` يجمعها بـcues.json
+     و05_sfx.py يخلطها تحت صوتك. الأنواع: tick hit impact air swish whip pen paper pop ding clink (references/sfx.md). */
+  const CUES = G.__CUES || (G.__CUES = {});
+  function cue(k, t, o) { o = o || {}; const id = o.id || (k + '@' + (+t).toFixed(2)); if (!CUES[id]) CUES[id] = { k, t: +(+t).toFixed(3), d: o.d == null ? null : +o.d, g: o.g == null ? null : +o.g }; }
   function scene(name, fn, layer) { if (typeof SCENE_LIST === 'undefined') throw new Error('MV.scene: هالصفحة مو compose'); if (layer) fn.layer = layer; SCENE_LIST.push([name, fn, layer]); }
 
   const MV = {
@@ -370,7 +376,7 @@
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,
     frameAt, personAt, pending, settle, faceAt, needFont, palmAt, env, overlay,
-    useStyle, get S() { return STY; },
+    useStyle, get S() { return STY; }, cue,
   };
   G.MV = MV;
 })();

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""يبني توقيتات الكابشن على التايم-لاين الجديد.  python3 02_captions.py <workdir>
+"""يبني توقيتات الكابشن على التايم-لاين الجديد.  python3 02_captions.py <workdir> [--no-snap] [--lead 0.10]
+--no-snap  = خلّ توقيت وِسبر كما هو (الافتراضي من 6.5: بداية كل كلمة تنضبط على أول ارتفاع بموجة الصوت — _onsets.py)
+--lead S   = كرت الكابشن يطلع قبل أول كلمة بـS ثانية (الافتراضي 0.10 مثل قبل — 0 = مع الصوت بالضبط)
 يقرأ: cut.json · a.json (وِسبر) · fixes.json  ← {"fix":[[كلمات الجملة 0],...], "hot":[كلمات تُظلَّل]}
 عدد كلمات كل جملة في fix لازم يساوي عدد كلمات وِسبر لنفس الجملة (عشان التوقيتات تبقى مضبوطة)."""
 # ── توافق ويندوز/UTF-8 (مضاف) ─────────────────────────────────────
@@ -20,6 +22,15 @@ import json, sys, os
 W=os.path.abspath(sys.argv[1])
 keep=json.load(open(os.path.join(W,"cut.json")))["keep"]
 tr=json.load(open(os.path.join(W,"a.json")))
+LEAD=float(sys.argv[sys.argv.index("--lead")+1]) if "--lead" in sys.argv else 0.10
+if "--no-snap" not in sys.argv:
+    # 🆕 6.5 توقيت الكلمة على الموجة (دليل «captions reel»): وِسبر يبدأ الكلمة قبل نطقها بحوالي 0.1 ث — نضبطها على أول ارتفاع بالصوت
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import _onsets
+        _src=_onsets.find_source(W)
+        if _src: print(_onsets.report(_onsets.snap_segments(tr["segments"], _src)))
+        else: print("⚠️ توقيت الموجة: ما لقيت src.mov — باقي على توقيت وِسبر")
+    except Exception as _e: print("⚠️ توقيت الموجة ما اشتغل (", _e, ") — باقي على توقيت وِسبر")
 fx=json.load(open(os.path.join(W,"fixes.json")))
 FIX, HOT = fx["fix"], set(fx.get("hot",[]))
 FXMAP = fx.get("fx", {})   # 🎬 حركات الكلمة العربية (v3.1): {"خلاص":"drop","متصلة":"type",…} — drop · shake · crack · type · pulse · stretch · slam
@@ -65,7 +76,7 @@ for i,seg in enumerate(tr["segments"]):
         if txt in FXMAP: _w["fx"]=FXMAP[txt]
         o.append(_w)
     a,b=keep[si]; lo,hi=(off[si],off[si]+(b-a)) if pin else (0.0,acc)
-    cs=max(o[0]["s"]-0.10, lo)
+    cs=max(o[0]["s"]-LEAD, lo)   # التبكير اختيار (--lead) — الافتراضي 0.10 مثل قبل
     ce=min(max(x["e"] for x in o)+0.45, hi)   # 6.1 (ماجد 20 أكتوبر): الكابشن يقعد 0.45 ث بعد آخر كلمة لو بعده سكتة (كان 0.28) — والجاي يقصّه تحت
     cards.append({"s":round(cs,3),"e":round(ce,3),"w":o})
 cards.sort(key=lambda c:c["s"])

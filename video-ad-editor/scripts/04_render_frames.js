@@ -2,7 +2,8 @@
    node 04_render_frames.js <workdir> all                       ← يكمّل من وين وقف (يتخطّى الموجود)
    node 04_render_frames.js <workdir> all --force               ← يعيد الرسم من الصفر
    node 04_render_frames.js <workdir> range 12.0 18.5           ← يعيد رسم نافذة وحدة بس (بعد تعديل مشهد)
-   node 04_render_frames.js <workdir> preview 4.6 12.3 31.0     */
+   node 04_render_frames.js <workdir> preview 4.6 12.3 31.0
+   node 04_render_frames.js <workdir> cues                      ← 🔊 6.5: يمر على كل الفريمات بلا تصوير ويجمع MV.cue ← cues.json (لـ05_sfx.py) */
 const path=require('path'), fs=require('fs');
 const W=path.resolve(process.argv[2])+path.sep;
 const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));       // فيه outro
@@ -41,7 +42,7 @@ function findChrome(){
 const CHROME=findChrome();
 /* 🎞️ معرض الحركات: compose.html يطلب moves.js + moves-compose.js من مجلد الشغل — لو ناقصين ننسخهم من السكل قبل الفتح
    (بدونهم FX ما يتعرّف والمشهد يتخطّى). وcompose قديم بلا الوسمين: نركّبهم بعد الفتح عشان FX/MV يشتغلون وقت الرسم. */
-const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js'),'styles.js':path.join(__dirname,'..','motion','styles.js')};
+const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js'),'styles.js':path.join(__dirname,'..','motion','styles.js'),'depth.js':path.join(__dirname,'depth.js')};   /* depth.js (6.5): العمق — references/depth.md */
 function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
   for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); }
   /* 74 آية بسكينة: الخط العثماني يتحمّل من مجلد الشغل (MV.needFont) */
@@ -113,7 +114,18 @@ async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV&&
     const d=await p.evaluate(async(t,q)=>{window.draw(t);if(window.MV&&MV.pending&&MV.pending()){await MV.settle();window.draw(t);}return window.shot(q);},t,q);
     fs.writeFileSync(file,Buffer.from(d.split(',')[1],'base64'));
   };
-  if(mode==='preview'){
+  if(mode==='cues'){
+    /* كل صوت = حركة صارت فعلاً: المشاهد تسجّل MV.cue وقت رسمها — نرسم كل فريم (بلا لقطة) ونجمعها */
+    const n=Math.round(dur*FPS);
+    for(let i=0;i<n;i++){ const t=i/FPS, id=String(Math.min(NVF,Math.max(1,i+1))).padStart(5,'0');
+      if(BEHIND){ const inR=BEHIND.ranges.some(r=>i+1>=r[0]&&i+1<=r[1]), pf=W+'bt/person/'+id+'.png';
+        await p.evaluate((s,f)=>window.setPerson(s,f), inR&&fs.existsSync(pf)?fileURL(pf):null, (BEHIND.faces&&BEHIND.faces[i+1])||null); }
+      await p.evaluate(t=>{ try{ window.draw(t); }catch(e){} },t); }
+    const cues=await p.evaluate(()=>Object.values(window.__CUES||{}).sort((a,b)=>a.t-b.t));
+    fs.writeFileSync(W+'cues.json',JSON.stringify(cues,null,0).replace(/\},\{/g,'},\n{'));
+    const by={}; cues.forEach(c=>by[c.k]=(by[c.k]||0)+1);
+    console.log('🔊 cues.json:',cues.length,'صوت مربوط بحركة —',Object.entries(by).map(([k,v])=>k+' '+v).join(' · ')||'ولا واحد (المشاهد ما تنادي MV.cue)');
+  }else if(mode==='preview'){
     fs.mkdirSync(W+'prev',{recursive:true});
     for(const t of process.argv.slice(4).map(Number)){await grab(t,W+'prev/t'+t.toFixed(2)+'.jpg',0.9);console.log('معاينة',t);}
   }else{

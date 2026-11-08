@@ -23,6 +23,13 @@ const caps=JSON.parse(fs.readFileSync(W+'caps.json','utf8'));
 const FPS=30, MAXW=4, MINDUR=0.85;
 
 const words=c=>c.w.map(w=>w.t).join(' ');
+/* 🆕 6.5 حواف الشعر: بعد قصّ الماك نعيد القصّ ببيريف نت (44_matte.py) — أنعم بوضوح على الشعر وبلا هالة من لون الغرفة
+   (مقارنة ريل البطاريات). يكمّل من وين وقف، وأي فشل (rembg مو منصّب) يخلّي قصّ الماك كما هو. MATTE=apple = الماك بس. */
+function refineMatte(f0,f1){
+  if(String(process.env.MATTE||'').toLowerCase()==='apple') return;
+  const r=cp.spawnSync('python3',[SC+'44_matte.py',W,String(f0),String(f1)],{stdio:'inherit'});
+  if(r.status!==0) console.log('ℹ️ باقي على قصّ الماك للفريمات '+f0+'–'+f1);
+}
 if(MODE==='off'){ try{fs.unlinkSync(W+'behind.json');}catch(e){} console.log('انلغى التأثير.'); process.exit(0); }
 /* ranges (مدى الفريمات اللي يحمّل لها 04 صورة الشخص) تنحسب من الجُمل والمشاهد الموجودة — مو تتراكم مع كل تشغيل */
 function rebuildRanges(o){
@@ -101,6 +108,7 @@ if(MODE==='cutout'||MODE==='headout'||MODE==='person'){
     ' -start_number '+f0+' -i '+JSON.stringify(W+'bt/mask/%05d.png')+' -frames:v '+(f1-f0+1)+
     ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v][a]alphamerge,format=rgba"'+
     ' -start_number '+f0+' -y '+JSON.stringify(W+'bt/person/%05d.png'),{stdio:'pipe'});
+  refineMatte(f0,f1);
   const prev=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):{lines:[],ranges:[],faces:{}};
   const key=MODE==='headout'?'headouts':MODE==='person'?'persons':'cutouts';
   prev[key]=(prev[key]||[]).filter(c=>!(c[0]===a&&c[1]===b)).concat([[a,b]]);   /* نفس المدى مرتين = مرة وحدة */
@@ -180,6 +188,7 @@ for(const [f0,f1] of ranges){
     ' -frames:v '+(f1-f0+1)+
     ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v][a]alphamerge,format=rgba"'+
     ' -start_number '+f0+' -y '+JSON.stringify(W+'bt/person/%05d.png'),{stdio:'pipe'});
+  refineMatte(f0,f1);
 }
 
 /* 5) «طبقات»: قناع الجمع لكل جملة = متوسط أقنعة فريماتها (ربع الدقة). المحرّك يقرأ منه حدود الجسم صف صف
