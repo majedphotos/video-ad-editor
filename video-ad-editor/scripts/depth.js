@@ -68,13 +68,15 @@
     const v = vis(o, t); if (v <= 0) return;
     const k = eo(pr(t, o.t, o.t + (o.popD || 0.2))), out = eio(pr(t, o.e - (o.outD || 0.24), o.e));
     let sc = 1, dy = 0, dx = 0;
+    let bl = 0;
     if (o.anim === 'slam') { sc = 1 + 0.32 * (1 - eo(pr(t, o.t, o.t + 0.16))); }
+    else if (o.anim === 'blur') { const kb = eo(pr(t, o.t, o.t + 0.24)); sc = 1.10 - 0.10 * kb; dy = (1 - kb) * 22; bl = (1 - kb) * 14; }   // تدخل من غبش لوضوح — أنعم من القفزة
     else if (o.anim === 'rise') { dy = (1 - k) * 46; }
     else if (o.anim === 'side') { dx = (1 - k) * (o.dir || 1) * 60; }
     else { sc = 0.84 + 0.16 * k; dy = (1 - k) * 18; }
-    dy -= out * 14;
+    dy -= out * 14; if (out > 0 && o.anim === 'blur') bl = Math.max(bl, out * 8);
     const size = o.size || 96, txt = typeof o.text === 'function' ? o.text(t) : o.text;
-    Y.save(); Y.globalAlpha *= v; Y.translate(val(o.x, t, 540) + dx, val(o.y, t, 400) + dy); Y.scale(sc, sc);
+    Y.save(); Y.globalAlpha *= v; Y.translate(val(o.x, t, 540) + dx, val(o.y, t, 400) + dy); Y.scale(sc, sc); if (bl > 0.3) Y.filter = 'blur(' + bl.toFixed(1) + 'px)';
     Y.font = (o.weight || 700) + ' ' + size + 'px ' + (o.font || (/[؀-ۿ]/.test(txt) ? AR() : 'system-ui,-apple-system,"Helvetica Neue",sans-serif'));
     Y.textAlign = o.align || 'center'; Y.textBaseline = 'middle'; Y.direction = /[؀-ۿ]/.test(txt) ? 'rtl' : 'ltr';
     if (o.ls) Y.letterSpacing = o.ls + 'px';
@@ -153,7 +155,13 @@
   depthVideo.layer = 'video';
   /* برّا اللقطات (بي-رول بلا قصّ): الكلمات والمربعات بلا كاميرا */
   function depthFlat(t) {
-    if (!shotAt(t)) for (const o of WORDS) if (t >= o.t && t <= o.e) drawWord(X, o, t);
+    if (!shotAt(t)) {
+      const L = lightsAt(null, t);   // كلمة مضيئة برّا اللقطات: نفس الإضاءة بلا كاميرا (الوجه للقدّامية بس)
+      if (L.length) { lightRoom(X, L);
+        if (G.MV && MV.person && MV.person.ok()) { const F = (typeof BEHIND !== 'undefined' && BEHIND && BEHIND.faces && BEHIND.faces[Math.round(t * 30) + 1]) || null;
+          lightPerson(X, L, y => MV.person(y), F ? [F.x + F.w / 2, F.y + F.h / 2 + 260] : [540, 1000]); } }
+      for (const o of WORDS) if (t >= o.t && t <= o.e) drawWord(X, o, t);
+    }
     for (const b of BOXES) drawBox(b, t);
   }
 
