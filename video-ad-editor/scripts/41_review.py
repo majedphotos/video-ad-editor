@@ -28,6 +28,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "taste":
             "<!-- يكتبه scripts/41_review.py taste — كل قاعدة من ملاحظة نجحت. السكل يقراه أول كل شغل ويطبّقه قبل قواعده العامة. -->\n\n")
     RX = re.compile(r"^(\d+)\. \[(.+?)\] (.+?)(?:\n   ↳ (.+))?$", re.M)
 
+    QN = lambda n: "قاعدة وحدة" if n == 1 else ("قاعدتين" if n == 2 else (f"{n} قواعد" if 3 <= n <= 10 else f"{n} قاعدة"))
     def load():
         if not os.path.exists(P): return []
         s = open(P, encoding="utf-8").read()
@@ -46,7 +47,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "taste":
     if cmd == "path": print(P)
     elif cmd == "show":
         if not R: print("ملف الذوق فاضي لسا — أول ملاحظة تنجح تنحفظ هني (41_review.py taste add)"); sys.exit(0)
-        print(f"🎯 ملف الذوق ({len(R)} قاعدة) — طبّقها قبل القواعد العامة:")
+        print(f"🎯 ملف الذوق ({QN(len(R))}) — طبّقها قبل القواعد العامة:")
         for r in R: print(f"  {r['n']}. [{r['tag']}] {r['rule']}" + (f"  ← {r['why']}" if r['why'] else ""))
     elif cmd == "add":
         if len(sys.argv) < 3 or sys.argv[2].startswith("--"): print(__doc__); sys.exit(1)
@@ -60,7 +61,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "taste":
             for r in near: print(f"   {r['n']}. {r['rule']}")
             sys.exit(3)
         R.append(dict(n=(max([r["n"] for r in R]) + 1) if R else 1, tag=tag, rule=rule, why=why)); save(R)
-        print(f"✅ قاعدة {R[-1]['n']} انحفظت بملف الذوق ({len(R)} قاعدة) — {P}")
+        print(f"✅ قاعدة {R[-1]['n']} انحفظت بملف الذوق ({QN(len(R))}) — {P}")
     elif cmd == "drop":
         n = int(sys.argv[2]); R2 = [r for r in R if r["n"] != n]
         if len(R2) == len(R): print("ما فيه قاعدة بهالرقم"); sys.exit(2)
