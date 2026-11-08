@@ -6,6 +6,8 @@
 
    python3 44_matte.py <work> <من فريم> <إلى فريم>          ← يكتب bt/mask (القناع) + bt/person (الشخص بشفافية)
    python3 44_matte.py <work> <من> <إلى> --check              ← يقول كم فريم ناقص وكم ياخذ، بلا شغل
+   python3 44_matte.py <work> <من> <إلى> --from-apple         ← ⚡ سريع (ثواني): قصّ الماك نفسه بس ننظّف حوافه
+        (نضيّقه بكسل ونشيل لون الغرفة من الأطراف) — للمقاطع اللي ما فيها شي ورا الراس (قرار ماجد: بيريف نت للي ورا الراس بس)
    الفريمات من bt/src (11_behind_text.js يجهّزها) أو vfr.
    ينادى تلقائياً من 11_behind_text.js (build/stack/cutout/headout/person). MATTE=apple يرجّع قصّ الماك.
 
@@ -18,7 +20,7 @@ from PIL import Image
 
 if len(sys.argv) < 4: print(__doc__); sys.exit(1)
 W = os.path.abspath(sys.argv[1]); f0, f1 = int(sys.argv[2]), int(sys.argv[3])
-CHECK = "--check" in sys.argv
+CHECK = "--check" in sys.argv; APPLE = "--from-apple" in sys.argv
 RAW = os.path.join(W, "bt", "bf_raw"); MASK = os.path.join(W, "bt", "mask"); PERS = os.path.join(W, "bt", "person")
 for d in (RAW, MASK, PERS): os.makedirs(d, exist_ok=True)
 ids = [f"{i:05d}" for i in range(f0, f1 + 1)]
@@ -27,7 +29,7 @@ def src(i):
         p = os.path.join(W, d, i + ".jpg")
         if os.path.exists(p): return p
     return None
-todo = [i for i in ids if src(i) and not (os.path.exists(os.path.join(RAW, i + ".png")) and os.path.getsize(os.path.join(RAW, i + ".png")) > 1000)]
+todo = [] if APPLE else [i for i in ids if src(i) and not (os.path.exists(os.path.join(RAW, i + ".png")) and os.path.getsize(os.path.join(RAW, i + ".png")) > 1000)]
 print(f"قصّ بيريف نت: {len(ids)} فريم — ناقص {len(todo)} (≈ {len(todo)*13/60:.0f} دقيقة على المعالج)")
 if CHECK: sys.exit(0)
 
@@ -52,6 +54,14 @@ try:
 except Exception:
     estimate_foreground_ml = None; print("ℹ️ pymatting مو منصّب — بلا تنظيف لون الأطراف (pip3 install pymatting)")
 def raw(i):
+    if APPLE:   # قصّ الماك: نضيّقه بكسل (حافته واسعة فيها لون الغرفة) ونخلّيه ناعم — من نسخته الأصلية (bt/mask_apple) عشان الإعادة ما تضيّقه مرتين
+        p0 = os.path.join(MASK, i + ".png"); p = os.path.join(W, "bt", "mask_apple", i + ".png")
+        if not os.path.exists(p):
+            if not os.path.exists(p0): return None
+            os.makedirs(os.path.dirname(p), exist_ok=True); import shutil; shutil.copy(p0, p)
+        m = Image.open(p).convert("L"); from PIL import ImageFilter
+        m = m.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
+        return np.asarray(m, np.float32) / 255
     p = os.path.join(RAW, i + ".png")
     return np.asarray(Image.open(p).convert("L"), np.float32) / 255 if os.path.exists(p) else None
 ring = []; n = 0
@@ -80,4 +90,4 @@ if ring:
 dp = os.path.join(W, "depth.json"); d = json.load(open(dp)) if os.path.exists(dp) else {}
 d.setdefault("rooms", []); d["rooms"] = [r for r in d["rooms"] if r.get("f") != [f0, f1]] + [{"f": [f0, f1], **info}]
 json.dump(d, open(dp, "w"), ensure_ascii=False, indent=1)
-print(f"✅ {n} فريم: bt/mask + bt/person (قصّ بيريف نت + تنظيف الأطراف) · لون غرفتك حولك {info.get('bg','؟')} ← depth.json")
+print(f"✅ {n} فريم: bt/mask + bt/person ({'قصّ الماك منظّف' if APPLE else 'قصّ بيريف نت'} + تنظيف الأطراف) · لون غرفتك حولك {info.get('bg','؟')} ← depth.json")
