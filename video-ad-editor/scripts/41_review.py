@@ -25,7 +25,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "taste":
 
     P = os.environ.get("TASTE_FILE") or os.path.join(os.path.expanduser("~"), ".video-ad-editor", "taste.md")
     HEAD = ("# ملف الذوق — قواعد المونتاج اللي تعلّمناها منك\n"
-            "<!-- يكتبه scripts/45_taste.py — كل قاعدة من ملاحظة نجحت. السكل يقراه أول كل شغل ويطبّقه قبل قواعده العامة. -->\n\n")
+            "<!-- يكتبه scripts/41_review.py taste — كل قاعدة من ملاحظة نجحت. السكل يقراه أول كل شغل ويطبّقه قبل قواعده العامة. -->\n\n")
     RX = re.compile(r"^(\d+)\. \[(.+?)\] (.+?)(?:\n   ↳ (.+))?$", re.M)
 
     def load():
@@ -45,7 +45,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "taste":
     R = load()
     if cmd == "path": print(P)
     elif cmd == "show":
-        if not R: print("ملف الذوق فاضي لسا — أول ملاحظة تنجح تنحفظ هني (45_taste.py add)"); sys.exit(0)
+        if not R: print("ملف الذوق فاضي لسا — أول ملاحظة تنجح تنحفظ هني (41_review.py taste add)"); sys.exit(0)
         print(f"🎯 ملف الذوق ({len(R)} قاعدة) — طبّقها قبل القواعد العامة:")
         for r in R: print(f"  {r['n']}. [{r['tag']}] {r['rule']}" + (f"  ← {r['why']}" if r['why'] else ""))
     elif cmd == "add":

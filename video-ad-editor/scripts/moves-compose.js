@@ -359,7 +359,7 @@
   }
   /* 🔊 6.5 صوت مربوط بحركة: MV.cue('pen', t0, {d:0.4, g:0.03, id:'box1'}) داخل المشهد عند لحظة الحركة نفسها.
      عادي يُنادى كل فريم (يتسجّل مرة وحدة بالمفتاح id). `node 04_render_frames.js <work> cues` يجمعها بـcues.json
-     و05_sfx.py يخلطها تحت صوتك. الأنواع: tick hit impact air swish whip pen paper pop ding clink (references/sfx.md). */
+     و05_sfx.py يخلطها تحت صوتك. الأنواع: tick hit impact air swish whip pen paper pop ding clink (references/depth.md §7). */
   const CUES = G.__CUES || (G.__CUES = {});
   function cue(k, t, o) { o = o || {}; const id = o.id || (k + '@' + (+t).toFixed(2)); if (!CUES[id]) CUES[id] = { k, t: +(+t).toFixed(3), d: o.d == null ? null : +o.d, g: o.g == null ? null : +o.g }; }
   function scene(name, fn, layer) { if (typeof SCENE_LIST === 'undefined') throw new Error('MV.scene: هالصفحة مو compose'); if (layer) fn.layer = layer; SCENE_LIST.push([name, fn, layer]); }
