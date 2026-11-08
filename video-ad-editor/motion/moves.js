@@ -57,12 +57,18 @@
   /* 3 طلعة متتابعة — الكلمات تطلع من خط مخفي تحتها وحدة ورا الثانية، وبالطلعة تختفي بخط فوقها. القناع من قياس الخط نفسه ويروح لما توصل (6.5).
      o: {text, s, x=540, y=880, size=190, stagger=.13, out(time), accent:[i], underline=true, lineHeight=1.2,
          blur (تطلع من غباش لوضوح) · bounce (ترتد شوي لما توصل) · shine (لمعة بلون الهوية تعبر كلمة التمييز)} — الثلاث شغّالة افتراضياً (طلب ماجد)، وتطفي وحدة بـfalse
-     الكلمة تبدأ مخفية بالكامل تحت خطها (مسافة الطلعة 1.75 من الحجم ≥ طول الحروف) وتختفي بالكامل فوقه — بلا طرف طالع */
+     الكلمة تبدأ مخفية بالكامل تحت خطها وتختفي بالكامل فوقه — بلا طرف طالع: مسافة الطلعة = أطول كلمة بالخط نفسه + هامش القناع + هامش الغباش
+     (أقلها 1.75 من الحجم — خط الرقعة وريدكس أطول من لاليزار بـ30٪، وبحجم صغير كان طرفها المغبّش يبين قبل لا تبدأ) */
   FX.riseUp = (ctx, t, o) => {
     const { X, P, at } = ctx, size = o.size || 190, st = pick(o, 'stagger', 0.13), x = pick(o, 'x', 540), y = pick(o, 'y', 880);
+    const BL = o.blur !== false, BO = o.bounce !== false, SH = o.shine !== false;
     const L = ctx.text.layout(X, o.text, { family: 'display', size, maxWidth: o.maxWidth || 900, lineHeight: o.lineHeight || 1.2 });
+    let D = 0;
     ctx.text.drawLayout(X, L, x, y, { perWord: (i, w, box) => {
-      const BL = o.blur !== false, BO = o.bounce !== false, SH = o.shine !== false, D = size * 1.75;
+      if (!D) { let H = 0;   // الخط مركّب هني (drawLayout يحطه قبل أول كلمة) — نقيس كل الكلمات مرة وحدة بالفريم
+        for (const ln of L.lines) for (const ww of ln.words) { const m = X.measureText(ww.text); H = Math.max(H, (m.actualBoundingBoxAscent || size * 0.95) + (m.actualBoundingBoxDescent || size * 0.4)); }
+        const sc = Math.min(1, Math.abs(X.getTransform().a) || 1);   // الغباش ما يتصغّر مع اللوحة (مسودة 0.5 = غباش ضعف) — الهامش يكبر معه
+        D = Math.max(size * 1.75, H + size * 0.14 + (BL ? 42 / sc : 0) + 8); }
       const t0 = o.s + i * st, kin = at(t, t0, t0 + 0.7, BO ? 'backOut' : 'expoOut'), kout = o.out ? at(t, o.out + i * 0.07, o.out + 0.55 + i * 0.07, 'expoIn') : 0;
       const entering = t < t0 + 0.7, leaving = kout > 0, acc = (o.accent || []).includes(i);
       let color = acc ? P.acc : (o.color || P.ink);
