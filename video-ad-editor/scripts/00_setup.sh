@@ -90,7 +90,7 @@ if [ "$1" = "--extras" ]; then
   "$PY" -c "import torch" 2>/dev/null || { line "⏬ torch (أساس الموديلات)…"; pipx2 torch; }
   "$PY" -c "import transformers,PIL" 2>/dev/null || { line "⏬ البحث بالمعنى (transformers — الموديل ~1.5 قيقا ينزل أول بحث)…"; pipx2 "transformers>=4.49" pillow sentencepiece protobuf || line "   ⚠️ فشل"; }
   # 🆕 6.5 قصّ الشخص بحواف شعر ناعمة (44_matte.py — بيريف نت، الموديل ~970 ميقا ينزل أول قصّ)
-  "$PY" -c "import rembg,pymatting" 2>/dev/null || { line "⏬ قصّ الشعر الناعم (rembg + onnxruntime + pymatting)…"; pipx2 rembg onnxruntime pymatting || line "   ⚠️ فشل — يبقى قصّ الماك"; }
+  "$PY" -c "import rembg,pymatting" 2>/dev/null || { line "⏬ قصّ الشعر الناعم (rembg + onnxruntime + pymatting)…"; { command -v nvidia-smi >/dev/null 2>&1 && ORT=onnxruntime-gpu || ORT=onnxruntime; }; pipx2 rembg "$ORT" pymatting || line "   ⚠️ فشل — يبقى قصّ الماك"; }
   line "الإضافات: $(extras_status)"
   exit 0
 fi

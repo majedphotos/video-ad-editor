@@ -12,6 +12,7 @@
    ينادى تلقائياً من 11_behind_text.js (build/stack/cutout/headout/person). MATTE=apple يرجّع قصّ الماك.
 
    ⏱️ السرعة: حوالي 13 ث للفريم على معالج الماك (ثانية كلام = 30 فريم ≈ 6–7 دقايق) — يكمّل من وين وقف.
+   🎮 فيه كرت شاشة إنفيديا (ويندوز/لينكس)؟ يستخدمه تلقائياً لو منصّب onnxruntime-gpu (00_setup.sh --extras يركّبه لحاله) — أسرع بواجد.
    القصّ الخام ينحفظ بـbt/bf_raw فإعادة التشغيل ما تعيد شي جاهز.
    يحتاج: pip3 install rembg onnxruntime pymatting (أول مرة ينزّل الموديل ~970 ميقا لـ~/.u2net)."""
 import os, sys, json, time
@@ -39,7 +40,14 @@ if todo:
         from rembg import new_session, remove
     except Exception:
         print("⚠️ rembg مو منصّب (pip3 install rembg onnxruntime) — باقي على قصّ الماك"); sys.exit(10)
-    s = new_session("birefnet-portrait", providers=["CPUExecutionProvider"])
+    # كرت الشاشة أول لو موجود (تجربة عزيز: كرت إنفيديا خلّاه أسرع بواجد) — CUDA ← DirectML (ويندوز) ← المعالج.
+    # ⛔ CoreML بالماك لا: يعلّق المحرّك العصبي وقراءة النص. GPU=0 يجبر المعالج.
+    try:
+        import onnxruntime as ort; have = ort.get_available_providers()
+    except Exception: have = []
+    prov = [p for p in ("CUDAExecutionProvider", "DmlExecutionProvider") if p in have and os.environ.get("GPU") != "0"] + ["CPUExecutionProvider"]
+    print(f"  القص على: {'كرت الشاشة (' + prov[0] + ')' if len(prov) > 1 else 'المعالج'}")
+    s = new_session("birefnet-portrait", providers=prov)
     T = time.time()
     for k, i in enumerate(todo):
         im = Image.open(src(i)).convert("RGB")

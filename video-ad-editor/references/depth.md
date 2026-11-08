@@ -16,6 +16,7 @@ node scripts/11_behind_text.js <work> person <من-إلى>     # القصّ — 
 - ⛔ **قرار ماجد:** بيريف نت **للمقاطع اللي فيها شي ورا الراس بس**. الباقي `44_matte.py <work> <من> <إلى> --from-apple` — قصّ الماك نفسه بحافة أضيق وبلا لون الغرفة (ثواني).
   `python3 scripts/44_matte.py <work> <من فريم> <إلى فريم> --check` يقول كم باقي بلا شغل.
 - يحتاج مرة وحدة: `pip3 install rembg onnxruntime pymatting` (الموديل ~970 ميقا ينزل أول مرة). ما انصبّ؟ يرجع لقصّ الماك وحده.
+- 🎮 **كرت شاشة إنفيديا؟** ركّب `onnxruntime-gpu` بدال `onnxruntime` (أو `00_setup.sh --extras` يختار لحاله) والقص يمشي على الكرت تلقائياً — أسرع بواجد من المعالج (جربها عزيز). `GPU=0` يرجّعه للمعالج. بالماك يبقى على المعالج (CoreML يعلّق).
 
 `compose.html` ← بعد `moves-compose.js`: `<script src="depth.js"></script>` (04_render_frames.js ينسخه لمجلد الشغل لو ناقص).
 
