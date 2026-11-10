@@ -92,3 +92,4 @@
 | 98 | مؤشر ينقر | [Magic UI — components (Smooth Cursor, Pointer, Ripple)](https://magicui.design/docs/components) | MIT |
 | 99 | ذوبان الضوء | [gl-transitions — luma / luminance_melt](https://github.com/gl-transitions/gl-transitions/tree/master/transitions) | MIT |
 | 100 | صدى الحركة | [CapCut — Editing trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) (velocity edits) | — (ترند) |
+| 102 | تفكيك الطبقات | طلب ماجد (10 نوفمبر 2026) — من شريحة «تفكيك 3D قطعة قطعة» بكاروسيل السكلات (`video_cover/demo-scenes.js` بمشروع المكينة) | MIT (البلقن) |

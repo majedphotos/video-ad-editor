@@ -2328,5 +2328,85 @@
     X.restore();
   };
 
+  /* 102 تفكيك الطبقات (طلب ماجد — من شريحة «تفكيك 3D قطعة قطعة» بكاروسيل السكلات) — ألواح ثلاثية الأبعاد بألوان الهوية تطلع من نقطة
+     (فوق المنتج أو جنبك) وهي لازقة، وتنفك عن بعض وحدة وحدة بارتداد مع دوران خفيف. الطبقة اللي لها اسم: لحظة نطقه يطلع منها خط منقّط
+     لاسمها، وتنوّر وتطلع شوي لجهته. بالآخر تنضم وتنزل مكانها. ⛔ لا تكتب اسم طبقة ما له مصدر: الطبقة بلا اسم تبقى بلا خط.
+     o: {s, out, x=540, y=1150 (مركز أسفل لوح), n=6 (2–12), w=380 (عرض اللوح), d=0.62 (عمقه نسبة للعرض), th=14 (سماكته), gap=40 (الفراغ وهي مفكوكة),
+         stag=0.075 (بين لوح ولوح — ثانية), spin=6 (دوران درجة/ث), yaw=0, cols:[من تحت لفوق] (الافتراضي تدرّج P.clay ← P.acc ← P.ink),
+         labels:[{i (رقم اللوح من تحت 0..), text, at|key, side:'r'|'l', dy=-40 (ارتفاع الاسم عن زاوية اللوح), size, color}],
+         size=44 (خط الأسماء), lead=0.1 (الخط يطلع قبل النطق), m=56 (هامش الكادر), pill=true (خلفية ورا الاسم), line=P.acc (لون الخط المنقّط), lw=4.2}
+     الأصوات (MV.cue): tick مع كل لوح ينفك · pop مع كل اسم · air لما تنضم. */
+  FX.explode = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    const out = o.out != null ? +o.out : null, ko = out != null ? at(t, out, out + 0.38, 'cubicIn') : 0; if (ko >= 1) return;
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const hex = c => { c = String(c || '#888888').replace('#', ''); if (c.length === 3) c = c.split('').map(q => q + q).join(''); const v = parseInt(c.slice(0, 6), 16) || 0; return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
+    const mix = (p, q, k) => { const A = hex(p), B = hex(q); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * cl(k)).toString(16).padStart(2, '0')).join(''); };
+    const shade = (c, k) => 'rgb(' + hex(c).map(v => Math.round(cl(v * k, 0, 255))).join(',') + ')';
+    const lum = c => { const [r, g, b] = hex(c); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+    const n = Math.max(2, Math.min(12, o.n || 6)), a = (o.w || 380) / 2, b = a * (o.d || 0.62), th = o.th || 14, gap = o.gap != null ? o.gap : 40;
+    const stag = o.stag != null ? o.stag : 0.075, cx = o.x != null ? o.x : 540, IX = 0.8, IY = 0.4;
+    const cols = o.cols || Array.from({ length: n }, (_, i) => { const u = i / (n - 1); return u < 0.5 ? mix(P.clay, P.acc, u * 2) : mix(P.acc, P.ink, (u - 0.5) * 1.1); });
+    const kin = at(t, s, s + 0.24, 'backOut'), alpha = cl(at(t, s, s + 0.12)) * (1 - ko); if (alpha <= 0.003) return;
+    const yaw = ((o.yaw || 0) + (o.spin != null ? o.spin : 6) * (t - s)) * Math.PI / 180, cs = Math.cos(yaw), sn = Math.sin(yaw);
+    const cy = (o.y != null ? o.y : 1150) + (1 - kin) * 46 + ko * 70, sc = 0.86 + 0.14 * kin;
+    const P3 = (u, v, z) => { const uu = (u * cs - v * sn) * sc, vv = (u * sn + v * cs) * sc; return [cx + (uu - vv) * IX, cy + (uu + vv) * IY - z * sc]; };
+    /* الفراغ j (بين لوح j-1 و j) يفتح بلحظته بارتداد، وكلهم يتسكّرون مع الانضمام */
+    const Z = [0]; for (let i = 1; i < n; i++) Z.push(Z[i - 1] + th + gap * at(t, s + i * stag, s + i * stag + 0.42, 'backOut') * (1 - ko));
+    /* وقت كل اسم: at أو أول نطق لكلمته، ناقص lead */
+    const lead = o.lead != null ? o.lead : 0.1, LB = o.labels || [];
+    if (!o._L) o._L = LB.map(L => { const v = L.at != null ? +L.at : (ctx.findWord && L.key ? ctx.findWord(L.key, s - 0.3) : null); return v == null ? null : v - lead; });
+    const LT = o._L, act = new Array(n).fill(0), dir = new Array(n).fill(0), ok = (L, k) => LT[k] != null && L.i != null && L.i >= 0 && L.i < n;
+    LB.forEach((L, k) => { if (!ok(L, k)) return; const v = at(t, LT[k], LT[k] + 0.3, 'cubicOut') * (1 - ko); if (v > act[L.i]) { act[L.i] = v; dir[L.i] = L.side === 'l' ? -1 : 1; } });
+    X.save(); X.globalAlpha *= alpha;
+    { const R = (a + b) * IX * 1.15 * sc, g = X.createRadialGradient(cx, cy + 12, 2, cx, cy + 12, R);      // ظل تحت الكومة
+      g.addColorStop(0, 'rgba(0,0,0,0.36)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      X.save(); X.translate(cx, cy + 12); X.scale(1, 0.42); X.fillStyle = g; X.beginPath(); X.arc(0, 0, R, 0, 6.2832); X.fill(); X.restore(); }
+    const C = [[-a, -b], [a, -b], [a, b], [-a, b]], mids = [];
+    for (let i = 0; i < n; i++) {
+      const push = act[i] * 14 * dir[i], bob = Math.sin((t - s) * 2.2 + i * 0.7) * 1.6 * cl((t - s - n * stag) * 2);
+      const z0 = Z[i] + bob, z1 = z0 + th, col = act[i] > 0 ? mix(cols[i % cols.length], '#FFFFFF', 0.22 * act[i]) : cols[i % cols.length];
+      const top = C.map(([u, v]) => { const p = P3(u, v, z1); p[0] += push; return p; }), bot = C.map(([u, v]) => { const p = P3(u, v, z0); p[0] += push; return p; });
+      mids.push(top.map((p, k) => [p[0], (p[1] + bot[k][1]) / 2]));
+      /* الأوجه الجانبية اللي تبين (وجهها لنا)، وضوء من فوق يسار */
+      [0, 1, 2, 3].forEach(k => { const k2 = (k + 1) % 4, mu = (C[k][0] + C[k2][0]) / 2, mv = (C[k][1] + C[k2][1]) / 2, du = mu * cs - mv * sn, dv = mu * sn + mv * cs;
+        if (du + dv <= 0) return;
+        X.fillStyle = shade(col, 0.5 + 0.3 * cl((dv - du) / (a + b) * 0.5 + 0.5)); X.beginPath();
+        X.moveTo(top[k][0], top[k][1]); X.lineTo(top[k2][0], top[k2][1]); X.lineTo(bot[k2][0], bot[k2][1]); X.lineTo(bot[k][0], bot[k][1]); X.closePath(); X.fill(); });
+      X.fillStyle = col; X.beginPath(); top.forEach((p, k) => k ? X.lineTo(p[0], p[1]) : X.moveTo(p[0], p[1])); X.closePath(); X.fill();
+      X.save(); X.strokeStyle = 'rgba(255,255,255,' + (0.35 + 0.45 * act[i]).toFixed(2) + ')'; X.lineWidth = 2; X.lineJoin = 'round'; X.stroke(); X.restore();
+      const ins = C.map(([u, v]) => { const p = P3(u * 0.7, v * 0.58, z1); p[0] += push; return p; });
+      X.save(); X.strokeStyle = lum(col) > 0.6 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'; X.lineWidth = 2; X.beginPath();
+      ins.forEach((p, k) => k ? X.lineTo(p[0], p[1]) : X.moveTo(p[0], p[1])); X.closePath(); X.stroke(); X.restore();
+      if (ctx.cue) ctx.cue('tick', s + i * stag, { id: 'exk' + i + '@' + s, g: 0.035 });
+    }
+    /* الخطوط المنقّطة والأسماء */
+    const M = o.m != null ? o.m : 56, dark = lum(P.bg) < 0.45;
+    LB.forEach((L, k) => {
+      const tl = LT[k]; if (!ok(L, k) || t < tl) return;
+      const kl = at(t, tl, tl + 0.3, 'cubicOut') * (1 - ko), kt = at(t, tl + 0.1, tl + 0.42, 'cubicOut') * (1 - ko); if (kl <= 0) return;
+      const sd = L.side === 'l' ? -1 : 1, sz = L.size || o.size || 44, f = ctx.font('body', 700, sz), px = 18, ac = L.color || P.acc;
+      const m = mids[L.i], p0 = m.reduce((q, p) => (sd > 0 ? p[0] > q[0] : p[0] < q[0]) ? p : q, m[0]);
+      X.save(); X.font = f; const tw = X.measureText(L.text).width; X.restore();
+      const ly = p0[1] + (L.dy != null ? L.dy : -40), tx = sd > 0 ? 1080 - M : M, dotX = sd > 0 ? tx - tw - px - 12 : tx + tw + px + 12;
+      const p1 = [p0[0] + sd * Math.min(46, Math.abs(dotX - p0[0]) * 0.35), ly], S2 = [[p0, p1], [p1, [dotX, ly]]], len = S2.map(([q, r]) => Math.hypot(r[0] - q[0], r[1] - q[1]));
+      let rem = (len[0] + len[1]) * kl;
+      X.save(); X.strokeStyle = L.line || o.line || ac; X.lineWidth = o.lw || 4.2; X.lineCap = 'round'; X.setLineDash([0.5, 11]); X.shadowColor = 'rgba(0,0,0,0.4)'; X.shadowBlur = 6;
+      X.beginPath(); X.moveTo(p0[0], p0[1]);
+      for (let j = 0; j < 2 && rem > 0; j++) { const u = Math.min(1, rem / Math.max(1, len[j])), [q, r] = S2[j]; X.lineTo(q[0] + (r[0] - q[0]) * u, q[1] + (r[1] - q[1]) * u); rem -= len[j]; }
+      X.stroke(); X.setLineDash([]); X.fillStyle = ac; X.beginPath(); X.arc(p0[0], p0[1], 7 * cl(kl * 3), 0, 6.2832); X.fill();
+      if (kl > 0.96) { X.beginPath(); X.arc(dotX, ly, 8, 0, 6.2832); X.fill(); }
+      X.restore();
+      if (kt > 0) { const x0 = sd > 0 ? tx - tw : tx, dx = sd * (1 - kt) * 18, ph = sz * 1.5;
+        X.save(); X.globalAlpha *= kt;
+        if (o.pill !== false) { X.fillStyle = dark ? 'rgba(10,12,14,0.55)' : 'rgba(255,255,255,0.75)'; X.beginPath(); X.roundRect(x0 - px + dx, ly - ph / 2, tw + px * 2, ph, ph / 2); X.fill(); }
+        X.font = f; X.fillStyle = L.ink || P.ink; X.textAlign = sd > 0 ? 'right' : 'left'; X.textBaseline = 'middle'; X.direction = 'rtl';
+        X.shadowColor = 'rgba(0,0,0,0.3)'; X.shadowBlur = 10; X.fillText(L.text, tx + dx, ly + sz * 0.06); X.restore(); }
+      if (ctx.cue) ctx.cue('pop', tl, { id: 'exl' + k + '@' + tl, g: 0.04 });
+    });
+    if (ctx.cue && out != null) ctx.cue('air', out, { id: 'exo@' + out, d: 0.4, g: 0.025 });
+    X.restore();
+  };
+
   G.FX = FX;
 })();
