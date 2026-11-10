@@ -222,6 +222,25 @@
     X.fillStyle = o.color || PAL().ink; X.fillText(K.text, 0, 0);
     X.restore(); return K;
   }
+  /* 🆕 6.5.1 (قاعدة المستخدم): كلمة ورا الراس = الكشيدة على الراس — لا حرف ولا نقطة تنخفي ورا راسه.
+     headGap(X, str, {gx, gap, family='display', weight=900, size=200, m=40}) → {text, x, gx, n, w, ok}:
+     تمدّ الكلمة بكشيدة بالمفصل اللي يخلّيها أقرب لوسط الراس gx، بطول gap (عرض الراس عند سطر الكلام + هامش)،
+     وx = وين ترسمها (وسط النص، align center) عشان الكشيدة تجي فوق الراس بالضبط. ok=false (ما فيه مفصل، أو الكادر ما يكفي
+     وطلعت الكشيدة عن الراس) = انقل الكلمة فوق الراس أو قدّامه — مو شرط تكون ورا الراس. */
+  function headGap(X, str, o = {}) {
+    X.save(); X.font = fontStr(o.family || 'display', o.weight || 900, o.size || 200); X.direction = 'rtl';
+    const s0 = westernDigits(str), m = o.m == null ? 40 : o.m, wt = X.measureText('ـ').width || 1, gx = o.gx == null ? 540 : o.gx, gap = o.gap || 300;
+    const n = Math.max(1, Math.ceil(gap / wt)), ch = [...s0]; let best = null;
+    for (const sl of kashidaSlots(s0)) {
+      const R = ch.slice(0, sl.at).join(''), L = ch.slice(sl.at).join(''), txt = R + 'ـ'.repeat(n) + L, W = X.measureText(txt).width;
+      if (W > 1080 - 2 * m) continue;
+      const wR = X.measureText(R + 'ـ').width - wt, ideal = gx - W / 2 + wR + (n * wt) / 2;     // RTL: أول الكلمة يمين، فوسط الكشيدة = x + W/2 − wR − طولها/2
+      const x = Math.min(1080 - m - W / 2, Math.max(m + W / 2, ideal)), off = Math.abs(x - ideal);
+      if (!best || off < best.off) best = { text: txt, x, gx: gx + (x - ideal), n, w: W, off };
+    }
+    X.restore();
+    return best ? Object.assign(best, { ok: best.off <= gap * 0.2 }) : { text: s0, x: gx, gx, n: 0, w: 0, off: 0, ok: false };
+  }
   function typeSub(str, k) { const ch = [...westernDigits(str)], n = Math.round(clamp(k) * ch.length); const s = ch.slice(0, n).join(''); return n < ch.length && n > 0 && DUAL.has(ch[n - 1]) ? s + '‍' : s; }
 
   /* ── خط يرتسم (من engine.js: drawPath) ── */
@@ -389,7 +408,7 @@
     at: (lt, a, b, ez = 'cubicOut') => (typeof ez === 'function' ? ez : E[ez])(prog(lt, a, b)),
     wordTime, lineSpan, wordsOf,
     font: fontStr, F: fontStr,
-    text: Object.assign((X, s, x, y, o) => text(X, s, x, y, o), { draw: text, layout, drawLayout, kashida, drawKashida, typeSub, westernDigits, visualOrder }),
+    text: Object.assign((X, s, x, y, o) => text(X, s, x, y, o), { draw: text, layout, drawLayout, kashida, drawKashida, headGap, typeSub, westernDigits, visualOrder }),
     num: (v, d = 0) => westernDigits(Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })),
     drawPath, pathInfo,
     video, person, panel, hideCaption, scene, ready,

@@ -911,7 +911,9 @@
   };
 
   /* 57 غلاف مجلة — المتحدث يصير غلاف مجلة: اسم المجلة ورا راسه، سطر العدد، عناوين الغلاف وباركود. بالقصّ: الراس يغطي الاسم. بلاه: الاسم فوق الفيديو.
-     o: {s, out, person, video, title='مكينة', issue='العدد 61 · أكتوبر 2026', lines:[[رقم/كلمة كبيرة, سطر]], big='السر بالبداية', bg=P.acc} */
+     o: {s, out, person, video, title='مكينة', issue='العدد 61 · أكتوبر 2026', lines:[[رقم/كلمة كبيرة, سطر]], big='السر بالبداية', bg=P.acc,
+         head:[وسط الراس x، عرضه عند سطر الاسم] (6.5.1 — بإحداثيات الفيديو: الاسم ينمد بكشيدة تجي على راسه، لا حرف ولا نقطة تنخفي — راسه يتحرك؟ العرض = اللي يغطيه طول الحركة),
+         place:{s=1.06, y=-40} (مكان الشخص — نزّله y موجب لو تبي الراس يغطي أقل من الاسم)} */
   FX.coverStory = (ctx, t, o) => {
     const { X, P, at, E } = ctx, k = kIO(ctx, t, o, 0.45), PM = hasP(o), title = o.title || 'مكينة', zoom = 1 + 0.05 * at(t, o.s, o.s + 5, 'sineInOut');
     const L = o.lines || [['5', 'أدوات تختصر شغل أسبوع'], ['حصري', 'شلون أصوّر بالجوال'], ['ليش', 'أول 3 ثواني أهم شي']];
@@ -925,12 +927,16 @@
       else if (o.video) o.video(X);
       const sh = PM ? { blur: 18, y: 0, color: bgc } : { blur: 18, y: 4, color: 'rgba(0,0,0,.45)' }, cf = PM ? fg : '#FFFFFF';
       const km = ka(0); X.save(); X.translate(0, -120 * (1 - km)); X.globalAlpha *= cl(km * 1.3);
-      X.font = ctx.font('display', 400, 300); const tw = X.measureText(title).width, sx = Math.min(1.25, 940 / tw);
-      ctx.text(X, title, 540, 410, { family: 'display', size: 300, color: PM ? tc : '#FFFFFF', scaleX: sx, shadow: PM ? null : { blur: 30, y: 8, color: 'rgba(0,0,0,.35)' } }); X.restore();
+      let ttl = title, tx = 540, tsz = 300, sx = 1;
+      if (PM && o.head && ctx.text.headGap) {     // الراس (مرسوم ×1.06 من تحت بالنص) يقعد على كشيدة الاسم — والخط يصغر لين تركب
+        const ps = (o.place && o.place.s) || 1.06, hx = 540 + (o.head[0] - 540) * ps, gw = (o.head[1] || 300) * ps + 40;
+        for (let z = 300; z >= 180; z -= 20) { const K = ctx.text.headGap(X, title, { gx: hx, gap: gw, family: 'display', size: z, m: 60 }); if (K.ok) { ttl = K.text; tx = K.x; tsz = z; break; } }
+      } else { X.font = ctx.font('display', 400, 300); sx = Math.min(1.25, 940 / X.measureText(title).width); }
+      ctx.text(X, ttl, tx, 410, { family: 'display', size: tsz, color: PM ? tc : '#FFFFFF', scaleX: sx, shadow: PM ? null : { blur: 30, y: 8, color: 'rgba(0,0,0,.35)' } }); X.restore();
       const ki = ka(1); X.save(); X.globalAlpha *= ki; X.fillStyle = cf; X.fillRect(140, 452, 800 * ki, 4);
       ctx.text(X, o.issue || 'العدد 61 · أكتوبر 2026', 940, 500, { family: 'body', weight: 700, size: 32, align: 'right', color: cf, shadow: sh }); X.restore();
       X.restore();
-      if (PM) { X.save(); X.globalAlpha = k; zoomAt(X, [540, 960], zoom); placeP(X, { s: 1.06, y: -40 }); shd(X, 40, 10, 0.3); o.person(X); X.restore(); noShd(X); }
+      if (PM) { X.save(); X.globalAlpha = k; zoomAt(X, [540, 960], zoom); placeP(X, o.place || { s: 1.06, y: -40 }); shd(X, 40, 10, 0.3); o.person(X); X.restore(); noShd(X); }
       L.forEach((ln, i) => { const kk = ka(2 + i); if (kk <= 0) return; const right = i % 2 === 0, x = right ? 940 : 140, y = 680 + i * 210;
         X.save(); X.globalAlpha = k * kk; X.translate((right ? 1 : -1) * 80 * (1 - kk), 0);
         ctx.text(X, ln[0], x, y, { family: 'display', size: 120, align: right ? 'right' : 'left', color: i === 0 ? P.acc : cf, shadow: sh, dir: 'rtl' });
