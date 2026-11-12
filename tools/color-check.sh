@@ -4,8 +4,8 @@
 # يمشّي ثانيتين من المقطع بالخط كامل (03 قص + فريمات ← 04 رسم بلا تصميم ← 06 تجميع ← 28 كفر أول فريم ← 06b ماستر)
 # ويقارن 3 فريمات من الناتج النهائي بفريم أبل الأصلي (AVAssetImageGenerator ← sRGB).
 # المقارنة بطريقين مستقلين: فك ffmpeg الدقيق (القيم الخام) + مشغّل أبل نفسه (اللي يعرضه كويك تايم والصور).
-# ينجح لو متوسط الفرق لكل قناة أقل من 1 من 255: القيم الخام بكل المراحل + مشغّل أبل على ناتج 06_encode.
-# (النهائي بعد الكفر بمشغّل أبل ينطبع للعلم بس — خطوة الكفر تشيل ملف الألوان من قبل، وقرارها عند ماجد.)
+# ينجح لو متوسط الفرق لكل قناة أقل من 1 من 255 بالطريقين وبكل المراحل (ناتج 06_encode والنهائي بعد الكفر والماستر)،
+# وملف ألوان الحاوية (colr prof) موجود بالاثنين.
 # ما يعدّل المقطع (قراية بس) · يحتاج: ماك + swiftc + numpy + puppeteer-core (PUPPETEER_PATH لو مو منصّب بالمجلد).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; SK="$REPO/video-ad-editor"
@@ -88,8 +88,13 @@ def apple(tag, label):   # الطريق الثاني المستقل: نفس ال
     print(f"   {label} بمشغّل أبل: أسوأ قناة {worst:.2f}", end=" ")
     return worst
 w = apple("enc", "06_encode"); print("✅" if w < 1 else "❌ (ملف ألوان الحاوية colr prof ضاع — شوف _compat.sh)"); ok = ok and w < 1
-w = apple("final", "النهائي (كفر + ماستر)")
-print("✅" if w < 1 else "⚠️ معروف من قبل 6.5.1: 28_cover --first يعيد الترميز ويشيل ملف الألوان، فمشغّل أبل يعرض الريل أفتح — القيم الخام فوق مطابقة. ما يُفشّل الفحص.")
+w = apple("final", "النهائي (كفر + ماستر)"); print("✅" if w < 1 else "❌ (ملف ألوان الحاوية ضاع بخطوة الكفر — cover.jpg لازم ينحفظ بملف ألوان sRGB، شوف 28_cover.py)"); ok = ok and w < 1
+def colr(path):   # نوع ملف ألوان الحاوية: prof = ملف ألوان sRGB (المطلوب) · nclx/ما فيه = أبل يعرضه أفتح
+    b = open(path, "rb").read(); i = b.find(b"colr"); return b[i + 4:i + 8].decode("latin1") if i >= 0 else "ما فيه"
+def tags(path):
+    return subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=color_range,color_space,color_primaries,color_transfer", "-of", "csv=p=0", path], capture_output=True, text=True).stdout.strip()
+for name, path in (("06_encode", W + "/ad-final.mp4"), ("النهائي", W + "/final.mp4")):
+    c = colr(path); print(f"   {name}: ملف ألوان الحاوية {c} {'✅' if c == 'prof' else '❌'} · الوسوم {tags(path)}"); ok = ok and c == "prof"
 print("🟢 اللون مطابق لتصوير الآيفون (فرق أقل من 1 من 255 لكل قناة)" if ok else "🔴 اللون مو مطابق — راجع VF_FRAMES/VF_ENCODE بـscripts/_compat.sh")
 sys.exit(0 if ok else 1)
 EOF

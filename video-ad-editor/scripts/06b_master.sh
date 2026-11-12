@@ -58,7 +58,7 @@ import json,sys;d=json.loads('''$M''');print(d['input_i'],d['input_tp'],d['input
 fi
 
 ffmpeg -v error -nostats -i "$IN" -i "$NRM" -map 0:v:0 -map 1:a:0 -c:v copy \
-  -c:a aac -b:a 192k -ar 48000 -movflags +faststart -y "$OUT"
+  -c:a aac -b:a 192k -ar 48000 -movflags +faststart+prefer_icc -y "$OUT"   # 🎨 prefer_icc: ملف ألوان الحاوية (colr prof) ينتقل مع النسخ — بلاه مشغّل أبل يعرض الريل أفتح
 rm -f "$MIX" "$NRM"
 LU=$(ffmpeg -hide_banner -nostats -v info -i "$OUT" -af "loudnorm=I=$I:TP=-1.5:print_format=summary" -f null - 2>&1 | awk '/Input Integrated/{i=$3}/Input True Peak/{p=$4}END{print i" LUFS · ذروة "p}' || true)
 echo "✅ $OUT  — $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT" | awk '{printf "%.2f ث", $1}') · $LU"

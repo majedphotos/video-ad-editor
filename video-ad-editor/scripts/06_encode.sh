@@ -21,11 +21,11 @@ if [ "${FIT:-0}" = "1" ]; then
   echo "🎞  أجمّع الفريمات والصوت بمرحلتين — ${VB}k (الهدف أقل من $MAXMB ميقا)…"
   R=(-b:v ${VB}k -maxrate $((VB*2))k -bufsize $((VB*4))k -passlogfile "$W/.x264pass")
   ffmpeg -v error -nostats "${IN[@]}" "${V[@]}" "${R[@]}" -pass 1 "${A[@]}" -f null -
-  ffmpeg -v error -nostats "${IN[@]}" "${V[@]}" "${R[@]}" -pass 2 "${A[@]}" -movflags +faststart -y "$OUT"
+  ffmpeg -v error -nostats "${IN[@]}" "${V[@]}" "${R[@]}" -pass 2 "${A[@]}" -movflags +faststart+prefer_icc -y "$OUT"
   rm -f "$W"/.x264pass*
 else
   echo "🎞  أجمّع الفريمات والصوت… (بلا عدّاد)"
-  ffmpeg -v error -nostats "${IN[@]}" "${V[@]}" -crf 21 -maxrate 6M -bufsize 12M "${A[@]}" -movflags +faststart -y "$OUT"
+  ffmpeg -v error -nostats "${IN[@]}" "${V[@]}" -crf 21 -maxrate 6M -bufsize 12M "${A[@]}" -movflags +faststart+prefer_icc -y "$OUT"
 fi
 echo "✅ $OUT  — $(ffprobe -v error -show_entries format=duration,size -of default=nw=1:nk=1 "$OUT" | paste -sd' ' - | awk '{printf "%.2f ث · %.1f ميقا", $1, $2/1048576}')"
 SZ=$(ffprobe -v error -show_entries format=size -of csv=p=0 "$OUT")
