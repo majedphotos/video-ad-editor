@@ -106,7 +106,7 @@ if(MODE==='cutout'||MODE==='headout'||MODE==='person'){
   cp.execSync(JSON.stringify(BIN2)+' '+JSON.stringify(W+'bt/src')+' '+JSON.stringify(W+'bt/mask')+' accurate 2.5',{stdio:'inherit'});
   cp.execSync('ffmpeg -v error -start_number '+f0+' -i '+JSON.stringify(W+'bt/src/%05d.jpg')+
     ' -start_number '+f0+' -i '+JSON.stringify(W+'bt/mask/%05d.png')+' -frames:v '+(f1-f0+1)+
-    ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v][a]alphamerge,format=rgba"'+
+    ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v]scale=in_color_matrix=bt601:in_range=pc:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=gbrp[c];[c][a]alphamerge,format=rgba"'+
     ' -start_number '+f0+' -y '+JSON.stringify(W+'bt/person/%05d.png'),{stdio:'pipe'});
   refineMatte(f0,f1);
   const prev=fs.existsSync(W+'behind.json')?JSON.parse(fs.readFileSync(W+'behind.json','utf8')):{lines:[],ranges:[],faces:{}};
@@ -186,7 +186,7 @@ for(const [f0,f1] of ranges){
   cp.execSync('ffmpeg -v error -start_number '+f0+' -i '+JSON.stringify(W+'bt/src/%05d.jpg')+
     ' -start_number '+f0+' -i '+JSON.stringify(W+'bt/mask/%05d.png')+
     ' -frames:v '+(f1-f0+1)+
-    ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v][a]alphamerge,format=rgba"'+
+    ' -filter_complex "[1:v]format=gray,scale=1080:1920[a];[0:v]scale=in_color_matrix=bt601:in_range=pc:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=gbrp[c];[c][a]alphamerge,format=rgba"'+
     ' -start_number '+f0+' -y '+JSON.stringify(W+'bt/person/%05d.png'),{stdio:'pipe'});
   refineMatte(f0,f1);
 }

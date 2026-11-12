@@ -21,6 +21,7 @@
 ⛔ يولّد فقط اللي ما هو موجود بمجلد gen/ (ما يعيد ولا يدفع مرتين). لو فشل طلب مرة، يوقف ويقول السبب — ما يكرّر.
 """
 import sys, os, json, time, subprocess, urllib.request, urllib.error
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 
 IMG_MODEL = "fal-ai/nano-banana"
 VID_MODEL = "fal-ai/wan-25-preview/text-to-video"
@@ -110,7 +111,7 @@ def main():
                     time.sleep(5)
                 res = _get(ru, key); url = res["video"]["url"]
                 mp4 = os.path.join(g, k + ".mp4"); _dl(url, mp4)
-                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vf", "fps=30", "-q:v", "3", os.path.join(g, k + "_%04d.jpg")], check=True)
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vf", "fps=30," + VF_FRAMES, "-q:v", "1", os.path.join(g, k + "_%04d.jpg")], check=True)
                 print("  ✅ %s مقطع %s ث → %d فريم (%.0f ث)" % (k, dur, frames_of(work, k), time.time() - t0))
             else:
                 res = _post("https://fal.run/" + IMG_MODEL, key, {"prompt": prompt, "num_images": 1, "aspect_ratio": a.get("ar", "3:4"), "output_format": "jpeg"}, 120)

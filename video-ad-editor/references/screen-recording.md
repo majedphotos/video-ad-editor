@@ -12,7 +12,8 @@
 
 ## استخراج اللقطات
 ```bash
-ffmpeg -v error -y -ss <من> -t <مدة> -i screen.MP4 -vf "fps=30,scale=1080:-2" broll/<اسم>_%04d.jpg
+. scripts/_compat.sh     # يعرّف VF_FRAMES — فريمات بألوان مطابقة للأصل
+ffmpeg -v error -y -ss <من> -t <مدة> -i screen.MP4 -vf "fps=30,scale=1080:-2,$VF_FRAMES" -q:v 1 broll/<اسم>_%04d.jpg
 ```
 وعرّفها بـ`BR_NEED={<اسم>:[1,<عدد>]}`.
 

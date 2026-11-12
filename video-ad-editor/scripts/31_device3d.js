@@ -8,6 +8,7 @@ const puppeteer = require('puppeteer-core');
 require('../motion/vendor.js')();
 const glArgs = require('./_chrome_flags.js');   // الماك: كرت الشاشة · السحابة/الجوال: SwiftShader
 const fs = require('fs'), path = require('path'), http = require('http'), { spawn, execFileSync } = require('child_process');
+const { VF_FRAMES, VF_ENCODE } = require('./_chrome_flags.js');   // 🎨 ألوان مطابقة للأصل (_compat.sh)
 const CHROME = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/chromium', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
 const cfgPath = path.resolve(process.argv[2] || ''); if (!fs.existsSync(cfgPath)) { console.log('الاستخدام: node 31_device3d.js demo.json [preview 1 3 5]'); process.exit(1); }
@@ -22,7 +23,7 @@ const srcs = Array.isArray(D.src) ? D.src : [D.src];
 const isVid = srcs.length === 1 && /\.(mp4|mov|m4v|webm|mkv)$/i.test(srcs[0]);
 if (isVid) {
   const fd = path.join(WORK, 'src'); fs.mkdirSync(fd, { recursive: true });
-  if (!fs.existsSync(path.join(fd, 'done'))) { execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', path.resolve(BASE, srcs[0]), '-vf', `fps=${FPS}`, '-q:v', '2', path.join(fd, '%05d.jpg')]); fs.writeFileSync(path.join(fd, 'done'), ''); }
+  if (!fs.existsSync(path.join(fd, 'done'))) { execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', path.resolve(BASE, srcs[0]), '-vf', `fps=${FPS},${VF_FRAMES}`, '-q:v', '1', path.join(fd, '%05d.jpg')]); fs.writeFileSync(path.join(fd, 'done'), ''); }
   frames = fs.readdirSync(fd).filter(f => f.endsWith('.jpg')).sort().map(f => path.join(fd, f)); DUR = frames.length / FPS;
 } else { frames = srcs.map(s => path.resolve(BASE, s)); holds = D.holds || srcs.map(() => D.hold || 2.5); DUR = holds.reduce((a, b) => a + b, 0); }
 if (D.duration) DUR = Math.min(DUR, D.duration);
@@ -69,7 +70,7 @@ const srv = http.createServer((req, res) => {
   } else {
     const out = path.resolve(BASE, D.out || 'device3d.mp4'), N = Math.round(DUR * FPS);
     const ff = spawn('ffmpeg', ['-y', '-v', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+      '-vf', VF_ENCODE, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
     for (let i = 0; i < N; i++) { await step(i / FPS); const buf = await p.screenshot({ type: 'jpeg', quality: 92 });
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); if (i % 150 === 0) process.stdout.write(`\r${i}/${N}`); }
     ff.stdin.end(); await new Promise(r => ff.on('close', r)); console.log(`\r→ ${out} · ${DUR.toFixed(1)} ث`);

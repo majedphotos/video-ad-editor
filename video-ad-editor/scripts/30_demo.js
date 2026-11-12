@@ -18,6 +18,7 @@
 // القواعد: النسبة الأصلية مقدّسة (contain داخل الإطار)، الزوم يدخل ويطلع بنعومة 0.45 ث، والإيقاع من الكلام.
 const puppeteer = require('puppeteer-core');
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
+const { VF_FRAMES, VF_ENCODE } = require('./_chrome_flags.js');   // 🎨 ألوان مطابقة للأصل (_compat.sh)
 const CHROME = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/chromium', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
 const cfgPath = path.resolve(process.argv[2] || ''); if (!fs.existsSync(cfgPath)) { console.log('الاستخدام: node 30_demo.js demo.json [preview 1 3 5]'); process.exit(1); }
@@ -34,7 +35,7 @@ const srcs = Array.isArray(D.src) ? D.src : [D.src];
 if (srcs.length === 1 && /\.(mp4|mov|m4v|webm|mkv)$/i.test(srcs[0])) {
   const v = path.resolve(BASE, srcs[0]); const fd = path.join(WORK, 'src'); fs.mkdirSync(fd, { recursive: true });
   if (!fs.existsSync(path.join(fd, 'done'))) {
-    execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', v, '-vf', `fps=${FPS}`, '-q:v', '2', path.join(fd, '%05d.jpg')]); fs.writeFileSync(path.join(fd, 'done'), '');
+    execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', v, '-vf', `fps=${FPS},${VF_FRAMES}`, '-q:v', '1', path.join(fd, '%05d.jpg')]); fs.writeFileSync(path.join(fd, 'done'), '');
   }
   frames = fs.readdirSync(fd).filter(f => f.endsWith('.jpg')).sort().map(f => path.join(fd, f)); DUR = frames.length / FPS;
 } else {
@@ -155,7 +156,7 @@ function titleAt(t) { for (const q of D.title || []) if (t >= q.s && t <= q.e) {
   } else {
     const out = path.resolve(BASE, D.out || 'demo.mp4'); const N = Math.round(DUR * FPS);
     const ff = spawn('ffmpeg', ['-y', '-v', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+      '-vf', VF_ENCODE, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
     for (let i = 0; i < N; i++) {
       await step(i / FPS); const buf = await p.screenshot({ type: 'jpeg', quality: 92 });
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));

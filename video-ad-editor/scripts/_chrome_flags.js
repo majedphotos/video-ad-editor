@@ -9,3 +9,7 @@ module.exports = function glArgs() {
   if (mode === 'gpu') return ['--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'];
   return ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'];
 };
+
+/* 🎨 ألوان مطابقة للأصل: صيغتي ffmpeg (فيديو ← فريمات للرسم · فريمات المتصفح ← فيديو) — المصدر الواحد _compat.sh */
+const _compat = require('fs').readFileSync(require('path').join(__dirname, '_compat.sh'), 'utf8');
+for (const k of ['VF_FRAMES', 'VF_ENCODE']) module.exports[k] = _compat.match(new RegExp(k + "='([^']+)'"))[1];

@@ -244,7 +244,7 @@ def source_frames(work, plan, s, n):
         if not os.path.exists(sdr) and os.path.exists(tool): run(tool, src, sdr)
         if os.path.exists(sdr): src = sdr
     tm = s.get("tmap"); nn = int(tm[-1][1] * FPS) + 2 if tm else n
-    vf = f"fps={FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},format=rgb24"
+    vf = f"fps={FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},scale=in_color_matrix=bt709:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=rgb24"   # 🎨 فك دقيق — العادي يغمّق الصورة درجتين من 255
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-ss", str(s.get("ss", 0)), "-i", src, "-vf", vf, "-frames:v", str(nn), "-f", "rawvideo", "-"], stdout=subprocess.PIPE)
     fr = []
     while len(fr) < nn:
@@ -370,7 +370,8 @@ def compose(work, only=None, out=None):
     ov = os.path.join(work, "overlay"); ff = None
     if out:
         ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "medium", "-crf", "15",
-                               "-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out], stdin=subprocess.PIPE)
+                               "-vf", "scale=out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
+                               "-bsf:v", "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0", out], stdin=subprocess.PIPE)
     done = []
     for s in plan["shots"]:
         f0 = int(round(s["t0"] * FPS)); f1 = int(round(s["t1"] * FPS)); n = f1 - f0

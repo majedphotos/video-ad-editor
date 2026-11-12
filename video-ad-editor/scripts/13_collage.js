@@ -4,6 +4,7 @@
    الخطوات: فريمات → قصّ المتحدث (مكتبة ماك المدمجة) → المخطِّط يبني الخط الزمني من الجمل → رسم → مؤثرات → دمج مع صوته.
    يكمّل من وين وقف: الفريمات والأقنعة الموجودة ما تُعاد. */
 const path=require('path'),fs=require('fs'),cp=require('child_process');
+const { VF_FRAMES, VF_ENCODE } = require('./_chrome_flags.js');   // 🎨 ألوان مطابقة للأصل (_compat.sh)
 const W=path.resolve(process.argv[2])+path.sep, SC=__dirname+path.sep;
 const args=process.argv.slice(3);const li=args.indexOf('--logos');const LOGOS=li>=0?path.resolve(args[li+1])+path.sep:null;if(li>=0)args.splice(li,2);
 const STYLE=(args[0]==='accents')?'accents':'collage';const MODE=args[1]||'all';
@@ -14,7 +15,7 @@ for(const f of ['cutz.mp4','caps.json','theme.json'])if(!fs.existsSync(W+f)){con
 const CAPS=JSON.parse(fs.readFileSync(W+'caps.json','utf8'));const DUR=CAPS.total||CAPS.cards[CAPS.cards.length-1].e;const FPS=30;let N=Math.ceil(DUR*FPS);
 /* 1) فريمات */
 const FR=W+'cframes/';fs.mkdirSync(FR,{recursive:true});
-if(fs.readdirSync(FR).filter(f=>f.endsWith('.jpg')).length<N-2){console.log('🎞️ فريمات: '+N);sh(`ffmpeg -v error -i ${JSON.stringify(W+'cutz.mp4')} -vf fps=${FPS} -q:v 2 -y ${JSON.stringify(FR+'f_%04d.jpg')}`);}
+if(fs.readdirSync(FR).filter(f=>f.endsWith('.jpg')).length<N-2){console.log('🎞️ فريمات: '+N);sh(`ffmpeg -v error -i ${JSON.stringify(W+'cutz.mp4')} -vf "fps=${FPS},${VF_FRAMES}" -q:v 1 -y ${JSON.stringify(FR+'f_%04d.jpg')}`);}
 N=Math.min(N,fs.readdirSync(FR).filter(f=>f.endsWith('.jpg')).length);   // آخر فريم فعلي (ffmpeg يقرّب المدة)
 /* 2) قصّ المتحدث */
 const MK=W+'cmask/';fs.mkdirSync(MK,{recursive:true});
@@ -49,7 +50,7 @@ fs.writeFileSync(W+'collage.html',tpl.replace('<script>','<script>window.CFG='+J
   sh(`python3 ${JSON.stringify(SC+'13_collage_sfx.py')} ${JSON.stringify(W+'collage_sfx.json')} ${JSON.stringify(W+'collage_sfx.wav')} ${DUR+0.2}`);
   sh(`ffmpeg -v error -y -i ${JSON.stringify(W+'cutz.mp4')} -vn -ac 1 -ar 48000 ${JSON.stringify(W+'collage_voice.wav')}`);
   sh(`ffmpeg -v error -y -i ${JSON.stringify(W+'collage_voice.wav')} -i ${JSON.stringify(W+'collage_sfx.wav')} -filter_complex "[0]volume=1.0[a];[1]volume=0.9[b];[a][b]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11" -ar 48000 ${JSON.stringify(W+'collage_mix.wav')}`);
-  sh(`ffmpeg -v error -y -framerate ${FPS} -i ${JSON.stringify(OUT+'f_%04d.jpg')} -i ${JSON.stringify(W+'collage_mix.wav')} -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p -c:a aac -b:a 160k -shortest -movflags +faststart ${JSON.stringify(W+'ad-collage.mp4')}`);
+  sh(`ffmpeg -v error -y -framerate ${FPS} -i ${JSON.stringify(OUT+'f_%04d.jpg')} -i ${JSON.stringify(W+'collage_mix.wav')} -vf "${VF_ENCODE}" -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -c:a aac -b:a 160k -shortest -movflags +faststart ${JSON.stringify(W+'ad-collage.mp4')}`);
   sh(`ffmpeg -v error -y -i ${JSON.stringify(W+'ad-collage.mp4')} -vf "select='not(mod(n\\,${Math.max(30,Math.round(N/24))}))',scale=180:-1,tile=8x3" -frames:v 1 -vsync vfr ${JSON.stringify(W+'collage_sheet.jpg')}`);
   console.log('✅ '+W+'ad-collage.mp4  ·  ورقة اللقطات: collage_sheet.jpg');process.exit(0);
 })().catch(e=>{console.error('⛔',e.message);process.exit(1);});

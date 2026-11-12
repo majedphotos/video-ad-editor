@@ -8,9 +8,12 @@ W="$(abspath "$1")"; OUT="${2:-$W/ad-final.mp4}"; MAXMB="${MAXMB:-29}"
 DUR=$("$PY" -c "import json;c=json.load(open('$W/caps.json'));s=json.load(open('$W/sfx.json'));print(round(c['total']+float(s.get('outro',0) or 0),3))")
 FADE=$("$PY" -c "print(round($DUR-0.6,3))")
 IN=(-framerate 30 -i "$W/out/%05d.jpg" -i "$W/cutz.mp4" -i "$W/sfx.wav"
- -filter_complex "[0:v]scale=in_range=pc:out_range=tv:out_color_matrix=bt709,format=yuv420p[vo];[1:a]apad=pad_dur=8[a0];[a0][2:a]amix=inputs=2:duration=first:normalize=0[am];[am]atrim=0:$DUR,asetpts=PTS-STARTPTS,afade=t=out:st=$FADE:d=0.6[ao]"
+ -filter_complex "[0:v]$VF_ENCODE[vo];[1:a]apad=pad_dur=8[a0];[a0][2:a]amix=inputs=2:duration=first:normalize=0[am];[am]atrim=0:$DUR,asetpts=PTS-STARTPTS,afade=t=out:st=$FADE:d=0.6[ao]"
  -map "[vo]" -map "[ao]")
-V=(-c:v libx264 -preset slow -profile:v high -level 4.0 -pix_fmt yuv420p -color_range tv -colorspace bt709 -color_primaries bt709 -color_trc bt709 -r 30)
+# 🎨 VF_ENCODE (_compat.sh): تحويل دقيق من فريمات المتصفح لـbt709. ووسوم bt709 تنكتب بالملف نفسه (h264_metadata) —
+#    مع filter_complex كان color_transfer وcolor_primaries يطلعون unknown مهما انكتب بالأمر.
+V=(-c:v libx264 -preset slow -profile:v high -level 4.0 -pix_fmt yuv420p -color_range tv -colorspace bt709 -color_primaries bt709 -color_trc bt709 -r 30
+   -bsf:v h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0)
 A=(-c:a aac -b:a 160k -ar 48000)
 if [ "${FIT:-0}" = "1" ]; then
   # المعدل = (الهدف − صوت 192k بعد المعايرة) × 0.97 هامش الحاوية — 124 ث ← ~1715k ≈ 28 ميقا (ريل «1000$ بيوم»: 1.72M = 27.9)

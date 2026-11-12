@@ -211,8 +211,7 @@ if os.path.exists(P("sfx.json")):
 
 print(f"""
 ✅ تم. الحين أعد بناء الفيديو:
-   python scripts/03_cut_zoom.py {W}
-   mkdir -p {W}/vfr && ffmpeg -v error -i {W}/cutz.mp4 -vf fps=30 -q:v 3 -y {W}/vfr/%05d.jpg
+   python scripts/03_cut_zoom.py {W}                    (يقص ويطلّع فريمات vfr بنفسه)
    node scripts/04_render_frames.js {W} all --force     (أو 04b_remotion.sh {W} render)
 ⚠️ لو كنت مصمّماً مشاهد بأوقات ثابتة — أوقاتها انزاحت، راجعها.
 ↩️ للتراجع: python scripts/10_script_edit.py {W} undo""")

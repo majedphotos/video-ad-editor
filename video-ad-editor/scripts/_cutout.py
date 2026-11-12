@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(HERE, "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 SOURCES = ["src_sdr.mov", "src_fixed.mov", "src.mov", "src.mp4", "ad-master.mp4", "ad-final.mp4"]   # المصدر أول: النهائي فيه كابشن محروق
 
 
@@ -66,7 +67,7 @@ def cutout(video, out, t=-1.0, n=12, cache=None):
     d = _dur(video)
     times = [t] if t >= 0 else [1.0 + (d - 2.0) * i / max(1, n - 1) for i in range(n)]
     for i, x in enumerate(times):
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(0, x):.2f}", "-i", video, "-frames:v", "1", "-q:v", "2",
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(0, x):.2f}", "-i", video, "-frames:v", "1", "-vf", VF_FRAMES, "-q:v", "1",
                         os.path.join(fr, f"{i:03d}.jpg")])
     subprocess.run([_bin(cache or os.path.join(tmp, "bt")), fr, mk, "accurate", "1.5"],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)

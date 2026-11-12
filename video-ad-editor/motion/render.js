@@ -10,6 +10,7 @@
            --no-blur (يطفي الموشن بلير — مسودة أسرع)
    ⚠ الاستئناف يتخطّى أي فريم موجود: عدّلت مشهد؟ استخدم --fresh أو range على المقطع المعدّل بعد حذف فريماته. */
 const fs = require('fs'), path = require('path'), http = require('http'), { spawnSync } = require('child_process');
+const { VF_ENCODE } = require('../scripts/_chrome_flags.js');   // 🎨 ألوان مطابقة للأصل (_compat.sh)
 require('./vendor.js')();
 const ROOT = path.resolve(__dirname, '..');                        // video-ad-editor (serves /motion, /scripts)
 const LOGOS = path.resolve(__dirname, '../../hook-assets/logos');
@@ -66,7 +67,7 @@ const ffmpeg = args => { const r = spawnSync('ffmpeg', args, { stdio: ['ignore',
 function encode(frameDir, fps, out, startNumber = 0, count = null) {
   const args = ['-y', '-v', 'error', '-stats', '-framerate', String(fps), '-start_number', String(startNumber), '-i', path.join(frameDir, 'f_%06d.jpg')];
   if (count) args.push('-frames:v', String(count));
-  args.push('-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', CRF,
+  args.push('-vf', VF_ENCODE, '-c:v', 'libx264', '-preset', 'slow', '-crf', CRF,
     '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv', '-r', String(fps), '-movflags', '+faststart', out);
   ffmpeg(args);
 }

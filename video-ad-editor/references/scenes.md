@@ -109,7 +109,8 @@ SCENE_LIST.push(['listPanel',listPanel]);   // بدون التسجيل ما ين
 ## البي-رول (اختياري)
 
 فيديو ثانٍ من الشركة؟
-1. استخرج المفيد فريمات: `<work>/broll/<اسم>_%04d.jpg`
+1. استخرج المفيد فريمات — **بـ`$VF_FRAMES`** عشان لونه يطابق تصويره (الأمر العادي ينقص الأحمر):
+   `. scripts/_compat.sh; ffmpeg -v error -ss <من> -t <مدة> -i broll.mp4 -vf "fps=30,$VF_FRAMES" -q:v 1 <work>/broll/<اسم>_%04d.jpg`
 2. عرّف مداه بـ`BR_NEED`.
 3. اعرضه بـ`brCard()` مع `R_LOWER`.
 4. `BRCROP` يقصّ الترجمة المحروقة.

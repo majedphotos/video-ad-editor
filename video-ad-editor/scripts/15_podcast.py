@@ -17,6 +17,7 @@ _bi.open=_u
 import json, os, sys, subprocess, glob, shutil, math, statistics, wave, struct
 import numpy as np
 SC=os.path.dirname(os.path.abspath(__file__))
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(SC, "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 PY=sys.executable
 FPS=30; LOFPS=10; LOW=270; LOH=480
 VID_EXT=('.mp4','.mov','.m4v','.mkv','.MP4','.MOV')
@@ -85,7 +86,7 @@ def prep(W,args):
         procs.append(subprocess.Popen(["ffmpeg","-v","error","-y","-ss",f"{start-c['offset']:.3f}","-t",f"{total:.3f}","-i",c["file"],
             "-vf",f"fps={LOFPS},scale={LOW}:{LOH}:force_original_aspect_ratio=increase,crop={LOW}:{LOH}","-q:v","4",os.path.join(lo,"%05d.jpg")]))
         hi=os.path.join(W,f"cam{c['id']}"); os.makedirs(hi,exist_ok=True)
-        procs.append(subprocess.Popen(["ffmpeg","-v","error","-y","-ss",f"{start-c['offset']:.3f}","-t",f"{total:.3f}","-i",c["file"],"-vf",f"fps={FPS}","-q:v","3",os.path.join(hi,"%05d.jpg")]))
+        procs.append(subprocess.Popen(["ffmpeg","-v","error","-y","-ss",f"{start-c['offset']:.3f}","-t",f"{total:.3f}","-i",c["file"],"-vf",f"fps={FPS},"+VF_FRAMES,"-q:v","3",os.path.join(hi,"%05d.jpg")]))   # q3 مثل قبل: كاميرات 4K × حلقة كاملة — q1 يضاعف الحجم بلا فايدة
     # التفريغ بالتوازي مع الفريمات
     wh=subprocess.Popen([PY,"-m","whisper",os.path.join(W,"a.wav"),"--language","ar","--model","medium","--word_timestamps","True","--output_format","json","--output_dir",W,"--fp16","False"],stdout=open(os.path.join(W,"whisper.log"),"w"),stderr=subprocess.STDOUT)
     for p in procs: p.wait()
@@ -413,7 +414,7 @@ def make(W):
             if os.path.exists(a): shutil.copy(a,os.path.join(src,f"{f:05d}.jpg"))
           subprocess.run([pm,src,msk,"accurate","2.5"],capture_output=True)
           sh(["ffmpeg","-v","error","-y","-start_number",str(f0),"-i",os.path.join(src,"%05d.jpg"),"-start_number",str(f0),"-i",os.path.join(msk,"%05d.png"),
-            "-frames:v",str(f1-f0+1),"-filter_complex","[1:v]format=gray,scale=iw:ih[a];[0:v][a]alphamerge,format=rgba","-start_number",str(f0),os.path.join(per,"%05d.png")])
+            "-frames:v",str(f1-f0+1),"-filter_complex","[1:v]format=gray,scale=iw:ih[a];[0:v]scale=in_color_matrix=bt601:in_range=pc:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=gbrp[c];[c][a]alphamerge,format=rgba","-start_number",str(f0),os.path.join(per,"%05d.png")])
           print(f"قصّ الراس: كام{cam} {sc['s']:.1f}-{sc['e']:.1f} ({f1-f0+1} فريم)")
         # حدود ثابتة للمشهد (وسيط) — بدونها الكرت يرقص
         bs=[]; cw=next(x for x in cams if x["id"]==cam); kx=cw["w"]/270; ky=cw["h"]/480
@@ -432,7 +433,7 @@ def make(W):
     # 5) التجميع + المعايرة + الترجمة + الورقة
     dur=caps["total"]+P["outro"]
     sh(["ffmpeg","-v","error","-y","-framerate","30","-i",os.path.join(W,"out","%05d.jpg"),"-i",os.path.join(W,"master.m4a"),"-map","0:v","-map","1:a",
-        "-af","apad","-t",f"{dur:.3f}","-c:v","libx264","-preset","medium","-crf","19","-pix_fmt","yuv420p","-colorspace","bt709","-color_primaries","bt709","-color_trc","bt709",
+        "-af","apad","-t",f"{dur:.3f}","-vf",VF_ENCODE,"-c:v","libx264","-preset","medium","-crf","19","-pix_fmt","yuv420p","-colorspace","bt709","-color_primaries","bt709","-color_trc","bt709",
         "-c:a","aac","-b:a","192k","-movflags","+faststart",os.path.join(W,"pod-final.mp4")],quiet=False)
     m=subprocess.run(["bash",os.path.join(SC,"06b_master.sh"),W,os.path.join(W,"pod-final.mp4"),os.path.join(W,"pod-master.mp4")],capture_output=True,text=True)
     lufs=[l for l in m.stdout.splitlines() if "LUFS" in l]

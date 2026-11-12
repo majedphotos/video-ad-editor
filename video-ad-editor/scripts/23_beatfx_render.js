@@ -23,6 +23,7 @@
           ← ما يرسم شي: يطلع ورقة الفحص من الفيديو الجاهز على نفس <work>/beatfx.json → <work>/beatfx-sheet.jpg */
 const path = require('path'), fs = require('fs'), { execFileSync, spawnSync } = require('child_process');
 const { pathToFileURL } = require('url');
+const { VF_FRAMES, VF_ENCODE } = require('./_chrome_flags.js');   // 🎨 ألوان مطابقة للأصل (_compat.sh)
 const fileURL = p => pathToFileURL(p).href;
 const A = process.argv.slice(2);
 if (A.length < 2) { console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0]); process.exit(1); }
@@ -106,7 +107,7 @@ const probe = f => { try { return JSON.parse(execFileSync('ffprobe', ['-v', 'err
   const sig = IN + '|' + fs.statSync(IN).mtimeMs;
   if (Math.abs(nOld - need) > 2 || !fs.existsSync(stamp) || fs.readFileSync(stamp, 'utf8') !== sig) {
     fs.rmSync(SRC, { recursive: true, force: true }); fs.mkdirSync(SRC, { recursive: true });
-    const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', IN, '-vf', 'fps=' + FPS, '-q:v', '2', SRC + '%05d.jpg'], { stdio: 'inherit' });
+    const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', IN, '-vf', 'fps=' + FPS + ',' + VF_FRAMES, '-q:v', '1', SRC + '%05d.jpg'], { stdio: 'inherit' });
     if (r.status) { console.error('❌ فشل استخراج الفريمات'); process.exit(2); }
     fs.writeFileSync(stamp, sig);
   }
@@ -211,7 +212,7 @@ window.sheet=async(items,cols,cw)=>{   /* ورقة فحص: صور + تسميتي
   const au = opt('--audio', hasA ? IN : 'none');
   const args = ['-v', 'error', '-y', '-framerate', String(FPS), '-i', OUT + '%05d.jpg'];
   if (au !== 'none') args.push('-i', path.resolve(au)); else args.push('-f', 'lavfi', '-t', String(NF / FPS), '-i', 'anullsrc=r=48000:cl=stereo');
-  args.push('-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+  args.push('-map', '0:v', '-map', '1:a', '-vf', VF_ENCODE, '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
     '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709',
     '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-t', (NF / FPS).toFixed(3), '-movflags', '+faststart', out);
   const r = spawnSync('ffmpeg', args, { stdio: 'inherit' });

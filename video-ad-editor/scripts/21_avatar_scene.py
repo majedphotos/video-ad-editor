@@ -9,6 +9,7 @@
           بلا --yes يطبع التكلفة بس ولا يصرف.
 المزوّد fal.ai — المفتاح FAL_KEY بالبيئة أو .env (مجلد الشغل أو المشروع أو البيت)."""
 import sys, os, json, time, base64, subprocess, urllib.request, urllib.error
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 
 IMG_EDIT = "fal-ai/nano-banana/edit"            # 0.039$ للصورة (صفحة fal، 28 سبتمبر 2026)
 AVATAR   = "fal-ai/kling-video/ai-avatar/v2/pro" # 0.115$ للثانية — صورة + صوت → يتكلم بالصوت نفسه
@@ -78,7 +79,7 @@ def main():
         n = int(round(dur * 30))
         for f in os.listdir(os.path.join(W, "clips")):
             if f.startswith(name + "_"): os.remove(os.path.join(W, "clips", f))
-        subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-vf", "fps=30,scale=1080:1890", "-frames:v", str(n), "-q:v", "2",
+        subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-vf", "fps=30,scale=1080:1890," + VF_FRAMES, "-frames:v", str(n), "-q:v", "1",
                         os.path.join(W, "clips", name + "_%04d.jpg")], check=True)
         print("✅ clips/%s_0001..%04d.jpg — تبدأ عند %.2f ث بالضبط (الشفايف على صوته). الرسم: references/talking-avatar.md" % (name, n, a))
     else: sys.exit(__doc__)

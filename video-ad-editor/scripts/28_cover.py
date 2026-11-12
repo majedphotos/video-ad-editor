@@ -26,6 +26,7 @@ import numpy as np
 from PIL import Image
 
 SQ0, SQ1 = 420, 1500          # المربع الآمن 1:1 بنص 9:16
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 
 def arg(n, d):
     return type(d)(sys.argv[sys.argv.index(n) + 1]) if n in sys.argv else d
@@ -104,7 +105,7 @@ def main():
     if video and os.path.exists(video):
         t = arg("--t", -1.0); t = t if t >= 0 else pick(video, arg("--n", 16), cache)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", video, "-frames:v", "1",
-                        "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920", frame], check=True)
+                        "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,scale=in_color_matrix=bt709:flags=accurate_rnd+full_chroma_int+full_chroma_inp+bicubic,format=rgb24", frame], check=True)   # 🎨 فك دقيق — العادي يغمّق صورته درجتين
     elif not photo:
         sys.exit("❌ ما لقيت الفيديو — اعطه --video أو --photo")
     if cut and not photo:   # صورته من الفيديو نفسه، مقصوصة — نفس الثانية لو حددها
@@ -206,14 +207,15 @@ def main():
     if first and os.path.exists(first):
         hold = arg("--hold", 0.1); out = os.path.splitext(first)[0] + "-cover.mp4"
         has_a = bool(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", first], capture_output=True, text=True).stdout.strip())
-        fc = "[1:v]scale=1080:1920,setsar=1,fps=30,format=yuv420p[c];[0:v]scale=1080:1920,setsar=1,fps=30,format=yuv420p[v];"
+        fc = "[1:v]" + VF_ENCODE + ",scale=1080:1920,setsar=1,fps=30,format=yuv420p[c];[0:v]scale=1080:1920,setsar=1,fps=30,format=yuv420p[v];"   # 🎨 الكفر (JPEG) يتحوّل bt709 بدقة · الفيديو نفسه ما ينلمس لونه
         if has_a:
             fc += "[2:a]aresample=48000[s];[0:a]aresample=48000[a];[c][s][v][a]concat=n=2:v=1:a=1[ov][oa]"; maps = ["-map", "[ov]", "-map", "[oa]", "-c:a", "aac", "-b:a", "192k"]
         else:
             fc += "[c][v]concat=n=2:v=1:a=0[ov]"; maps = ["-map", "[ov]"]
         base = ["ffmpeg", "-v", "error", "-y", "-i", first, "-loop", "1", "-t", f"{hold}", "-framerate", "30", "-i", cj,
                 "-f", "lavfi", "-t", f"{hold}", "-i", "anullsrc=r=48000:cl=stereo", "-filter_complex", fc, *maps,
-                "-c:v", "libx264", "-pix_fmt", "yuv420p"]
+                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
+                "-bsf:v", "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0"]   # وسوم bt709 بالملف نفسه
         # 6.1 الحجم (ريل «1000$ بيوم» 124 ث: CRF 18 طلّعه فوق 60 ميقا): هذا ملف التسليم — لازم تحت 30 ميقا.
         # أطول من 90 ث أو الناتج أكبر من MAXMB (افتراضي 29) ← ترميز بمرحلتين بمعدل محسوب من المدة، من النسخة العالية (مرة وحدة)
         maxmb = float(os.environ.get("MAXMB", 29))

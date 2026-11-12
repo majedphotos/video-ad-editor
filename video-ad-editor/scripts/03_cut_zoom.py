@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""قص السكتات + زوم مختلف لكل مقطع + تدرّج دافئ.  python3 03_cut_zoom.py <workdir>"""
+"""قص السكتات + زوم مختلف لكل مقطع + فريمات vfr بألوان مطابقة.  python3 03_cut_zoom.py <workdir> [--frames]"""
 # ── توافق ويندوز/UTF-8 (مضاف) ─────────────────────────────────────
 import sys as _sys, builtins as _bi
 try:
@@ -16,6 +16,21 @@ _bi.open = _utf8_open
 # ──────────────────────────────────────────────────────────────────
 import json, subprocess, sys, os
 W=os.path.abspath(sys.argv[1]); SRC=os.path.join(W,"src.mov")
+# 🎨 فريمات vfr بألوان مطابقة للأصل (12 نوفمبر — ريل «عيون»): الأمر العادي (`-vf fps=30 -q:v 3`) كان يكتب JPEG بمصفوفة bt709
+#    والمتصفح يقراه bt601 ← الأحمر ينقص 3.4 من 255. الحين 03 يطلّعها بنفسه بعد القص بفلتر colorspace (الصيغة بـ_compat.sh ← VF_FRAMES).
+#    فريمات بس بلا إعادة قص (مشروع قديم تبي تصلّح لونه):  python3 03_cut_zoom.py <work> --frames   ثم الرسم --force
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
+def _frames():
+    import shutil, glob
+    cz=os.path.join(W,"cutz.mp4"); vfr=os.path.join(W,"vfr")
+    if not os.path.exists(cz): print("❌ ما فيه cutz.mp4 — شغّل القص أول"); return 2
+    shutil.rmtree(vfr,ignore_errors=True); os.makedirs(vfr)
+    rc=subprocess.call(["ffmpeg","-v","error","-nostats","-i",cz,"-vf","fps=30,"+VF_FRAMES,"-q:v","1","-y",os.path.join(vfr,"%05d.jpg")])
+    n=len(glob.glob(os.path.join(vfr,"*.jpg")))
+    if rc==0 and n: print(f"✅ vfr — {n} فريم بألوان مطابقة للأصل")
+    else: print("❌ فشل استخراج الفريمات (vfr)"); rc=rc or 1
+    return rc
+if "--frames" in sys.argv[2:]: sys.exit(_frames())
 _cj=json.load(open(os.path.join(W,"cut.json"))); k=_cj["keep"]; TAIL=float(_cj.get("tail",0) or 0)
 _tp=os.path.join(W,"theme.json")
 _th=json.load(open(_tp)) if os.path.exists(_tp) else {}
@@ -133,4 +148,5 @@ _rc=subprocess.call(["ffmpeg","-v","error","-nostats",*SEEK,"-i",SRC,"-filter_co
 if _rc==0:
     _d=subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",_OUT],capture_output=True,text=True).stdout.strip()
     print(f"✅ cutz.mp4 — {float(_d or 0):.2f} ث · {len(k)} مقطع")
+    _rc=_frames()
 sys.exit(_rc)

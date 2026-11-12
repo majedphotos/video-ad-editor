@@ -111,9 +111,7 @@ def reapply_words(old_caps):
     wr('caps.json', caps)
 
 def rebuild_after_cut(old_keep):
-    log("✂️ أقصّ وأزوّم من جديد…"); sh([PY, os.path.join(S, '03_cut_zoom.py'), W])
-    log("🖼️ أطلّع الفريمات…"); shutil.rmtree(P('vfr'), ignore_errors=True); os.makedirs(P('vfr'))
-    sh(['ffmpeg', '-v', 'error', '-i', P('cutz.mp4'), '-vf', 'fps=30', '-q:v', '3', '-y', P('vfr', '%05d.jpg')])
+    log("✂️ أقصّ وأزوّم وأطلّع الفريمات من جديد…"); sh([PY, os.path.join(S, '03_cut_zoom.py'), W])   # 03 يطلّع vfr بنفسه بألوان مطابقة
     new_keep = rd('cut.json')['keep']; shift_studio(old_keep, new_keep)
     for f in ('behind.json', 'sfx.wav'):
         try: os.remove(P(f))
@@ -177,10 +175,10 @@ def do_undo_cut():
     for f in ('cut.json', 'caps.json', 'studio.json', 'sfx.json'):
         if os.path.exists(os.path.join(bk, f)): shutil.copy(os.path.join(bk, f), P(f))
     log("↶ رجّعت ملفات ما قبل القص…")
-    sh([PY, os.path.join(S, '03_cut_zoom.py'), W]); shutil.rmtree(P('vfr'), ignore_errors=True); os.makedirs(P('vfr'))
-    sh(['ffmpeg', '-v', 'error', '-i', P('cutz.mp4'), '-vf', 'fps=30', '-q:v', '3', '-y', P('vfr', '%05d.jpg')])
+    sh([PY, os.path.join(S, '03_cut_zoom.py'), W])   # 03 يطلّع vfr بنفسه
     shutil.rmtree(P('out'), ignore_errors=True); JOB["reload"] = True
 
+VF_FRAMES, VF_ENCODE = [__import__("re").search(_n + r"='([^']+)'", open(os.path.join(S, "_compat.sh"), encoding="utf-8").read()).group(1) for _n in ("VF_FRAMES", "VF_ENCODE")]   # 🎨 ألوان مطابقة للأصل — المصدر الواحد _compat.sh
 def do_broll(name, data):
     key = re.sub(r'[^a-z0-9]+', '', name.lower().rsplit('.', 1)[0])[:12] or 'clip'
     key = key + str(int(time.time()) % 1000)
@@ -192,7 +190,7 @@ def do_broll(name, data):
     if hdr and os.path.exists(os.path.join(S, 'hdr2sdr')):
         log("🎨 لقطة HDR — أحوّلها بمحوّل أبل…"); use = P('broll_src', key + '_sdr.mov'); sh([os.path.join(S, 'hdr2sdr'), src, use], check=False)
         if not os.path.exists(use): use = src
-    sh(['ffmpeg', '-v', 'error', '-i', use, '-vf', 'fps=30,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920', '-q:v', '3', '-y', P('broll', key + '_%04d.jpg')])
+    sh(['ffmpeg', '-v', 'error', '-i', use, '-vf', 'fps=30,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,' + VF_FRAMES, '-q:v', '1', '-y', P('broll', key + '_%04d.jpg')])
     n = len([f for f in os.listdir(P('broll')) if f.startswith(key + '_')])
     st = rd('studio.json') or {}; st.setdefault('brNeed', {})[key] = [1, n]; wr('studio.json', st)
     JOB["done"] = json.dumps({"key": key, "frames": n}); JOB["reload"] = True

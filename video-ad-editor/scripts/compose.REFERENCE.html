@@ -920,7 +920,7 @@ function personStage(t){
 }
 
 /* ---------- B-roll: لقطات فيديو ثانية داخل كرت (اختياري) ----------
-   استخرج الفريمات: ffmpeg -ss <من> -t <مدة> -i broll.mp4 -vf fps=30 <work>/broll/<اسم>_%04d.jpg
+   استخرج الفريمات (بـ$VF_FRAMES من scripts/_compat.sh — لون مطابق للأصل): ffmpeg -ss <من> -t <مدة> -i broll.mp4 -vf "fps=30,$VF_FRAMES" -q:v 1 <work>/broll/<اسم>_%04d.jpg
    ثم عرّف المدى هنا: BR_NEED={tree:[60,151]} ← يُحمَّل مرة وحدة عند init. brCard(اسم, t-s, سرعة, 1, s, e) يرسمه بكرت فوق.
    BRCROP يقصّ الترجمة المحروقة أسفل لقطات أنثروبك (من 720×1280: خذ 640×800 من y=60). */
 const BR={}, BR_NEED={};
