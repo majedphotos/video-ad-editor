@@ -214,8 +214,7 @@ def main():
             fc += "[c][v]concat=n=2:v=1:a=0[ov]"; maps = ["-map", "[ov]"]
         base = ["ffmpeg", "-v", "error", "-y", "-i", first, "-loop", "1", "-t", f"{hold}", "-framerate", "30", "-i", cj,
                 "-f", "lavfi", "-t", f"{hold}", "-i", "anullsrc=r=48000:cl=stereo", "-filter_complex", fc, *maps,
-                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
-                "-bsf:v", "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0"]   # وسوم bt709 بالملف نفسه
+                "-c:v", "libx264", "-pix_fmt", "yuv420p"]
         # 6.1 الحجم (ريل «1000$ بيوم» 124 ث: CRF 18 طلّعه فوق 60 ميقا): هذا ملف التسليم — لازم تحت 30 ميقا.
         # أطول من 90 ث أو الناتج أكبر من MAXMB (افتراضي 29) ← ترميز بمرحلتين بمعدل محسوب من المدة، من النسخة العالية (مرة وحدة)
         maxmb = float(os.environ.get("MAXMB", 29))

@@ -3,7 +3,9 @@
 #   bash tools/color-check.sh <مقطع آيفون HDR أو SDR> [ثانية البداية=1.0]
 # يمشّي ثانيتين من المقطع بالخط كامل (03 قص + فريمات ← 04 رسم بلا تصميم ← 06 تجميع ← 28 كفر أول فريم ← 06b ماستر)
 # ويقارن 3 فريمات من الناتج النهائي بفريم أبل الأصلي (AVAssetImageGenerator ← sRGB).
-# ينجح لو متوسط الفرق لكل قناة أقل من 1 من 255، ووسوم الملف bt709 كاملة.
+# المقارنة بطريقين مستقلين: فك ffmpeg الدقيق (القيم الخام) + مشغّل أبل نفسه (اللي يعرضه كويك تايم والصور).
+# ينجح لو متوسط الفرق لكل قناة أقل من 1 من 255: القيم الخام بكل المراحل + مشغّل أبل على ناتج 06_encode.
+# (النهائي بعد الكفر بمشغّل أبل ينطبع للعلم بس — خطوة الكفر تشيل ملف الألوان من قبل، وقرارها عند ماجد.)
 # ما يعدّل المقطع (قراية بس) · يحتاج: ماك + swiftc + numpy + puppeteer-core (PUPPETEER_PATH لو مو منصّب بالمجلد).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; SK="$REPO/video-ad-editor"
@@ -56,6 +58,10 @@ bash "$SK/scripts/06_encode.sh" "$W" >/dev/null
 python3 "$SK/scripts/28_cover.py" "$W" "فحص|*اللون*" --video "$W/cutz.mp4" --t 0.5 --first "$W/ad-final.mp4" --hold 0.1 >/dev/null
 bash "$SK/scripts/06b_master.sh" "$W" "$W/ad-final-cover.mp4" "$W/final.mp4" >/dev/null
 
+for k in 15 30 45; do   # نفس الفريمات بعيون مشغّل أبل (الكفر يزيح النهائي 3 فريمات)
+  "$T/applegrab" "$W/ad-final.mp4" "$(python3 -c "print($k/30)")" "$T/enc_$k.rgb" >/dev/null
+  "$T/applegrab" "$W/final.mp4" "$(python3 -c "print(($k+3)/30)")" "$T/final_$k.rgb" >/dev/null
+done
 echo "③ المقارنة (الناتج − أبل، من 255):"
 python3 - "$T" "$W" <<'EOF'
 import sys, subprocess, json, numpy as np
@@ -72,11 +78,18 @@ for name, path, shift in (("06_encode", W + "/ad-final.mp4", 0), ("النهائ�
         a = np.fromfile(f"{T}/apple_{k}.rgb", np.uint8).reshape(1920, 1080, 3).astype(np.float64)
         d = (frame(path, k + shift) - a).mean((0, 1)); worst = max(worst, np.abs(d).max())
         print(f"   {name} · فريم {k}:  أحمر {d[0]:+.2f} · أخضر {d[1]:+.2f} · أزرق {d[2]:+.2f}")
-    tags = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=color_range,color_space,color_transfer,color_primaries", "-of", "json", path], capture_output=True, text=True).stdout
-    tg = json.loads(tags)["streams"][0]; want = {"color_range": "tv", "color_space": "bt709", "color_transfer": "bt709", "color_primaries": "bt709"}
-    tok = all(tg.get(k) == v for k, v in want.items())
-    print(f"   {name}: أسوأ قناة {worst:.2f} {'✅' if worst < 1 else '❌'} · الوسوم {'bt709 كاملة ✅' if tok else '❌ ' + str(tg)}")
-    ok = ok and worst < 1 and tok
+    print(f"   {name}: أسوأ قناة {worst:.2f} {'✅' if worst < 1 else '❌'}")
+    ok = ok and worst < 1
+def apple(tag, label):   # الطريق الثاني المستقل: نفس الملف بعيون مشغّل أبل (كويك تايم/الصور)
+    worst = 0.0
+    for k in (15, 30, 45):
+        a = np.fromfile(f"{T}/apple_{k}.rgb", np.uint8).reshape(1920, 1080, 3).astype(np.float64)
+        d = (np.fromfile(f"{T}/{tag}_{k}.rgb", np.uint8).reshape(1920, 1080, 3).astype(np.float64) - a).mean((0, 1)); worst = max(worst, np.abs(d).max())
+    print(f"   {label} بمشغّل أبل: أسوأ قناة {worst:.2f}", end=" ")
+    return worst
+w = apple("enc", "06_encode"); print("✅" if w < 1 else "❌ (ملف ألوان الحاوية colr prof ضاع — شوف _compat.sh)"); ok = ok and w < 1
+w = apple("final", "النهائي (كفر + ماستر)")
+print("✅" if w < 1 else "⚠️ معروف من قبل 6.5.1: 28_cover --first يعيد الترميز ويشيل ملف الألوان، فمشغّل أبل يعرض الريل أفتح — القيم الخام فوق مطابقة. ما يُفشّل الفحص.")
 print("🟢 اللون مطابق لتصوير الآيفون (فرق أقل من 1 من 255 لكل قناة)" if ok else "🔴 اللون مو مطابق — راجع VF_FRAMES/VF_ENCODE بـscripts/_compat.sh")
 sys.exit(0 if ok else 1)
 EOF

@@ -15,5 +15,8 @@ abspath(){ ( cd "$1" 2>/dev/null && { pwd -W 2>/dev/null || pwd; } ); }
 # حتى مع accurate_rnd، ففلتر colorspace هو اللي يحوّل (فرق أقل من نص درجة عن فريم أبل). الصيغتين زوج: لا تستخدم وحدة بلا الثانية.
 #   فيديو ← فريمات JPEG للرسم:   ffmpeg -i in.mp4 -vf "fps=30,$VF_FRAMES" -q:v 1 out/%05d.jpg
 #   فريمات المتصفح ← فيديو:      ffmpeg -framerate 30 -i out/%05d.jpg -vf "$VF_ENCODE" …
+# ⚠️ آخر VF_ENCODE «setparams=…unknown» مقصود — لا تشيله: فريمات المتصفح فيها ملف ألوان sRGB، وffmpeg يكتبه بالملف (colr prof)
+#    بس لما وسم المنحنى والألوان الأساسية بالفريم «غير محدد». بوجوده مشغّل أبل (كويك تايم/الصور) يعرض الناتج مطابق لفريم أبل الأصلي
+#    (فرق 0.6)، وبدونه ينكتب nclx bt709 ويعرضه أفتح 9 من 255. وسوم bt709 اللي يقراها ffprobe تنكتب بالبتستريم (06_encode ← h264_metadata).
 VF_FRAMES='scale=out_range=tv:flags=accurate_rnd+full_chroma_int+full_chroma_inp,format=yuv420p,colorspace=ispace=bt709:irange=tv:iprimaries=bt709:itrc=bt709:space=bt470bg:range=pc:primaries=bt709:trc=bt709:format=yuv444p,format=yuvj444p'
-VF_ENCODE='colorspace=ispace=bt470bg:irange=pc:iprimaries=bt709:itrc=bt709:space=bt709:range=tv:primaries=bt709:trc=bt709:format=yuv420p'
+VF_ENCODE='colorspace=ispace=bt470bg:irange=pc:iprimaries=bt709:itrc=bt709:space=bt709:range=tv:primaries=bt709:trc=bt709:format=yuv420p,setparams=color_primaries=unknown:color_trc=unknown'
