@@ -2471,7 +2471,7 @@
   const rngOf = sd => { let a = sd >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let q = Math.imul(a ^ a >>> 15, 1 | a); q = q + Math.imul(q ^ q >>> 7, 61 | q) ^ q; return ((q ^ q >>> 14) >>> 0) / 4294967296; }; };
   const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
     return lerp(lerp(h2(xi, yi), h2(xi + 1, yi), u), lerp(h2(xi, yi + 1), h2(xi + 1, yi + 1), u), v); };
-  const rgb = c => { c = String(c || '#888888').replace('#', ''); if (c.length === 3) c = c.split('').map(q => q + q).join(''); const v = parseInt(c.slice(0, 6), 16) || 0; return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
+  const rgb = c => { c = String(c || '#888888'); if (c[0] === 'r') { const m = c.match(/[\d.]+/g) || []; return [+m[0] || 0, +m[1] || 0, +m[2] || 0]; } c = c.replace('#', ''); if (c.length === 3) c = c.split('').map(q => q + q).join(''); const v = parseInt(c.slice(0, 6), 16) || 0; return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
   const mixc = (p, q, k) => { const A = rgb(p), B = rgb(q); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * cl(k))).join(',') + ')'; };
   const whenOf = (ctx, h, s) => (h.at != null ? +h.at : (ctx.findWord && h.key ? ctx.findWord(h.key, s - 0.3) : null));   // ثانية اكتمال الشكل: at، أو أول نطق لكلمة key
   const imgOf = (ctx, v) => (typeof v === 'string' ? (ctx.img && ctx.img(v)) : v);
@@ -2646,6 +2646,77 @@
     if (g0) txt(g0, 1 - at(t, t0, t0 + 0.16), 1);
     X.restore();
     if (ctx.cue) ST.forEach((g, i) => { ctx.cue('air', g.T - dur, { id: 'ld' + i + '@' + s, d: 0.5, g: 0.02 }); ctx.cue('pop', g.T, { id: 'ldp' + i + '@' + s, g: 0.04 }); });
+  };
+
+  /* 106 مكعبات تنبني — مكعبات صغيرة ثلاثية الأبعاد تنزل من فوق وتتراص صف فوق صف لين تبني رقم أو كلمة أو عمود مقارنة أو جوال أو شعار، وبعدها تنهد وتنبني شكل ثاني.
+     الوجه الأمامي مواجه للكاميرا (الرقم ينقرا عدل) والعمق يبين من فوق ومن الجنب — والرسم من ورا لقدام (صف صف من تحت) فالمكعبات تغطي بعض صح.
+     o: {s, out, cell=30 (حجم المكعب), depth=0.8 (عمقه نسبة لحجمه), angle=38 (زاوية العمق), swing=7 (تأرجح الزاوية بالدرجات — 0 = ثابتة), dur=1.2 (زمن البناء), fall=0.42 (زمن نزول المكعب),
+         color=P.acc (أعلى الشكل), color2=P.clay (أسفله), x=540, y=900 (مركز الشكل), seed=106,
+         shapes:[{ at | key,          ← ثانية «اكتمال» البناء (آخر مكعب نزل) أو كلمة من كلامه. البناء يبدأ قبلها بـdur
+                   text, size=520, family='num', weight=900 | img (صورة شفافة — المكعبات تاخذ ألوانها، tint:true = لون الهوية), w=700 | box:{x,y,w,h}
+                   | bars:[{v, label, hi}] (أعمدة مقارنة — w=760 عرضها كلها، h=640 أعلى عمود، value:false يخفي الرقم فوق العمود)
+                   | phone:true (جوال: cols=11, rows=20),
+                   x, y, cell, color, color2 }]}
+     بين شكل وشكل خل dur + 0.4 على الأقل (القديم ينهد والجديد ينزل). out: ينهد ويطيح.
+     الأصوات (MV.cue): tick مع نزول الصفوف · pop لما يكمل الشكل · air لما ينهد. */
+  FX.voxelBuild = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    const dur = o.dur || 1.2, fall = o.fall || 0.42;
+    if (!o._V) {
+      const r = rngOf(o.seed || 106), dark = lum(P.bg) < 115, cA = o.color || P.acc, cB = o.color2 || P.clay || cA, neutral = dark ? mixc(P.ink, P.bg, 0.3) : mixc(P.ink, P.bg, 0.55);
+      const tone = (c, k) => { const v = rgb(c).map(q => Math.round(cl(q * k, 0, 255))); return 'rgb(' + v.join(',') + ')'; };
+      const face = c => { const j = 0.94 + r() * 0.12, b = tone(c, j); return [b, mixc(b, '#FFFFFF', 0.3), mixc(b, '#000000', 0.34)]; };   // قدام · فوق · جنب
+      const SH = (o.shapes || []).map(h => ({ h, T: whenOf(ctx, h, s) })).filter(q => q.T != null).sort((p, q) => p.T - q.T);
+      SH.forEach(q => { const h = q.h, c = h.cell || o.cell || 30, x = h.x != null ? h.x : (o.x != null ? o.x : 540), y = h.y != null ? h.y : (o.y != null ? o.y : 900), a1 = h.color || cA, a2 = h.color2 || (h.color ? h.color : cB), V = []; q.c = c; q.L = [];
+        const put = (gx, gy, col) => V.push({ gx, gy, col });
+        if (h.bars) { const n = h.bars.length, W = h.w || 760, Hm = h.h || 640, slot = W / n, bw = Math.max(2, Math.round(slot * 0.6 / c)), mx = Math.max(...h.bars.map(b => +b.v || 0)) || 1, rows = Math.max(2, Math.round(Hm / c));
+          q.ox = x - W / 2; q.oy = y + Hm / 2;
+          h.bars.forEach((b, i) => { const g0 = Math.round((slot * (ctx.rtl === false ? i : n - 1 - i) + slot / 2) / c - bw / 2), hh = Math.max(1, Math.round(rows * (+b.v || 0) / mx));
+            for (let gy = 0; gy < hh; gy++) for (let gx = 0; gx < bw; gx++) put(g0 + gx, gy, b.color || (b.hi ? mixc(cB, cA, gy / Math.max(1, hh - 1)) : neutral));
+            q.L.push({ x: q.ox + (g0 + bw / 2) * c, top: q.oy - hh * c, label: b.label, v: b.text != null ? b.text : b.v, hi: !!b.hi }); }); }
+        else if (h.phone) { const cols = h.cols || 11, rows = h.rows || 20, body = P.ink, scr = (gy) => mixc(cB, cA, gy / rows); q.ox = x - cols * c / 2; q.oy = y + rows * c / 2;
+          for (let gy = 0; gy < rows; gy++) for (let gx = 0; gx < cols; gx++) { const edge = gx === 0 || gy === 0 || gx === cols - 1 || gy === rows - 1, corner = (gx === 0 || gx === cols - 1) && (gy === 0 || gy === rows - 1); if (corner) continue;
+            const mid = Math.abs(gx - (cols - 1) / 2), notch = gy === rows - 2 && mid <= 1, bar = gy === 2 && mid <= 2, card = gy >= rows - 8 && gy <= rows - 6 && gx >= 2 && gx <= cols - 3;
+            put(gx, gy, edge || notch ? body : bar ? mixc(cA, '#FFFFFF', 0.55) : card ? mixc(cA, '#FFFFFF', 0.4) : scr(gy)); } }
+        else { const keep = !!h.img && !h.tint, D = shapePix(ctx, h.text != null ? Object.assign({ family: 'num', size: 520 }, h, { x, y }) : h.img ? Object.assign({ w: 700 }, h, { x, y }) : h);
+          let x0 = 270, y0 = 480, x1 = -1, y1 = -1; for (let j = 0; j < 480; j++) for (let i = 0; i < 270; i++) if (D[(j * 270 + i) * 4 + 3] > 110) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (j < y0) y0 = j; if (j > y1) y1 = j; }
+          if (x1 >= 0) { const cols = Math.max(1, Math.round((x1 + 1 - x0) * 4 / c)), rows = Math.max(1, Math.round((y1 + 1 - y0) * 4 / c)), cw = (x1 + 1 - x0) / cols, ch = (y1 + 1 - y0) / rows;
+            q.ox = (x0 + x1 + 1) * 2 - cols * c / 2; q.oy = (y1 + 1) * 4;
+            for (let gy = 0; gy < rows; gy++) for (let gx = 0; gx < cols; gx++) { let n = 0, a = 0, R = 0, Gc = 0, Bc = 0;
+              for (let j = Math.floor(y1 + 1 - (gy + 1) * ch); j < y1 + 1 - gy * ch; j++) for (let i = Math.floor(x0 + gx * cw); i < x0 + (gx + 1) * cw; i++) { if (i < 0 || j < 0 || i >= 270 || j >= 480) continue; const k = (j * 270 + i) * 4; n++; if (D[k + 3] > 110) { a++; R += D[k]; Gc += D[k + 1]; Bc += D[k + 2]; } }
+              if (n && a / n >= 0.45) put(gx, gy, keep ? 'rgb(' + Math.round(R / a) + ',' + Math.round(Gc / a) + ',' + Math.round(Bc / a) + ')' : mixc(a2, a1, gy / Math.max(1, rows - 1))); } } }
+        const rows = V.reduce((m, v) => Math.max(m, v.gy), 0) + 1; q.rows = rows; V.sort((p, c2) => p.gy - c2.gy || p.gx - c2.gx);          // صف صف من تحت، ومن اليسار لليمين
+        const xs = V.map(v => v.gx); q.x0 = Math.min(...xs); q.x1 = Math.max(...xs) + 1;
+        q.V = V.map(v => ({ x: q.ox + v.gx * c, y: q.oy - (v.gy + 1) * c, gy: v.gy, f: face(v.col), L: q.T - dur + fall + (dur - fall) * (v.gy + r() * 0.9) / (rows - 0.1), dl: r() * 0.25, vx: (r() - 0.5) * 340, vy: -r() * 260 })); });
+      const S2 = SH.filter(q => q.V.length); S2.forEach((q, i) => { const nx = S2[i + 1]; q.C = nx ? nx.T - dur - 0.3 : (o.out != null ? +o.out : null); });
+      o._V = { SH: S2 };
+    }
+    const SH = o._V.SH; if (!SH.length) return;
+    const ang = ((o.angle != null ? o.angle : 38) + (o.swing != null ? o.swing : 7) * Math.sin((t - s) * 0.9)) * Math.PI / 180, dk = o.depth != null ? o.depth : 0.8;
+    X.save(); X.lineJoin = 'round';
+    SH.forEach((q, qi) => {
+      const st = q.T - dur; if (t < st - 0.05) return; const C = q.C, col = C != null && t >= C; if (col && t > C + 1.5) return;
+      const c = q.c, dx = Math.cos(ang) * c * dk, dy = -Math.sin(ang) * c * dk, built = cl((t - st - fall) / (dur - fall));
+      if (!col) { const sw = (q.x1 - q.x0) * c * 0.62, sx = q.ox + (q.x0 + q.x1) * c / 2 + dx, sy = q.oy + 14, g = X.createRadialGradient(sx, sy, 2, sx, sy, sw);      // ظل على الأرض يكبر مع البناء
+        g.addColorStop(0, 'rgba(0,0,0,' + (0.3 * built).toFixed(3) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); X.save(); X.translate(sx, sy); X.scale(1, 0.16); X.translate(-sx, -sy); X.fillStyle = g; X.beginPath(); X.arc(sx, sy, sw, 0, 6.2832); X.fill(); X.restore(); }
+      for (let i = 0; i < q.V.length; i++) { const v = q.V[i]; let x = v.x, y = v.y, al = 1, fl = 0;
+        if (col) { const u = t - C - v.dl; if (u > 0) { x += v.vx * u; y += v.vy * u + 2300 * u * u; al = 1 - cl((u - 0.55) / 0.5); if (al <= 0 || y > 2000) continue; } }
+        else { const k = (t - (v.L - fall)) / fall; if (k <= 0) continue;
+          if (k < 1) { y -= 760 * (1 - k * k); al = cl(k * 4); } else { const b = (t - v.L) / 0.24; if (b < 1) { y -= Math.sin(b * Math.PI) * c * 0.3 * (1 - b); fl = 1 - b; } } }
+        X.globalAlpha = al;
+        X.fillStyle = v.f[2]; X.beginPath(); X.moveTo(x + c, y); X.lineTo(x + c + dx, y + dy); X.lineTo(x + c + dx, y + c + dy); X.lineTo(x + c, y + c); X.closePath(); X.fill();
+        X.fillStyle = v.f[1]; X.beginPath(); X.moveTo(x, y); X.lineTo(x + dx, y + dy); X.lineTo(x + c + dx, y + dy); X.lineTo(x + c, y); X.closePath(); X.fill();
+        X.fillStyle = fl > 0.02 ? mixc(v.f[0], '#FFFFFF', 0.4 * fl) : v.f[0]; X.fillRect(x, y, c, c);
+        X.strokeStyle = 'rgba(0,0,0,0.2)'; X.lineWidth = 1.5; X.strokeRect(x + 0.75, y + 0.75, c - 1.5, c - 1.5);
+      }
+      X.globalAlpha = 1;
+      if (q.L.length) { const ka = (col ? 1 - at(t, C, C + 0.25) : 1); q.L.forEach(L => {                               // أعمدة المقارنة: الاسم تحت، والرقم فوق لما يكمل
+        if (L.label) { X.save(); X.globalAlpha = at(t, st, st + 0.35) * ka; ctx.text(X, String(L.label), L.x + dx / 2, q.oy + 78, { family: 'body', weight: 700, size: 52, color: P.ink, maxWidth: 300 }); X.restore(); }
+        if (q.h.value !== false && L.v != null) { const k = at(t, q.T - 0.1, q.T + 0.22, 'backOut'); if (k > ON) { X.save(); X.globalAlpha = cl(k) * ka; X.translate(L.x + dx / 2, L.top + dy - 26); X.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
+          ctx.text(X, String(L.v), 0, 0, { family: 'num', weight: 900, size: 72, color: L.hi ? (o.color || P.acc) : P.ink, dir: 'ltr' }); X.restore(); } } }); }
+      if (ctx.cue) { for (let k = 0; k < 6; k++) ctx.cue('tick', st + fall + (dur - fall) * k / 6, { id: 'vx' + qi + '.' + k + '@' + s, g: 0.03 }); ctx.cue('pop', q.T, { id: 'vxp' + qi + '@' + s, g: 0.045 }); if (C != null) ctx.cue('air', C, { id: 'vxc' + qi + '@' + s, d: 0.5, g: 0.025 }); }
+    });
+    X.restore();
   };
 
   G.FX = FX;

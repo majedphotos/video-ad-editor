@@ -96,3 +96,4 @@
 | 103 | تحوّل النقاط | ريل «قبل هالاختبار» (17 نوفمبر 2026) — أسلوب particle morphing المعروف، والكود مكتوب من الصفر بكانفس | MIT (البلقن) |
 | 104 | تيار الخطوط | [Creative Bloq — Make interactive 3D typography effects](https://www.creativebloq.com/how-to/make-interactive-3d-typography-effects) (حروف قناع لخطوط تمشي مع حقل ضجيج — الفكرة بس؛ هني المسار يتحسب مرة ويتخزن فكل فريم ثابت) | — (مقال) |
 | 105 | قطرات تندمج | [Jamie Wong — Metaballs and Marching Squares](https://jamie-wong.com/2014/08/19/metaballs-and-marching-squares/) (الحقل يتقاس على شبكة والحافة بتقريب خطي — الطريقة بس، والكود مكتوب من الصفر) | — (مقال) |
+| 106 | مكعبات تنبني | [Shaun Lebron — Drawing isometric boxes in the correct order](https://shaunlebron.github.io/IsometricBlocks) (ترتيب رسم الصناديق عشان تغطي بعض صح — المبدأ بس؛ هني الوجه الأمامي مواجه والرسم صف صف) | — (مقال) |

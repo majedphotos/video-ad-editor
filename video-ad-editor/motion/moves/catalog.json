@@ -2434,6 +2434,33 @@
     "url": "https://jamie-wong.com/2014/08/19/metaballs-and-marching-squares/"
    },
    "bonus": false
+  },
+  {
+   "n": 106,
+   "id": "voxelBuild",
+   "name": "مكعبات تنبني",
+   "sub": "مكعبات 3D تتراص رقم أو عمود أو جوال",
+   "cat": "card",
+   "role": "card",
+   "energy": 3,
+   "families": [
+    "punch",
+    "onetake",
+    "editorial"
+   ],
+   "cues": [
+    "number",
+    "contrast",
+    "tech",
+    "price"
+   ],
+   "desc": "مكعبات صغيرة ثلاثية الأبعاد تنزل من فوق وتتراص صف فوق صف لين تبني رقم أو عمود مقارنة أو جوال أو شعار بألوانه. بعدها تنهد وتطيح، والشكل اللي بعده ينزل مكانها. البناء يكمل لحظة ما تنطق الكلمة. الرقم ينقرا عدل والعمق يبين من فوق ومن الجنب.",
+   "preview": "previews/106.mp4",
+   "source": {
+    "label": "مكعبات مرسومة من ورا لقدام — ترتيب الرسم من Shaun Lebron",
+    "url": "https://shaunlebron.github.io/IsometricBlocks"
+   },
+   "bonus": false
   }
  ],
  "families": {
