@@ -2414,5 +2414,58 @@
     X.restore();
   };
 
+  /* 103 تحوّل النقاط — نفس النقاط تتجمع وتشكّل شكل، وتطير وتشكّل اللي بعده (رقم ← كلمة ← شعار ← كرت) بلا ولا قطع. من ريل «قبل هالاختبار» (17 نوفمبر).
+     o: {s, out, n=700 (200–1400 نقطة), dot=5 (حجم النقطة), dur=1.05 (زمن الطيران), stag=0.32 (أقصى تأخير بين نقطة ونقطة), swirl=260 (قوس الطيران), float=2.4 (رجفة وهي واقفة),
+         color (الافتراضي كريمي على الغامق و P.ink على الفاتح), hi=P.acc, glow (توهّج — الافتراضي شغّال على الخلفية الغامقة بس), seed=41,
+         shapes:[{ at | key,                 ← ثانية «اكتمال» الشكل، أو كلمة من كلامه. الطيران يبدأ قبلها بـ(dur+stag) عشان الشكل يكمل مع النطق مو بعده
+                   text, size=420, x=540, y=900, family='display', weight=900      ← نص أو رقم (العربي ينرسم جملة كاملة، الوصلات سليمة)
+                   | img (اسم صورة بـctx.img أو صورة/كانفس — شفافيتها هي الشكل), x, y, w=800
+                   | box:{x,y,w,h} (شبكة مرتبة داخل مستطيل — كرت أو شاشة) | pts:[[x,y],…] | scatter:true (تنتثر بالكادر),
+                   hi:true (الشكل بلون التمييز), color, dot }]}
+     أول شكل: النقاط تدخل من انتثار. out: تنتثر وتختفي. الأصوات (MV.cue): air مع كل طيران · tick لما يكمل الشكل. */
+  FX.dotMorph = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0, SH = o.shapes || []; if (!SH.length || t < s - 0.02) return;
+    const out = o.out != null ? +o.out : null, ko = out != null ? at(t, out, out + 0.7, 'cubicIn') : 0; if (ko >= 1) return;
+    const N = Math.max(200, Math.min(1400, o.n || 700)), dur = o.dur || 1.05, stag = o.stag != null ? o.stag : 0.32, sw = o.swirl != null ? o.swirl : 260, fl = o.float != null ? o.float : 2.4;
+    const dark = lum(P.bg) < 115, glow = o.glow != null ? !!o.glow : dark, base = o.color || (dark ? '#FFE9DA' : P.ink), hi = o.hi || P.acc;
+    if (!o._M) {                                                    // يتحسب مرة: عيّنة نقاط كل شكل + صفات كل نقطة
+      let a = (o.seed || 41) >>> 0; const r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let q = Math.imul(a ^ a >>> 15, 1 | a); q = q + Math.imul(q ^ q >>> 7, 61 | q) ^ q; return ((q ^ q >>> 14) >>> 0) / 4294967296; };
+      const scat = () => Array.from({ length: N }, () => [r() * 1080, r() * 1920]);
+      const fromAlpha = paint => { const c = document.createElement('canvas'); c.width = 540; c.height = 960; const Y = c.getContext('2d', { willReadFrequently: true }); Y.scale(0.5, 0.5); paint(Y);
+        const D = Y.getImageData(0, 0, 540, 960).data, all = []; for (let y = 0; y < 960; y += 2) for (let x = 0; x < 540; x += 2) if (D[(y * 540 + x) * 4 + 3] > 128) all.push([x * 2, y * 2]);
+        return all.length ? Array.from({ length: N }, () => { const q = all[r() * all.length | 0]; return [q[0] + r() * 4 - 2, q[1] + r() * 4 - 2]; }) : scat(); };
+      const pts = h => {
+        if (h.pts && h.pts.length) return Array.from({ length: N }, (_, i) => h.pts[i % h.pts.length]);
+        if (h.box) { const b = h.box, cols = Math.max(2, Math.round(Math.sqrt(N * b.w / b.h))), rows = Math.ceil(N / cols); return Array.from({ length: N }, (_, i) => [b.x + (i % cols) * b.w / (cols - 1), b.y + (i / cols | 0) * b.h / Math.max(1, rows - 1)]); }
+        if (h.text != null) return fromAlpha(Y => { Y.fillStyle = '#fff'; Y.font = ctx.font(h.family || 'display', h.weight || 900, h.size || 420); Y.textAlign = 'center'; Y.textBaseline = 'middle'; Y.fillText(String(h.text), h.x != null ? h.x : 540, h.y != null ? h.y : 900); });
+        if (h.img) { const I = typeof h.img === 'string' ? (ctx.img && ctx.img(h.img)) : h.img; if (I) { const w = h.w || 800, hh = w * ((I.naturalHeight || I.height) / (I.naturalWidth || I.width)); return fromAlpha(Y => Y.drawImage(I, (h.x != null ? h.x : 540) - w / 2, (h.y != null ? h.y : 900) - hh / 2, w, hh)); } }
+        return scat(); };
+      const lead = dur + stag, T = SH.map((h, i) => { const v = h.at != null ? +h.at : (ctx.findWord && h.key ? ctx.findWord(h.key, s - 0.3) : null); return v == null ? null : Math.max(s, v - lead); });
+      const K = [[s - lead - 0.01, scat(), null]]; SH.forEach((h, i) => { if (T[i] != null || i === 0) K.push([T[i] != null ? T[i] : s, pts(h), h]); });
+      K.sort((p, q) => p[0] - q[0]);
+      const sprite = col => { const R = 26, c = document.createElement('canvas'); c.width = c.height = R * 2; const Y = c.getContext('2d'), g = Y.createRadialGradient(R, R, 0, R, R, R), h6 = '#' + (c2 => c2.length === 3 ? c2.split('').map(q => q + q).join('') : c2.slice(0, 6))(String(col).replace('#', ''));
+        g.addColorStop(0, h6); g.addColorStop(0.28, h6); g.addColorStop(0.42, h6 + '66'); g.addColorStop(1, h6 + '00'); Y.fillStyle = g; Y.fillRect(0, 0, R * 2, R * 2); return c; };
+      o._M = { K, lead, sp: {}, sprite, D: Array.from({ length: N }, () => ({ d: r() * stag, sw: (r() - 0.5) * sw, ph: r() * 6.283, z: 0.75 + r() * 0.5 })) };
+    }
+    const M = o._M, K = M.K; let seg = 0; for (let j = 0; j < K.length; j++) if (t >= K[j][0]) seg = j;
+    if (seg === 0) return;
+    const cur = K[seg], prev = K[seg - 1], h = cur[2] || {}, hp = prev[2] || {}, first = seg === 1;
+    const colOf = q => q.color || (q.hi ? hi : base), c1 = colOf(h), c0 = first ? c1 : colOf(hp), d1 = h.dot || o.dot || 5, d0 = first ? d1 : (hp.dot || o.dot || 5);
+    const kc = at(t, cur[0] + M.lead * 0.55, cur[0] + M.lead, 'cubicOut'), aIn = first ? at(t, cur[0], cur[0] + 0.45, 'cubicOut') : 1;
+    const E = k => k <= 0 ? 0 : k >= 1 ? 1 : k < 0.5 ? Math.pow(2, 20 * k - 10) / 2 : (2 - Math.pow(2, -20 * k + 10)) / 2;
+    X.save(); if (glow) X.globalCompositeOperation = 'lighter';
+    const draw = (col, al, lo, hiI) => { if (al <= 0.003) return; const sp = glow ? (M.sp[col] || (M.sp[col] = M.sprite(col))) : null; if (!glow) X.fillStyle = col;
+      for (let i = lo; i < hiI; i++) { const q = M.D[i], a = prev[1][i], b = cur[1][i], k = E(cl((t - cur[0] - q.d) / dur)), arc = Math.sin(k * Math.PI);
+        let x = lerp(a[0], b[0], k) + arc * q.sw, y = lerp(a[1], b[1], k) + arc * q.sw * 0.35 * Math.sin(q.ph);
+        x += Math.sin(t * 1.3 + q.ph) * fl; y += Math.cos(t * 1.1 + q.ph) * fl;
+        if (ko > 0) { x += (x - 540) * ko * 1.4 + Math.sin(q.ph) * 220 * ko; y += (y - 960) * ko * 1.4 + Math.cos(q.ph) * 220 * ko; }
+        const sz = lerp(d0, d1, kc) * q.z;
+        if (glow) { const R = sz * 1.75; X.globalAlpha = al; X.drawImage(sp, x - R, y - R, R * 2, R * 2); } else { X.globalAlpha = al; X.beginPath(); X.arc(x, y, sz * 1.05, 0, 6.2832); X.fill(); } } };
+    const A = 0.95 * aIn * (1 - ko);
+    if (c0 === c1) draw(c1, A, 0, N); else { draw(c0, A * (1 - kc), 0, N); draw(c1, A * kc, 0, N); }
+    X.restore();
+    if (ctx.cue) for (let j = 1; j < K.length; j++) { ctx.cue('air', K[j][0], { id: 'dm' + j + '@' + s, d: 0.5, g: 0.02 }); ctx.cue('tick', K[j][0] + M.lead, { id: 'dmk' + j + '@' + s, g: 0.03 }); }
+  };
+
   G.FX = FX;
 })();
