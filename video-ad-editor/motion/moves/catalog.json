@@ -2383,6 +2383,31 @@
     "url": ""
    },
    "bonus": false
+  },
+  {
+   "n": 104,
+   "id": "flowLines",
+   "name": "تيار الخطوط",
+   "sub": "آلاف الخطوط تنساب وتتجمع ترسم الرقم",
+   "cat": "text",
+   "role": "text",
+   "energy": 2,
+   "families": [
+    "calm",
+    "onetake"
+   ],
+   "cues": [
+    "number",
+    "reveal",
+    "emphasis"
+   ],
+   "desc": "آلاف الخطوط الرفيعة تمشي مع تيار واحد يتموّج، وبلحظة تنحرف وتتجمع لين ترسم رقم أو كلمة أو شعار — والتيار يكمل يمشي داخل الشكل وعلى حدوده. بعدها تفلت وترجع تنساب، أو تروح للشكل اللي بعده. كل شكل يكمل لحظة ما تنطق كلمته. على الخلفية الغامقة خطوط تتوهّج، وعلى الفاتحة خطوط بلون الخط.",
+   "preview": "previews/104.mp4",
+   "source": {
+    "label": "حقل التيار (flow field) بقناع الحروف — الفكرة من Creative Bloq",
+    "url": "https://www.creativebloq.com/how-to/make-interactive-3d-typography-effects"
+   },
+   "bonus": false
   }
  ],
  "families": {

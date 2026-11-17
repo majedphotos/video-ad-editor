@@ -2467,5 +2467,112 @@
     if (ctx.cue) for (let j = 1; j < K.length; j++) { ctx.cue('air', K[j][0], { id: 'dm' + j + '@' + s, d: 0.5, g: 0.02 }); ctx.cue('tick', K[j][0] + M.lead, { id: 'dmk' + j + '@' + s, g: 0.03 }); }
   };
 
+  /* ── أدوات الحركات 104–108 (أنظمة: كل وحدة تشيل لقطة كاملة أو لحظة داخل ريل) ── */
+  const rngOf = sd => { let a = sd >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let q = Math.imul(a ^ a >>> 15, 1 | a); q = q + Math.imul(q ^ q >>> 7, 61 | q) ^ q; return ((q ^ q >>> 14) >>> 0) / 4294967296; }; };
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+    return lerp(lerp(h2(xi, yi), h2(xi + 1, yi), u), lerp(h2(xi, yi + 1), h2(xi + 1, yi + 1), u), v); };
+  const rgb = c => { c = String(c || '#888888').replace('#', ''); if (c.length === 3) c = c.split('').map(q => q + q).join(''); const v = parseInt(c.slice(0, 6), 16) || 0; return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
+  const mixc = (p, q, k) => { const A = rgb(p), B = rgb(q); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * cl(k))).join(',') + ')'; };
+  const whenOf = (ctx, h, s) => (h.at != null ? +h.at : (ctx.findWord && h.key ? ctx.findWord(h.key, s - 0.3) : null));   // ثانية اكتمال الشكل: at، أو أول نطق لكلمة key
+  const imgOf = (ctx, v) => (typeof v === 'string' ? (ctx.img && ctx.img(v)) : v);
+  const ratioOf = I => (I.naturalHeight || I.videoHeight || I.height) / (I.naturalWidth || I.videoWidth || I.width);
+  /* يرسم شكل (text | img | box | pts) بربع الدقة 270×480 ويرجّع بكسلاته — شفافيته هي الشكل، ولونه يبقى (للمكعبات) */
+  const shapePix = (ctx, h, col) => {
+    const c = document.createElement('canvas'); c.width = 270; c.height = 480; const Y = c.getContext('2d', { willReadFrequently: true }); Y.scale(0.25, 0.25);
+    const x = h.x != null ? h.x : 540, y = h.y != null ? h.y : 900; Y.fillStyle = col || '#ffffff';
+    if (h.text != null) { Y.font = ctx.font(h.family || 'display', h.weight || 900, h.size || 420); Y.textAlign = 'center'; Y.textBaseline = 'middle'; Y.fillText(String(h.text), x, y); }
+    else if (h.img) { const I = imgOf(ctx, h.img); if (I) { const w = h.w || 800, hh = w * ratioOf(I); Y.drawImage(I, x - w / 2, y - hh / 2, w, hh); } }
+    else if (h.box) Y.fillRect(h.box.x, h.box.y, h.box.w, h.box.h);
+    else if (h.pts) h.pts.forEach(p => { Y.beginPath(); Y.arc(p[0], p[1], h.r || 14, 0, 6.2832); Y.fill(); });
+    return Y.getImageData(0, 0, 270, 480).data;
+  };
+
+  /* 104 تيار الخطوط — آلاف الخطوط الرفيعة تمشي مع تيار واحد، وتنحرف وتتجمع لين ترسم رقم أو كلمة أو شعار (التيار يكمل يمشي داخل الشكل)، وبعدها تفلت وترجع تنساب.
+     o: {s, out, n=2600 (300–6000 خط), speed=170 (بكسل/ث), dir=195 (اتجاه التيار بالدرجات: 180 = لليسار، 270 = لفوق), curl=3.4 (تموّج التيار), scale=420 (حجم الدوامات),
+         trail=0.55 (طول الخط بالثواني), lw=2.2 (سماكته), dur=1.1 (زمن التجمع), stag=0.3 (أقصى تأخير بين خط وخط), swirl=150 (قوس الانحراف وهي تتجمع), hold=1.6 (كم يقعد الشكل قبل لا يفلت),
+         color (الافتراضي كريمي على الغامق و P.ink على الفاتح), hi=P.acc, glow (الافتراضي شغّال على الخلفية الغامقة بس), seed=104,
+         shapes:[{ at | key,          ← ثانية «اكتمال» الشكل أو كلمة من كلامه. التجمع يبدأ قبلها بـ(dur+stag)
+                   text, size=420, x=540, y=900, family='display', weight=900 | img (صورة شفافة), x, y, w=800 | box:{x,y,w,h} | pts:[[x,y],…],
+                   hold (ثواني — لو الشكل الجاي يبدأ قبلها، الخطوط تروح له مباشرة), hi:true (الخطوط كلها بلون التمييز) }]}
+     بلا shapes = تيار بس (خلفية حية). الحركة كلها تتحسب مرة (محاكاة 30 خطوة/ث) وتتخزن، فأي فريم يطلع نفسه بأي ترتيب.
+     الأصوات (MV.cue): air مع كل تجمع · tick لما يكمل الشكل. */
+  FX.flowLines = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    if (!o._F) {
+      const r = rngOf(o.seed || 104), N = Math.round(cl(o.n || 2600, 300, 6000)), dur = o.dur || 1.1, stag = o.stag != null ? o.stag : 0.3, lead = dur + stag;
+      const SH = (o.shapes || []).map(h => ({ h, T: whenOf(ctx, h, s) })).filter(q => q.T != null).sort((p, q) => p.T - q.T);
+      SH.forEach(q => { q.g = Math.max(s, q.T - lead - 0.15); q.rel = q.T + (q.h.hold != null ? q.h.hold : o.hold != null ? o.hold : 1.6);
+        const D = shapePix(ctx, q.h), cells = []; q.M = new Uint8Array(270 * 480);
+        for (let i = 0; i < 270 * 480; i++) if (D[i * 4 + 3] > 110) { q.M[i] = 1; cells.push(i); }
+        q.tx = new Float32Array(N); q.ty = new Float32Array(N); q.ok = cells.length > 0;
+        for (let i = 0; i < N && q.ok; i++) { const c = cells[r() * cells.length | 0]; q.tx[i] = (c % 270) * 4 + r() * 4; q.ty[i] = (c / 270 | 0) * 4 + r() * 4; }
+        /* قناع ناعم: ميله يعطي اتجاه حافة الشكل — الخطوط اللي قرب الحافة تمشي معها (ترسم الحدود) بدل ما تطلع برّا */
+        let B = Float32Array.from(q.M); for (let pass = 0; pass < 2; pass++) { const C = new Float32Array(B.length);
+          for (let y = 0; y < 480; y++) for (let x = 0; x < 270; x++) { let v = 0, n = 0; for (let d = -3; d <= 3; d++) { const xx = pass ? x : x + d, yy = pass ? y + d : y; if (xx >= 0 && xx < 270 && yy >= 0 && yy < 480) { v += B[yy * 270 + xx]; n++; } } C[y * 270 + x] = v / n; } B = C; }
+        q.B = B; });
+      const S2 = SH.filter(q => q.ok); S2.forEach((q, i) => { const nx = S2[i + 1]; if (nx && nx.g < q.rel) q.rel = nx.g; });
+      const out = o.out != null ? +o.out : (S2.length ? S2[S2.length - 1].rel + 1.6 : s + 6);
+      const t0 = s - 1, T = out + 0.9 - t0, R = Math.max(12, Math.min(30, 1800 / T)), steps = Math.ceil(T * R) + 2, dt = 1 / R;
+      const PXa = new Int16Array(N * steps), PYa = new Int16Array(N * steps), BR = new Uint8Array(N * steps);
+      const px = new Float32Array(N), py = new Float32Array(N), gx = new Float32Array(N), gy = new Float32Array(N), dl = new Float32Array(N), zz = new Float32Array(N), sw = new Float32Array(N);
+      const swirl = o.swirl != null ? o.swirl : 150;
+      for (let i = 0; i < N; i++) { px[i] = -60 + r() * 1200; py[i] = -60 + r() * 2040; dl[i] = r() * stag; zz[i] = 0.65 + r() * 0.7; sw[i] = (r() - 0.5) * 2 * swirl; }
+      const sp = o.speed || 170, f = 1 / (o.scale || 420), curl = o.curl != null ? o.curl : 3.4, dirR = (o.dir != null ? o.dir : 195) * Math.PI / 180;
+      for (let k = 0; k < steps; k++) {
+        const tau = t0 + k * dt; let si = -1; for (let i = 0; i < S2.length; i++) if (tau >= S2[i].g) si = i;
+        const q = si >= 0 ? S2[si] : null, free = !q || tau >= q.rel, rs = q && free ? cl((tau - q.rel) / 0.6) : 1, ox = tau * 0.055, oy = tau * -0.04;
+        if (q && !q.ax) {                                                          // أول خطوة تجمع: كل خط ياخذ أقرب مكان بترتيبه (صفوف ثم أعمدة) — التيار ينضغط للشكل بدل ما يتشابك
+          const rank = (xs, ys) => { const id = Array.from({ length: N }, (_, i) => i).sort((p, c) => ys[p] - ys[c]), G = Math.ceil(N / 28); for (let g = 0; g < N; g += G) { const part = id.slice(g, g + G).sort((p, c) => xs[p] - xs[c]); for (let j = 0; j < part.length; j++) id[g + j] = part[j]; } return id; };
+          const ip = rank(px, py), it = rank(q.tx, q.ty); q.ax = new Float32Array(N); q.ay = new Float32Array(N); for (let j = 0; j < N; j++) { q.ax[ip[j]] = q.tx[it[j]]; q.ay[ip[j]] = q.ty[it[j]]; } }
+        for (let i = 0; i < N; i++) {
+          let x = px[i], y = py[i], br = 0, wrap = true;
+          const u = free ? -1 : (tau - q.g - dl[i]) / dur, gath = u > 0 && u < 1, fxp = gath ? gx[i] : x, fyp = gath ? gy[i] : y;      // وقت التجمع: التيار يكمل على «ظل» الخط، والخط نفسه ينسحب منه للشكل
+          const a = dirR + (vn(fxp * f + ox, fyp * f + oy) + 0.5 * vn(fxp * f * 2.3 - oy + 9.1, fyp * f * 2.3 + ox + 3.7) - 0.75) * curl, v = sp * zz[i] * dt;
+          let cx = Math.cos(a), cy = Math.sin(a);
+          if (free || u <= 0) { const m = free ? 0.5 + 0.5 * rs : 1; x += cx * v * m; y += cy * v * m; gx[i] = x; gy[i] = y; }
+          else if (gath) { const e = u * u * u * (u * (u * 6 - 15) + 10), m = 1 - 0.75 * e, X0 = gx[i] + cx * v * m, Y0 = gy[i] + cy * v * m, dx = q.ax[i] - X0, dy = q.ay[i] - Y0, dd = Math.hypot(dx, dy) || 1, arc = Math.sin(u * Math.PI) * sw[i] * Math.min(1, dd / 300);
+            gx[i] = X0; gy[i] = Y0; x = X0 + dx * e - dy / dd * arc; y = Y0 + dy * e + dx / dd * arc; wrap = false; }
+          else { wrap = false;                                                      // داخل الشكل: التيار يكمل، وقرب الحافة يمشي معها
+            const ci = (y >> 2) * 270 + (x >> 2), bx = q.B[ci + 1] - q.B[ci - 1], by = q.B[ci + 270] - q.B[ci - 270], bm = Math.hypot(bx, by);
+            if (bm > 0.015) { const tx = -by / bm, ty = bx / bm, sg = tx * cx + ty * cy >= 0 ? 1 : -1, w = cl(bm * 7), ins = cl(0.55 - q.B[ci]) * 1.6;
+              cx = lerp(cx, tx * sg, w) + bx / bm * ins; cy = lerp(cy, ty * sg, w) + by / bm * ins; const n = Math.hypot(cx, cy) || 1; cx /= n; cy /= n; }
+            x += cx * v * 0.5; y += cy * v * 0.5;
+            if (r() < dt / 0.85 || !(x >= 4 && x < 1076 && y >= 4 && y < 1916 && q.M[(y >> 2) * 270 + (x >> 2)])) { const j = r() * N | 0;      // عمر قصير + رجوع من نقطة ثانية: الكثافة تبقى موزعة وما تتكوّم عند طرف
+              x = q.tx[j]; y = q.ty[j]; br = 1; }
+            gx[i] = x; gy[i] = y; }
+          if (wrap) { if (x < -60) { x += 1200; br = 1; } else if (x > 1140) { x -= 1200; br = 1; } if (y < -60) { y += 2040; br = 1; } else if (y > 1980) { y -= 2040; br = 1; } gx[i] = x; gy[i] = y; }
+          px[i] = x; py[i] = y; const j = i * steps + k; PXa[j] = Math.round(cl(x, -4000, 4000) * 4); PYa[j] = Math.round(cl(y, -4000, 4000) * 4); BR[j] = br;
+        }
+      }
+      o._F = { N, steps, R, t0, out, lead, SH: S2, PXa, PYa, BR, m: Math.max(3, Math.round((o.trail || 0.55) * R)) };
+    }
+    const F = o._F, ko = at(t, F.out, F.out + 0.8, 'cubicIn'); if (ko >= 1) return;
+    const { N, steps, PXa, PYa, BR, m } = F, fi = cl((t - F.t0) * F.R, m, steps - 2), k = Math.floor(fi), fr = fi - k;
+    const dark = lum(P.bg) < 115, glow = o.glow != null ? !!o.glow : dark, base = o.color || (dark ? '#FFE9DA' : P.ink), hi = o.hi || P.acc;
+    let kc = 0; F.SH.forEach(q => { if (q.h.hi) kc = Math.max(kc, Math.min(at(t, q.g + F.lead * 0.45, q.T, 'cubicOut'), 1 - at(t, q.rel, q.rel + 0.8, 'cubicOut'))); });
+    let hk = 0; F.SH.forEach(q => { hk = Math.max(hk, Math.min(at(t, q.T - 0.35, q.T, 'cubicOut'), 1 - at(t, q.rel, q.rel + 0.5, 'cubicOut'))); });      // الشكل واقف: الخطوط أوضح وأسمك شوي
+    const A = at(t, s, s + 0.7, 'cubicOut') * (1 - ko) * (glow ? 0.5 : 0.6) * (1 + hk * (glow ? 0.95 * kc - 0.25 : 0.3)), lw = (o.lw || 2.2) * (1 + 0.3 * hk), b1 = Math.max(1, Math.round(m * 0.3)), b2 = Math.max(b1 + 1, Math.round(m * 0.62));
+    const BANDS = [[0, b1, 1, 1], [b1, b2, 0.55, 0.85], [b2, m, 0.22, 0.7]];
+    /* رؤوس الخط i: 0 = الراس (بين الخطوتين)، j = الخطوة k+1-j، والذيل ينسحب مع الراس — فالخط ثابت بين الفريمات وما يرجف */
+    const VX = (i, j) => { const b = i * steps + k + 1 - j; return j === 0 ? lerp(PXa[b - 1], PXa[b], fr) / 4 : j === m ? lerp(PXa[b], PXa[b + 1], fr) / 4 : PXa[b] / 4; };
+    const VY = (i, j) => { const b = i * steps + k + 1 - j; return j === 0 ? lerp(PYa[b - 1], PYa[b], fr) / 4 : j === m ? lerp(PYa[b], PYa[b + 1], fr) / 4 : PYa[b] / 4; };
+    X.save(); if (glow) X.globalCompositeOperation = 'lighter'; X.lineCap = 'round'; X.lineJoin = 'round';
+    for (let g = 0; g < 2; g++) {
+      const col = g ? hi : (kc > 0.01 ? mixc(base, hi, kc) : base);
+      BANDS.forEach(([j0, j1, al, wk]) => {
+        X.beginPath();
+        for (let i = g ? 0 : 1; i < N; i += g ? 6 : 1) {
+          if (!g && i % 6 === 0) continue;
+          const b = i * steps + k + 1; let st = BR[b] ? 1 : 0, en = 1; while (en < m && !BR[b - en]) en++;      // en = آخر راس قبل انقطاع (رجوع من الحافة أو من برّا الشكل)
+          const a0 = Math.max(j0, st), a1 = Math.min(j1, en); if (a1 <= a0) continue;
+          X.moveTo(VX(i, a0), VY(i, a0)); for (let j = a0 + 1; j <= a1; j++) X.lineTo(VX(i, j), VY(i, j));
+        }
+        X.globalAlpha = A * al; X.strokeStyle = col; X.lineWidth = lw * wk; X.stroke();
+      });
+    }
+    X.restore();
+    if (ctx.cue) F.SH.forEach((q, j) => { ctx.cue('air', q.g, { id: 'fl' + j + '@' + s, d: 0.6, g: 0.02 }); ctx.cue('tick', q.T, { id: 'flk' + j + '@' + s, g: 0.03 }); });
+  };
+
   G.FX = FX;
 })();

@@ -94,3 +94,4 @@
 | 100 | صدى الحركة | [CapCut — Editing trends 2026](https://www.capcut.com/help/latest-capcut-editing-trends) (velocity edits) | — (ترند) |
 | 102 | تفكيك الطبقات | طلب ماجد (10 نوفمبر 2026) — من شريحة «تفكيك 3D قطعة قطعة» بكاروسيل السكلات (`video_cover/demo-scenes.js` بمشروع المكينة) | MIT (البلقن) |
 | 103 | تحوّل النقاط | ريل «قبل هالاختبار» (17 نوفمبر 2026) — أسلوب particle morphing المعروف، والكود مكتوب من الصفر بكانفس | MIT (البلقن) |
+| 104 | تيار الخطوط | [Creative Bloq — Make interactive 3D typography effects](https://www.creativebloq.com/how-to/make-interactive-3d-typography-effects) (حروف قناع لخطوط تمشي مع حقل ضجيج — الفكرة بس؛ هني المسار يتحسب مرة ويتخزن فكل فريم ثابت) | — (مقال) |
