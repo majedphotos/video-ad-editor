@@ -2486,6 +2486,31 @@
     "url": ""
    },
    "bonus": false
+  },
+  {
+   "n": 108,
+   "id": "asciiReveal",
+   "name": "حروف ترسم الصورة",
+   "sub": "الصورة تنبني من حروف تتبدل ثم تنكشف",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "editorial",
+    "onetake",
+    "punch"
+   ],
+   "cues": [
+    "tech",
+    "reveal"
+   ],
+   "desc": "الصورة أو فريم الفيديو ينبني من حروف وأرقام صغيرة تتبدل طول الوقت — الفاتح حرف ثقيل والغامق حرف خفيف، فالصورة تبين من بعيد. بعدها تمر موجة وتنكشف الصورة الحقيقية خانة خانة. صورة الحروف تكمل لحظة ما تنطق الكلمة. تشتغل على صورة ثابتة، وعلى لقطة فيديو حية (الحروف تتحرك معها).",
+   "preview": "previews/108.mp4",
+   "source": {
+    "label": "صورة من حروف (ASCII) بحسب الإضاءة — الطريقة من marmelab",
+    "url": "https://marmelab.com/blog/2018/02/20/convert-image-to-ascii-art-masterpiece"
+   },
+   "bonus": false
   }
  ],
  "families": {

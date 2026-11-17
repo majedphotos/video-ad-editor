@@ -2765,5 +2765,66 @@
     X.restore();
   };
 
+  /* 108 حروف ترسم الصورة — الصورة (أو فريم الفيديو) تنبني من حروف وأرقام صغيرة تتبدل طول الوقت: الفاتح حرف ثقيل والغامق حرف خفيف، فالصورة تبين من بعيد. بعدها تمر موجة وتنكشف الصورة الحقيقية خانة خانة.
+     الطريقة: الصورة تتصغّر لبكسل واحد لكل خانة، والحروف مرتبة حسب ثقلها (يتقاس مرة) ومرسومة مرة بلوحة وحدة تنسخ منها كل خانة.
+     o: {s, out, img (اسم بـctx.img أو صورة/كانفس) | draw:(Y)=>… (رسم حي — مثلاً فريم الفيديو: Y => MV.video(Y)، ينعاد كل فريم فالحروف تتحرك مع اللقطة),
+         x=540, y=900, w=800, h (الافتراضي من نسبة الصورة، وللرسم الحي w×1.25), cell=22 (عرض الخانة — أصغر = تفاصيل أكثر), chars (الحروف المستخدمة — الافتراضي أرقام وحروف ورموز),
+         at | key        ← ثانية «اكتمال» صورة الحروف (أو كلمة من كلامه). البناء يبدأ قبلها بـ(build + 0.3)
+         build=1.1, reveal=0.5 (كم ثانية بعد at تبدأ الصورة الحقيقية — false = تبقى حروف), rdur=0.9 (زمن الانكشاف), flick=1 (سرعة تبدّل الحروف، 0 = ثابتة),
+         color (الافتراضي كريمي على الغامق و P.ink على الفاتح، أو 'img' = كل حرف بلون مكانه بالصورة), hi=P.acc (لون الحرف وهو ينكتب ووهو ينكشف), invert}
+     الأصوات (MV.cue): tick وهي تنكتب · air مع موجة الانكشاف. */
+  FX.asciiReveal = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    const out = o.out != null ? +o.out : null, ko = out != null ? at(t, out, out + 0.4, 'cubicIn') : 0; if (ko >= 1) return;
+    const dark = lum(P.bg) < 115, build = o.build || 1.1, rdur = o.rdur || 0.9;
+    if (!o._S) {
+      const I = o.img ? imgOf(ctx, o.img) : null, w = o.w || 800, h = o.h || (I ? w * ratioOf(I) : w * 1.25), cols = Math.max(4, Math.round(w / (o.cell || 22))), rows = Math.max(3, Math.round(h / ((o.cell || 22) * 1.3))), cw = w / cols, ch = h / rows;
+      const mk = (ww, hh) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(ww)); c.height = Math.max(1, Math.round(hh)); return c; };
+      const CH = Array.from(new Set(Array.from(o.chars || '0123456789ABCDEFGHKMNPRSTWXZ#%&@$*+=<>/?:;.,-~^'))).filter(q => q.trim()), gw = Math.ceil(cw) * 2, gh = Math.ceil(ch) * 2, fnt = ctx.font('num', 700, gh * 0.8);
+      const tmp = mk(gw, gh), Yt = tmp.getContext('2d', { willReadFrequently: true });
+      const den = CH.map(g => { Yt.clearRect(0, 0, gw, gh); Yt.font = fnt; Yt.textAlign = 'center'; Yt.textBaseline = 'middle'; Yt.fillStyle = '#fff'; Yt.fillText(g, gw / 2, gh * 0.54); const D = Yt.getImageData(0, 0, gw, gh).data; let a = 0; for (let i = 3; i < D.length; i += 4) a += D[i]; return a; });
+      const ord = CH.map((g, i) => i).sort((p, q) => den[p] - den[q]), G = ord.length, K = Math.max(1, Math.min(8, Math.floor(G / 2)));                    // من أخف حرف لأثقل حرف، مقسومين درجات
+      const atlas = col => { const c = mk(gw * G, gh), Y = c.getContext('2d'); Y.font = fnt; Y.textAlign = 'center'; Y.textBaseline = 'middle'; Y.fillStyle = col; ord.forEach((gi, k) => Y.fillText(CH[gi], k * gw + gw / 2, gh * 0.54)); return c; };
+      const colorMode = o.color === 'img', base = colorMode ? '#FFFFFF' : (o.color || (dark ? '#FFE9DA' : P.ink));
+      const sm = mk(cols, rows), big = I ? mk(cols * 4, rows * 4) : null, T = whenOf(ctx, o, s);
+      o._S = { I, w, h, cols, rows, cw, ch, gw, gh, G, K, A0: atlas(base), A1: atlas(o.hi || P.acc), colorMode, sm, big, D: null, dens: new Float32Array(cols * rows), T: T != null ? T : s + build + 0.3,
+        L1: colorMode ? mk(w, h) : null, L2: null, mask: mk(cols, rows), mk };
+    }
+    const S = o._S, { I, w, h, cols, rows, cw, ch, gw, gh, G, K } = S, x0 = (o.x != null ? o.x : 540) - w / 2, y0 = (o.y != null ? o.y : 900) - h / 2, T0 = S.T - build - 0.3;
+    if (t < T0 - 0.02) return;
+    const REV = o.reveal !== false, tr = S.T + (typeof o.reveal === 'number' ? o.reveal : 0.5), full = REV && t >= tr + rdur + 0.3;
+    const real = Y => { if (I) Y.drawImage(I, x0, y0, w, h); else if (o.draw) { Y.save(); Y.beginPath(); Y.rect(x0, y0, w, h); Y.clip(); o.draw(Y); Y.restore(); } };
+    X.save(); X.globalAlpha *= 1 - ko;
+    if (full) { real(X); X.restore(); return; }
+    if (!S.D || !I) {                                                                       // عيّنة: بكسل لكل خانة (الصورة مرة وحدة، والرسم الحي كل فريم)
+      const Ys = S.sm.getContext('2d', { willReadFrequently: true }); Ys.setTransform(1, 0, 0, 1, 0, 0); Ys.clearRect(0, 0, cols, rows);
+      if (I) { const Yb = S.big.getContext('2d'); Yb.clearRect(0, 0, cols * 4, rows * 4); Yb.drawImage(I, 0, 0, cols * 4, rows * 4); Ys.imageSmoothingQuality = 'high'; Ys.drawImage(S.big, 0, 0, cols, rows); }
+      else if (o.draw) { Ys.setTransform(cols / w, 0, 0, rows / h, -x0 * cols / w, -y0 * rows / h); o.draw(Ys); Ys.setTransform(1, 0, 0, 1, 0, 0); }
+      const D = S.D = Ys.getImageData(0, 0, cols, rows).data, n = cols * rows, V = new Float32Array(n); let lo = 1, hi2 = 0;
+      for (let c = 0; c < n; c++) { const a = D[c * 4 + 3] / 255; if (a < 0.2) { V[c] = -1; continue; } let v = (0.2126 * D[c * 4] + 0.7152 * D[c * 4 + 1] + 0.0722 * D[c * 4 + 2]) / 255; if (dark === !!o.invert) v = 1 - v; V[c] = v; if (v < lo) lo = v; if (v > hi2) hi2 = v; }
+      const flat = hi2 - lo < 0.12;                                                           // صورة بلون واحد (شعار): الثقل من نقش هادي بدل الإضاءة
+      for (let c = 0; c < n; c++) S.dens[c] = V[c] < 0 ? 0 : (flat ? 0.5 + 0.5 * vn((c % cols) * 0.33, (c / cols | 0) * 0.33) : 0.1 + 0.9 * (V[c] - lo) / (hi2 - lo)) * (D[c * 4 + 3] / 255);
+    }
+    const fl = o.flick != null ? o.flick : 1, revOn = REV && t >= tr - 0.15, Ym = revOn ? S.mask.getContext('2d') : null, MD = revOn ? Ym.createImageData(cols, rows) : null;
+    const Yg = S.colorMode ? S.L1.getContext('2d') : X, gx0 = S.colorMode ? 0 : x0, gy0 = S.colorMode ? 0 : y0, hot = [];
+    if (S.colorMode) { Yg.globalCompositeOperation = 'source-over'; Yg.globalAlpha = 1; Yg.clearRect(0, 0, w, h); }
+    const A = X.globalAlpha;
+    for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) { const c = r * cols + q, d = S.dens[c]; if (d <= 0.04) continue;
+      const a = T0 + build * (0.72 * r / rows + 0.28 * h2(c, 11)); if (t < a) continue;
+      const rc = REV ? tr + rdur * (0.8 * ((cols - 1 - q) / cols + r / rows) / 2 + 0.2 * h2(c, 37)) : 1e9;
+      if (MD) MD.data[c * 4 + 3] = 255 * cl((t - rc) / 0.14);
+      if (t >= rc + 0.16) continue;
+      const scr = t < a + 0.28 || t >= rc - 0.12, hB = h2(c, 23);
+      const gi = scr ? Math.floor(h2(c, Math.floor(t * 24) + 91) * G) : Math.min(G - 1, Math.floor(Math.min(K - 1, Math.floor(d * K)) * G / K + h2(c, Math.floor(t * (1.2 + 2.6 * hB) * fl + hB * 10) + 5) * G / K));
+      const al = cl((t - a) / 0.2) * (t >= rc ? 1 - (t - rc) / 0.16 : 1) * (S.colorMode ? 0.45 + 0.55 * d : 0.12 + 0.88 * Math.pow(d, 1.25));
+      if (scr) hot.push(gi, q, r, al); else { Yg.globalAlpha = (S.colorMode ? 1 : A) * al; Yg.drawImage(S.A0, gi * gw, 0, gw, gh, gx0 + q * cw, gy0 + r * ch, cw, ch); } }
+    if (S.colorMode) { Yg.globalAlpha = 1; Yg.globalCompositeOperation = 'source-in'; Yg.imageSmoothingEnabled = false; Yg.drawImage(S.sm, 0, 0, w, h); Yg.globalCompositeOperation = 'source-over'; X.globalAlpha = A; X.drawImage(S.L1, x0, y0, w, h); }
+    if (MD) { Ym.putImageData(MD, 0, 0); if (!S.L2) S.L2 = S.mk(w, h); const Y2 = S.L2.getContext('2d'); Y2.setTransform(1, 0, 0, 1, 0, 0); Y2.globalCompositeOperation = 'source-over'; Y2.clearRect(0, 0, w, h); Y2.translate(-x0, -y0); real(Y2); Y2.setTransform(1, 0, 0, 1, 0, 0);
+      Y2.globalCompositeOperation = 'destination-in'; Y2.imageSmoothingEnabled = false; Y2.drawImage(S.mask, 0, 0, w, h); X.globalAlpha = A; X.drawImage(S.L2, x0, y0, w, h); }
+    for (let i = 0; i < hot.length; i += 4) { X.globalAlpha = A * Math.min(1, hot[i + 3] + 0.25); X.drawImage(S.A1, hot[i] * gw, 0, gw, gh, x0 + hot[i + 1] * cw, y0 + hot[i + 2] * ch, cw, ch); }     // الحرف وهو ينكتب أو ينكشف: بلون التمييز فوق الكل
+    X.restore();
+    if (ctx.cue) { for (let k = 0; k < 5; k++) ctx.cue('tick', T0 + build * k / 5, { id: 'as' + k + '@' + s, g: 0.03 }); if (REV) ctx.cue('air', tr, { id: 'asr@' + s, d: 0.7, g: 0.025 }); }
+  };
+
   G.FX = FX;
 })();

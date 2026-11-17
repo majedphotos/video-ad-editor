@@ -98,3 +98,4 @@
 | 105 | قطرات تندمج | [Jamie Wong — Metaballs and Marching Squares](https://jamie-wong.com/2014/08/19/metaballs-and-marching-squares/) (الحقل يتقاس على شبكة والحافة بتقريب خطي — الطريقة بس، والكود مكتوب من الصفر) | — (مقال) |
 | 106 | مكعبات تنبني | [Shaun Lebron — Drawing isometric boxes in the correct order](https://shaunlebron.github.io/IsometricBlocks) (ترتيب رسم الصناديق عشان تغطي بعض صح — المبدأ بس؛ هني الوجه الأمامي مواجه والرسم صف صف) | — (مقال) |
 | 107 | صوتك يرسم | البلقن نفسه: `scripts/37_env.py` (قوة الصوت لكل فريم، من ريل بوبيان 6.0) — والأشكال الثلاثة مكتوبة من الصفر | MIT (البلقن) |
+| 108 | حروف ترسم الصورة | [marmelab — Convert An Image Into An ASCII Art Masterpiece](https://marmelab.com/blog/2018/02/20/convert-image-to-ascii-art-masterpiece) (إضاءة كل خانة ← حرف من سلّم ثقل — الطريقة بس؛ هني السلّم يتقاس من الخط نفسه والحروف تتبدل وتنكشف بموجة) | — (مقال) |
