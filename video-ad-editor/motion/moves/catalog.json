@@ -2461,6 +2461,31 @@
     "url": "https://shaunlebron.github.io/IsometricBlocks"
    },
    "bonus": false
+  },
+  {
+   "n": 107,
+   "id": "voiceDraw",
+   "name": "صوتك يرسم",
+   "sub": "حلقة أو أعمدة أو خط يتحرك مع صوتك الحقيقي",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "calm",
+    "onetake",
+    "editorial"
+   ],
+   "cues": [
+    "emphasis",
+    "tech"
+   ],
+   "desc": "شكل يتحرك مع قوة صوت المتكلم الحقيقي مقطع بمقطع: حلقة أعمدة حول قلب ينبض، أو صف أعمدة مثل رسالة صوتية، أو خط موجة. وسط الشكل هو اللحظة الحالية وأطرافه اللي انقال قبل شوي، فالكلمة تمشي فيه مثل موجة، والسكتة تبين سكتة. ما يخترع حركة: بلا ملف صوت يبقى واقف.",
+   "preview": "previews/107.mp4",
+   "source": {
+    "label": "البلقن نفسه — غلاف الصوت لكل فريم (scripts/37_env.py)",
+    "url": ""
+   },
+   "bonus": false
   }
  ],
  "families": {

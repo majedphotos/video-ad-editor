@@ -2719,5 +2719,51 @@
     X.restore();
   };
 
+  /* 107 صوتك يرسم — شكل (حلقة أو خط أو أعمدة) يتحرك مع قوة صوت المتكلم الحقيقي مقطع بمقطع: وسط الشكل = اللحظة الحالية، وأطرافه = اللي انقال قبل شوي، فالكلمة تمشي فيه مثل موجة.
+     مصدر الصوت (بالترتيب): env (دالة t ← 0..1) · levels (مصفوفة، rate قيمة بالثانية) · src (ملف env.js أو json من scripts/37_env.py) · window.ENV (ريل الكلام: <script src="env.js">).
+     o: {s, out, shape='ring' | 'line' | 'bars', x=540, y=900, r=240 (نص قطر الحلقة), w=820 (عرض الخط أو الأعمدة), h=300 (أقصى ارتفاع), n (عدد الأعمدة: 72 حلقة · 33 أعمدة),
+         span=0.7 (كم ثانية من الكلام مفرودة على الشكل), gain=1, offset=0 (ثانية الفيديو اللي يبدأ عندها ملف الصوت), rate=30, norm=true (يفرد الفرق بين المقاطع لو الصوت نظيف وقيمه متقاربة),
+         color=P.acc, color2 (الافتراضي كريمي على الغامق و P.ink على الفاتح), core=true (قلب الحلقة ينبض), img (صورة أو شعار وسط الحلقة), glow (الافتراضي على الغامق)}
+     بلا مصدر صوت = الشكل واقف على أقل حجم (ما يخترع حركة). ما له أصوات: هو يمشي مع الصوت نفسه. */
+  FX.voiceDraw = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    const out = o.out != null ? +o.out : null, ko = out != null ? at(t, out, out + 0.4, 'cubicIn') : 0; if (ko >= 1) return;
+    if (!o._A) { let L = o.levels || null, fn = typeof o.env === 'function' ? o.env : null;
+      if (!L && !fn && o.src) { try { const x = new XMLHttpRequest(); x.open('GET', o.src, false); x.send(); const tx = x.responseText || '', a = tx.indexOf('['), b = tx.lastIndexOf(']'); if (a >= 0 && b > a) L = JSON.parse(tx.slice(a, b + 1)); } catch (e) {} }
+      if (!L && !fn) L = G.ENV || null;
+      if (L && L.v) L = L.v;
+      if (L && o.norm !== false) { const v = Array.from(L).filter(q => q > 0.03).sort((p, q) => p - q);                       // صوت نظيف (سكتته صفر) يطلع كله قرب 1 — نفرد الفرق بين المقاطع
+        if (v.length > 8) { const lo = v[Math.floor(v.length * 0.1)], hi = v[Math.floor(v.length * 0.985)]; if (hi - lo < 0.55 && hi > lo) L = Array.from(L, q => (q <= 0.03 ? 0 : cl(0.1 + 0.9 * (q - lo) / (hi - lo)))); } }
+      const rate = o.rate || 30, off = +o.offset || 0, raw = fn ? fn : (L ? tt => { const f = (tt - off) * rate, i = Math.floor(f); if (f < 0 || i >= L.length - 1) return f >= 0 && i === L.length - 1 ? +L[i] || 0 : 0; return lerp(+L[i] || 0, +L[i + 1] || 0, f - i); } : () => 0);
+      o._A = { lev: tt => { let m = 0; for (let k = 0; k < 10; k++) { const v = raw(tt - k / 60) * Math.pow(0.8, k); if (v > m) m = v; } return cl(m * (o.gain || 1)); } }; }   // يطلع بسرعة وينزل بهدوء — الحركة ما ترجف
+    const lev = o._A.lev, shape = o.shape || 'ring', cx = o.x != null ? o.x : 540, cy = o.y != null ? o.y : 900, span = o.span != null ? o.span : 0.7, H = o.h || 300;
+    const dark = lum(P.bg) < 115, glow = o.glow != null ? !!o.glow : dark, col = o.color || P.acc, col2 = o.color2 || (dark ? '#FFE9DA' : P.ink), kin = at(t, s, s + 0.4, 'backOut'), A = cl(at(t, s, s + 0.25)) * (1 - ko), now = lev(t);
+    if (A <= 0.003) return;
+    X.save(); X.globalAlpha *= A; X.translate(cx, cy); X.scale(0.8 + 0.2 * kin, 0.8 + 0.2 * kin); X.lineCap = 'round'; X.lineJoin = 'round';
+    if (glow) { X.shadowColor = col; X.shadowBlur = 26; }
+    if (shape === 'ring') {
+      const N = o.n || 72, R = o.r || 240, lw = Math.max(3, 6.2832 * R / N * 0.46);
+      X.save(); X.shadowBlur = 0; X.globalAlpha *= 0.22 + 0.3 * now; X.strokeStyle = col2; X.lineWidth = 3; X.beginPath(); X.arc(0, 0, R + 36 + H * (0.2 + 0.86 * Math.max(now, lev(t - span * 0.5), lev(t - span))), 0, 6.2832); X.stroke(); X.restore();   // هالة تتنفس مع الصوت، ودايماً برّا أطول عمود
+      for (let g = 0; g < 2; g++) { X.beginPath();
+        for (let i = g; i < N; i += 2) { const a = (i + 0.5) / N * 6.2832 - Math.PI / 2, d = Math.abs(((i + 0.5) / N) * 2 - 1), v = lev(t - (1 - d) * span), len = 10 + H * v * (0.72 + 0.28 * h2(i, 107)), c = Math.cos(a), sn = Math.sin(a);
+          X.moveTo(c * (R + 8), sn * (R + 8)); X.lineTo(c * (R + 8 + len), sn * (R + 8 + len)); }
+        X.strokeStyle = g ? col2 : col; X.lineWidth = lw; X.stroke(); }
+      if (o.core !== false) { const rr = R * (0.8 + 0.1 * now), I = o.img ? imgOf(ctx, o.img) : null; X.save();
+        if (I) { X.beginPath(); X.arc(0, 0, rr, 0, 6.2832); X.clip(); X.shadowBlur = 0; const q = ratioOf(I), w = q > 1 ? rr * 2 : rr * 2 / q; X.drawImage(I, -w / 2, -w * q / 2, w, w * q); }
+        else { const gr = X.createRadialGradient(-rr * 0.3, -rr * 0.35, rr * 0.05, 0, 0, rr); gr.addColorStop(0, mixc(col, '#FFFFFF', 0.3)); gr.addColorStop(0.6, col); gr.addColorStop(1, mixc(col, '#000000', 0.25)); X.fillStyle = gr; X.beginPath(); X.arc(0, 0, rr, 0, 6.2832); X.fill(); }
+        X.restore(); }
+    } else if (shape === 'bars') {
+      const N = o.n || 33, W = o.w || 820, st = W / N, lw = st * 0.52, mid = (N - 1) / 2;
+      for (let g = 0; g < 2; g++) { X.beginPath();
+        for (let i = 0; i < N; i++) { const d = Math.abs(i - mid) / mid; if ((d < 0.34) !== !g) continue; const v = lev(t - d * span), hh = 6 + H * v * (0.6 + 0.4 * h2(i, 108)) * (1 - 0.35 * d * d), x = (i - mid) * st; X.moveTo(x, -hh); X.lineTo(x, hh); }
+        X.strokeStyle = g ? col2 : col; X.lineWidth = lw; X.stroke(); }
+    } else {
+      const W = o.w || 820, N = 120, wave = (ph, sp2, amp) => { X.beginPath(); for (let i = 0; i <= N; i++) { const u = i / N * 2 - 1, d = Math.abs(u), v = lev(t - d * span), win = Math.pow(Math.cos(u * Math.PI / 2), 1.4), y = Math.sin(u * 9.5 + t * sp2 + ph) * H * amp * (0.04 + v) * win; i ? X.lineTo(u * W / 2, y) : X.moveTo(u * W / 2, y); } };
+      X.save(); X.shadowBlur = 0; X.globalAlpha *= 0.4; X.strokeStyle = col2; X.lineWidth = 4; wave(2.1, -7, 0.62); X.stroke(); wave(4.4, 11, 0.4); X.stroke(); X.restore();
+      X.strokeStyle = col; X.lineWidth = 9; wave(0, 9, 1); X.stroke();
+    }
+    X.restore();
+  };
+
   G.FX = FX;
 })();
