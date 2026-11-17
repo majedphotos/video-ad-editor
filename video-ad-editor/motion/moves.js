@@ -2574,5 +2574,79 @@
     if (ctx.cue) F.SH.forEach((q, j) => { ctx.cue('air', q.g, { id: 'fl' + j + '@' + s, d: 0.6, g: 0.02 }); ctx.cue('tick', q.T, { id: 'flk' + j + '@' + s, g: 0.03 }); });
   };
 
+  /* 105 قطرات تندمج — قطرات سائلة (metaballs) تنقسم وتندمج: قطرة وحدة تنقسم 3 خيارات، أو رقمين يندمجون برقم. الحافة مرسومة خط (marching squares) فتطلع حادة بأي دقة.
+     o: {s, out, color=P.acc, color2=P.clay (أسفل التدرّج), ink (لون الكتابة داخل القطرة — الافتراضي أبيض أو غامق حسب لون القطرة), dur=0.9 (زمن الانقسام أو الاندماج),
+         wobble=1 (رجفة السائل وهو واقف), x=540, y=900 (مركز الترتيب التلقائي), r=150, size (حجم الكتابة — الافتراضي 0.62 من نص القطر), family='display', glow (الافتراضي على الغامق),
+         stages:[{ at | key,        ← ثانية «اكتمال» المرحلة (القطرات وصلت مكانها) أو كلمة من كلامه. الحركة تبدأ قبلها بـdur
+                   drops:[{ text, x, y, r, size, family }] | texts:['سريع','رخيص','قوي'] (ترتيب تلقائي بصف واحد حول x,y) }]}
+     أول مرحلة: القطرات تنزل من فوق. كل مرحلة بعدها: نفس السائل يتوزّع على قطراتها (1←3 انقسام، 2←1 اندماج). out: تتبخر.
+     بين مرحلة ومرحلة خل dur على الأقل. القطرتين ما يلزقون لو بين مراكزهم 2.4 من نص القطر وفوق.
+     الأصوات (MV.cue): air مع بداية كل حركة · pop لما تستقر. */
+  FX.liquidDrops = (ctx, t, o) => {
+    const { X, P, at } = ctx, s = +o.s || 0; if (t < s - 0.02) return;
+    const dur = o.dur || 0.9, KR = 1.7, TH = Math.pow(1 - 1 / (KR * KR), 3);
+    if (!o._D) {
+      const cx = o.x != null ? o.x : 540, cy = o.y != null ? o.y : 900;
+      const ST = (o.stages || []).map((g, gi) => { let D = g.drops || (g.texts || ['']).map(tx => ({ text: tx }));
+        const R0 = g.r || o.r || 150, n = D.length, auto = D.some(d => d.x == null || d.y == null), rr = auto ? Math.min(R0, 960 / (2 + 2.7 * (n - 1))) : R0, gap = 2.7 * rr;
+        D = D.map((d, i) => ({ text: d.text, size: d.size, family: d.family, r: d.r || rr, x: d.x != null ? d.x : cx + (i - (n - 1) / 2) * gap * (ctx.rtl === false ? 1 : -1), y: d.y != null ? d.y : (g.y != null ? g.y : cy) }));
+        const T = whenOf(ctx, g, s); return { D, T: T != null ? T : (gi === 0 ? s + dur : null) }; }).filter(g => g.T != null && g.D.length).sort((p, q) => p.T - q.T);
+      const gcd = (a, b) => (b ? gcd(b, a % b) : a); let M = 1; ST.forEach(g => { M = M * g.D.length / gcd(M, g.D.length); }); if (M > 12) M = Math.max(...ST.map(g => g.D.length));
+      const r = rngOf(o.seed || 105), B = Array.from({ length: M }, () => ({ ph: r() * 6.283, sg: r() * 0.16, wx: 0.6 + r() * 0.8 }));
+      ST.forEach(g => { const n = g.D.length, cnt = new Array(n).fill(0); g.of = B.map((_, b) => { const k = Math.min(n - 1, Math.floor(b * n / M)); cnt[k]++; return k; }); g.amp = g.of.map(k => 1 / cnt[k]); });
+      o._D = { ST, B, M, out: o.out != null ? +o.out : null };
+    }
+    const { ST, B, M, out } = o._D; if (!ST.length) return;
+    const ko = out != null ? at(t, out, out + 0.45, 'cubicIn') : 0; if (ko >= 1) return;
+    let j = 0; for (let i = 0; i < ST.length; i++) if (t >= ST[i].T - dur) j = i;
+    const g1 = ST[j], g0 = j > 0 ? ST[j - 1] : null, t0 = g1.T - dur, wob = o.wobble != null ? o.wobble : 1, tau = t - g1.T;
+    const jel = tau > 0 ? Math.sin(tau * 15) * Math.exp(-tau * 5.5) : 0;                       // السائل يهتز شوي لما يستقر
+    /* حالة كل كرة عند وقت tt: [x, y, نص قطر التأثير, الوزن] */
+    const ball = (b, tt) => { const q = B[b], d1 = g1.D[g1.of[b]], u = cl((tt - t0 - q.sg) / (dur - 0.16)); let x, y, R, a;
+      if (g0) { const d0 = g0.D[g0.of[b]], e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, k = e + Math.sin(e * Math.PI) * 0.06 * (b % 2 ? 1 : -1);
+        x = lerp(d0.x, d1.x, k); y = lerp(d0.y, d1.y, k) - Math.sin(e * Math.PI) * 26 * q.wx; R = lerp(d0.r, d1.r, e); a = lerp(g0.amp[b], g1.amp[b], e); }
+      else { x = d1.x; y = lerp(-d1.r * 2.2 - 60, d1.y, u * u); R = d1.r; a = g1.amp[b]; }
+      const w = wob * R * 0.05; x += Math.sin(tt * 1.7 * q.wx + q.ph) * w; y += Math.cos(tt * 1.3 * q.wx + q.ph * 1.7) * w + jel * R * 0.07;
+      return [x, y, R * KR * (1 + jel * 0.05), a * (1 - ko)]; };
+    const BL = []; for (let b = 0; b < M; b++) { const m = ball(b, t), l = ball(b, t - 0.075); BL.push([m[0], m[1], m[2], m[3] * 0.72], [l[0], l[1], l[2] * 0.92, m[3] * 0.28]); }   // كرة متأخرة ورا كل كرة = ذيل سائل وهي تتحرك
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; BL.forEach(q => { x0 = Math.min(x0, q[0] - q[2]); y0 = Math.min(y0, q[1] - q[2]); x1 = Math.max(x1, q[0] + q[2]); y1 = Math.max(y1, q[1] + q[2]); });
+    const G = 8; x0 = Math.floor(x0 / G) * G - G; y0 = Math.max(-400, Math.floor(y0 / G) * G - G); const nx = Math.ceil((x1 - x0) / G) + 3, ny = Math.ceil((y1 - y0) / G) + 3;
+    if (nx < 3 || ny < 3 || nx * ny > 400000) return;
+    const F = new Float32Array(nx * ny);
+    BL.forEach(([bx, by, R, a]) => { if (a <= 0) return; const R2 = R * R, i0 = Math.max(0, Math.floor((bx - R - x0) / G)), i1 = Math.min(nx - 1, Math.ceil((bx + R - x0) / G)), j0 = Math.max(0, Math.floor((by - R - y0) / G)), j1 = Math.min(ny - 1, Math.ceil((by + R - y0) / G));
+      for (let jj = j0; jj <= j1; jj++) { const dy = y0 + jj * G - by, dy2 = dy * dy; for (let ii = i0; ii <= i1; ii++) { const dx = x0 + ii * G - bx, q = 1 - (dx * dx + dy2) / R2; if (q > 0) F[jj * nx + ii] += a * q * q * q; } } });
+    /* marching squares: نقطة على كل ضلع يقطعه الحد (بتقريب خطي) ← نربطها حلقات مسكّرة */
+    const NE = nx * ny, L1 = new Int32Array(NE * 2).fill(-1), L2 = new Int32Array(NE * 2).fill(-1), link = (a, b) => { if (L1[a] < 0) L1[a] = b; else L2[a] = b; if (L1[b] < 0) L1[b] = a; else L2[b] = a; };
+    for (let jj = 0; jj < ny - 1; jj++) for (let ii = 0; ii < nx - 1; ii++) { const n0 = jj * nx + ii, c = (F[n0] > TH ? 1 : 0) | (F[n0 + 1] > TH ? 2 : 0) | (F[n0 + nx + 1] > TH ? 4 : 0) | (F[n0 + nx] > TH ? 8 : 0); if (c === 0 || c === 15) continue;
+      const Tp = n0, Rt = NE + n0 + 1, Bt = n0 + nx, Lf = NE + n0;
+      switch (c) { case 1: case 14: link(Lf, Tp); break; case 2: case 13: link(Tp, Rt); break; case 3: case 12: link(Lf, Rt); break; case 4: case 11: link(Rt, Bt); break;
+        case 6: case 9: link(Tp, Bt); break; case 7: case 8: link(Lf, Bt); break; case 5: link(Lf, Tp); link(Rt, Bt); break; case 10: link(Tp, Rt); link(Bt, Lf); break; } }
+    const PT = e => { if (e < NE) { const a = F[e], b = F[e + 1]; return [x0 + ((e % nx) + (TH - a) / (b - a)) * G, y0 + (e / nx | 0) * G]; } const n0 = e - NE, a = F[n0], b = F[n0 + nx]; return [x0 + (n0 % nx) * G, y0 + ((n0 / nx | 0) + (TH - a) / (b - a)) * G]; };
+    const seen = new Uint8Array(NE * 2), path = new Path2D(); let any = false;
+    for (let e = 0; e < NE * 2; e++) { if (L1[e] < 0 || seen[e]) continue; const pts = []; let cur = e, prev = -1;
+      while (cur >= 0 && !seen[cur]) { seen[cur] = 1; pts.push(PT(cur)); const nxt = L1[cur] !== prev ? L1[cur] : L2[cur]; prev = cur; cur = nxt; }
+      if (pts.length < 3) continue; any = true; const n = pts.length, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], m0 = mid(pts[n - 1], pts[0]); path.moveTo(m0[0], m0[1]);
+      for (let i = 0; i < n; i++) { const m = mid(pts[i], pts[(i + 1) % n]); path.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); } path.closePath(); }
+    if (!any) return;
+    const col = o.color || P.acc, col2 = o.color2 || P.clay || col, dark = lum(P.bg) < 115, glow = o.glow != null ? !!o.glow : dark, aIn = at(t, s, s + 0.2);
+    X.save(); X.globalAlpha *= aIn;
+    const gr = X.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, mixc(col, '#FFFFFF', 0.16)); gr.addColorStop(0.5, col); gr.addColorStop(1, col2);
+    X.save(); if (glow) { X.shadowColor = mixc(col, '#000000', 0.1).replace('rgb', 'rgba').replace(')', ',0.55)'); X.shadowBlur = 60; } else { X.shadowColor = 'rgba(0,0,0,0.2)'; X.shadowBlur = 34; X.shadowOffsetY = 16; }
+    X.fillStyle = gr; X.fill(path, 'evenodd'); X.restore();
+    X.save(); X.clip(path, 'evenodd');                                                           // لمعة السائل: ضوء من فوق يسار + حافة فاتحة
+    for (let b = 0; b < M; b++) { const [bx, by, R, a] = BL[b * 2], rr = R / KR, hx = bx - rr * 0.3, hy = by - rr * 0.36, hg = X.createRadialGradient(hx, hy, 0, hx, hy, rr * 0.75);
+      hg.addColorStop(0, 'rgba(255,255,255,' + (0.42 * a / 0.72).toFixed(3) + ')'); hg.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = hg; X.fillRect(hx - rr, hy - rr, rr * 2, rr * 2);
+      X.fillStyle = 'rgba(255,255,255,' + (0.5 * a / 0.72).toFixed(3) + ')'; X.beginPath(); X.ellipse(bx - rr * 0.42, by - rr * 0.5, rr * 0.16, rr * 0.09, -0.6, 0, 6.2832); X.fill(); }
+    X.strokeStyle = 'rgba(255,255,255,0.28)'; X.lineWidth = 7; X.stroke(path); X.restore();
+    /* الكتابة: تطلع لما القطرة تستقر، وتروح أول ما تتحرك للمرحلة الجاية */
+    const txt = (g, al, pop) => { if (al <= 0.01) return; g.D.forEach(d => { if (d.text == null || d.text === '') return; const sz = d.size || o.size || d.r * 0.62, ink = o.ink || (lum(col) > 150 ? '#1B1A17' : '#FFFFFF');
+      X.save(); X.globalAlpha *= al; X.translate(d.x, d.y + jel * d.r * 0.07); X.scale(pop, pop); ctx.text(X, String(d.text), 0, sz * 0.34, { family: d.family || o.family || 'display', weight: 800, size: sz, color: ink, maxWidth: d.r * 1.55 }); X.restore(); }); };
+    const nx2 = ST[j + 1], gone = nx2 ? at(t, nx2.T - dur, nx2.T - dur + 0.16) : 0;
+    txt(g1, at(t, g1.T - 0.14, g1.T + 0.1) * (1 - gone) * (1 - ko), 0.8 + 0.2 * at(t, g1.T - 0.14, g1.T + 0.2, 'backOut'));
+    if (g0) txt(g0, 1 - at(t, t0, t0 + 0.16), 1);
+    X.restore();
+    if (ctx.cue) ST.forEach((g, i) => { ctx.cue('air', g.T - dur, { id: 'ld' + i + '@' + s, d: 0.5, g: 0.02 }); ctx.cue('pop', g.T, { id: 'ldp' + i + '@' + s, g: 0.04 }); });
+  };
+
   G.FX = FX;
 })();

@@ -2408,6 +2408,32 @@
     "url": "https://www.creativebloq.com/how-to/make-interactive-3d-typography-effects"
    },
    "bonus": false
+  },
+  {
+   "n": 105,
+   "id": "liquidDrops",
+   "name": "قطرات تندمج",
+   "sub": "قطرة تنقسم خيارات، أو رقمين يندمجون",
+   "cat": "card",
+   "role": "card",
+   "energy": 2,
+   "families": [
+    "onetake",
+    "calm",
+    "editorial"
+   ],
+   "cues": [
+    "list",
+    "contrast",
+    "number"
+   ],
+   "desc": "قطرات سائلة تنزل وتنقسم وتندمج: قطرة وحدة تنقسم 3 خيارات كل خيار باسمه، أو رقمين يندمجون برقم واحد. السائل يتمدد بينهم وينقطع مثل الحقيقي، ويهتز شوي لما يستقر. كل مرحلة تكمل لحظة ما تنطق كلمتها. بلون الهوية على الغامق والفاتح.",
+   "preview": "previews/105.mp4",
+   "source": {
+    "label": "قطرات metaballs بحافة marching squares — الشرح من Jamie Wong",
+    "url": "https://jamie-wong.com/2014/08/19/metaballs-and-marching-squares/"
+   },
+   "bonus": false
   }
  ],
  "families": {
