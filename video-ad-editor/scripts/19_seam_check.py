@@ -112,14 +112,14 @@ def _final_check(args):
     cmd += ["-f", "null", "-"]
     ana = run(cmd).stderr
     blacks = [(float(a), float(b), float(c)) for a, b, c in re.findall(r"black_start:([\d.]+)\s+black_end:([\d.]+)\s+black_duration:([\d.]+)", ana)]
-    hard_black = [b for b in blacks if b[2] >= 0.5 and b[0] < dur - 1.0]
-    tail_black = [b for b in blacks if b[2] >= 0.5 and b[0] >= dur - 1.0]
-    soft_black = [b for b in blacks if 0.2 <= b[2] < 0.5]
-    first_black = [b for b in blacks if b[0] < 0.05 and b[2] >= 0.1]
+    # ❌ فقط لو أسود ≥ 2 ث أو أول فريم (الكفر) أسود ≥ 0.5 ث. أقل من كذا ممكن يكون كرت داكن مقصود قبل دخول نصه (ريل البطاريات 35.0–35.5 ث طلع إنذار كاذب)
+    hard_black = [b for b in blacks if b[2] >= 2.0 or (b[0] < 0.05 and b[2] >= 0.5)]
+    soft_black = [b for b in blacks if b not in hard_black and b[2] >= 0.2]
+    first_black = [b for b in blacks if b[0] < 0.05 and b[2] >= 0.1 and b not in hard_black]
     fmt_seg = lambda L: " · ".join(f"{a:.1f}–{b:.1f} ث" for a, b, _ in L[:4])
     if hard_black: add("fail", "black", f"فريمات سودا {len(hard_black)} مقطع ({fmt_seg(hard_black)}) — الرسم طاح أو فيه فراغ")
     elif first_black: add("warn", "black", f"أول الفيديو أسود ({first_black[0][2]:.2f} ث) — أول فريم هو الكفر")
-    elif tail_black or soft_black: add("warn", "black", f"لحظات سودا قصيرة ({fmt_seg(tail_black + soft_black)}) — لو مو فيد مقصود شوفها")
+    elif soft_black: add("warn", "black", f"لحظات سودا قصيرة ({fmt_seg(soft_black)}) — لو مو كرت داكن أو فيد مقصود شوفها")
     else: add("ok", "black", "ما فيه فريمات سودا")
 
     # تجمّد: freezedetect يطبع start ثم duration ثم end؛ لو انتهى الفيديو وهو متجمّد ما يكتب end
