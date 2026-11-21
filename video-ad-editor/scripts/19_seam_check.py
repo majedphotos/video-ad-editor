@@ -206,14 +206,44 @@ def _final_check(args):
             add(lv, "captions", f"الكابشن: {len(cards)} كرت" + ((" — " + " · ".join(prob_f + prob_w)) if (prob_f or prob_w) else " · التوقيت والمدة سليمة"))
     elif W:
         add("warn", "captions", f"ما لقيت caps.json بـ{W} — فحص الكابشن تخطّيته")
+
+    # 8) 🔗 كلمة الختام ← الأوتوميشن (6.8): نفس الكلمة بكرت الختام وبالكابشن. المشاهد يكتب اللي يشوفه، والأوتوميشن يرد على كلمة وحدة
+    #    ما نشغّل أي أوتوميشن من هني (يحتاج دخول المستخدم بزورجا) — نطلّع الكلمة جاهزة لمسودته بـfinal_check.json ← automation
+    if W and os.path.isdir(W):
+        def _nw(t): return re.sub("[ًٌٍَُِّْـ«»\"'،.!؟?:]", "", t or "").replace("أ", "ا").replace("إ", "ا").replace("آ", "ا").replace("ة", "ه").replace("ى", "ي").strip()
+        outro_w = ""
+        try: outro_w = (((json.load(open(os.path.join(W, "theme.json"), encoding="utf-8")).get("outro")) or {}).get("word") or "").strip()
+        except Exception: pass
+        caps_w = []
+        try:
+            cj2 = json.load(open(os.path.join(W, "caps.json"), encoding="utf-8"))
+            txt = " ".join(" ".join(w.get("t", "") for w in (c.get("w") or [])) for c in (cj2.get("cards") or []))
+            nwords = max(1, len(outro_w.split()))   # الكلمة بكرت الختام قد تكون كلمتين («قبل العصر»)؛ بدونها نقرا كلمة وحدة بعد «اكتب»
+            caps_w = [m for m in re.findall(r"اكتب\s+[«\"“]?((?:[^\s«»\"”،.!؟?]+\s*){%d})" % nwords, txt)]
+            caps_w = [c.strip() for c in caps_w]
+        except Exception: pass
+        if outro_w or caps_w:
+            kw = outro_w or caps_w[-1]
+            hit = any(_nw(kw) and _nw(kw).split()[0] in _nw(c).split() for c in caps_w) if caps_w else False
+            if outro_w and caps_w and not hit:
+                add("warn", "automation", f"كلمة الختام «{outro_w}» مو نفسها اللي بالكابشن ({' / '.join(caps_w[-2:])}) — المشاهد يكتب اللي يسمعه، وحّدهم قبل الأوتوميشن")
+            elif outro_w and not caps_w:
+                add("warn", "automation", f"كرت الختام فيه الكلمة «{outro_w}» بس الكابشن ما فيه «اكتب {outro_w}» — ما أحد بيعرف يكتبها إلا لو انقالت")
+            elif not outro_w:
+                add("ok", "automation", f"كلمة الأوتوميشن «{kw}» من الكابشن (كرت الختام ما فيه كلمة) — تنربط بزورجا بعد نزول الريل")
+            else:
+                add("ok", "automation", f"كلمة الأوتوميشن «{kw}» — موحّدة بالكرت والكابشن (تنربط بزورجا بعد نزول الريل)")
+            _AUTO["keyword"] = kw; _AUTO["from"] = "outro" if outro_w else "caps"; _AUTO["file"] = os.path.basename(F)
     return _final_report(res, F, W, dur, as_json, save)
 
+
+_AUTO = {}   # كلمة الأوتوميشن اللي لقاها الفحص (تنكتب بـfinal_check.json مع --save)
 
 def _final_report(res, F, W, dur, as_json, save=False):
     nf = sum(1 for r in res if r[0] == "fail"); nw = sum(1 for r in res if r[0] == "warn")
     verdict = "fail" if nf else ("warn" if nw else "ok")
     if as_json:
-        print(json.dumps({"file": F, "duration": round(dur, 3), "verdict": verdict, "fail": nf, "warn": nw,
+        print(json.dumps({"file": F, "duration": round(dur, 3), "verdict": verdict, "fail": nf, "warn": nw, "automation": _AUTO or None,
                           "checks": [{"level": a, "check": b, "msg": c} for a, b, c in res]}, ensure_ascii=False, indent=1))
     else:
         ic = {"ok": "✅", "warn": "⚠️", "fail": "❌"}
@@ -222,7 +252,7 @@ def _final_report(res, F, W, dur, as_json, save=False):
                "warn": f"⚠️ الفحص النهائي: {nw} تنبيه — شوفها قبل التسليم",
                "fail": f"❌ الفحص النهائي: {nf} مشكلة{(' و' + str(nw) + ' تنبيه') if nw else ''} — لا تسلّم"}[verdict])
     if save and W and os.path.isdir(W):
-        try: json.dump({"verdict": verdict, "checks": [{"level": a, "check": b, "msg": c} for a, b, c in res]},
+        try: json.dump({"verdict": verdict, "automation": _AUTO or None, "checks": [{"level": a, "check": b, "msg": c} for a, b, c in res]},
                        open(os.path.join(W, "final_check.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         except Exception: pass
     return 3 if nf else 0

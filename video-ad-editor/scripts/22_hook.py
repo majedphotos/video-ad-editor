@@ -9,6 +9,8 @@
         ← يكتب theme.json ← hook + ينسخ hook-card.js للمجلد ويركّبه بـcompose.html (04/16 يركّبونه وحدهم لو ناقص)
   python3 22_hook.py preview <work>                              ← 4 لقطات للهوك (بداية · 0.3 · آخره · بعده) بورقة وحدة hook_sheet.jpg
   python3 22_hook.py off     <work>                              ← يشيل الهوك
+  python3 22_hook.py perf-sync [--max 150]   ← (6.8) يسحب نسبة التخطي بأول 3 ثواني ووقت المشاهدة لريلاتك من ميتا (قراية بس؛ META_IG_TOKEN + META_IG_USER_ID بالبيئة) ← ~/.majed-video/perf_hooks.json
+  python3 22_hook.py perf-top [5]            ← أفضل وأسوأ ريلاتك بالتخطي، برابطها (شوف أول 3 ثواني منها). وبعد السحب `check` يطبع معيار حسابك
   python3 22_hook.py overlay <out> "<الهوك>" --theme theme.json --words reel.json [--video reel.mp4] [--pos mid] [...]
         ← لريل **مو** من محرّكاتنا (خط المقابلة بدافنشي/لوتي، أو mp4 جاهز): طبقة شفافة hook.mov (ProRes 4444 بألفا — حطها
           بأعلى تراك بدافنشي عند 0) ولو أعطيته --video يطلّع <اسم>_hook.mp4 محروق فوقه + hook_sheet.jpg
@@ -116,7 +118,81 @@ def check(W, hook, quiet=False):
         for e in errs: print("  ❌", e)
         for w in warns: print("  ⚠️", w)
         if not errs: print("  ✅ يمشي" + (" — والأفضل تصلّح التنبيهات" if warns else ""))
+        pl = perf_line()
+        if pl: print("  " + pl)
     return errs, warns, dv
+
+# ── 📊 أداء الهوك الفعلي من ميتا (6.8): نسبة التخطي بأول 3 ثواني لكل ريل ─────────────────────────────
+# الفاحص (check) ما يقدر يتنبأ بالتخطي من نص الهوك — جرّبناه على 138 ريل: نمط الكابشن ما يفرّق (53.5٪ مقابل 54.1٪ الوسيط).
+# اللي يفرّق فعلاً: القياس بعد النشر، ومقارنة ريلك الجديد بأفضل وأسوأ ريلاتك. perf-sync يسحبها، perf-top يعرضها، وcheck يطبع المعيار.
+PERF_FILE = os.path.expanduser("~/.majed-video/perf_hooks.json")
+GRAPH = "https://graph.facebook.com/v27.0"
+
+def _graph_get(url, tok):
+    import urllib.request, urllib.error
+    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + tok})
+    try: return json.load(urllib.request.urlopen(req, timeout=40))
+    except urllib.error.HTTPError as e: return {"_http": e.code, "_body": e.read().decode("utf-8", "replace")[:200]}
+    except Exception as e: return {"_http": 0, "_body": str(e)[:120]}
+
+def perf_sync(argv):
+    """يسحب ريلاتك من ميتا (قراية بس) ويكتب perf_hooks.json. المفتاح من META_IG_TOKEN ورقم الحساب META_IG_USER_ID (ما ينطبع)."""
+    import urllib.parse
+    from concurrent.futures import ThreadPoolExecutor
+    ap = argparse.ArgumentParser(prog="22_hook.py perf-sync"); ap.add_argument("--max", type=int, default=150); ap.add_argument("--out", default=PERF_FILE)
+    a = ap.parse_args(argv)
+    tok, uid = os.environ.get("META_IG_TOKEN", ""), os.environ.get("META_IG_USER_ID", "")
+    if not tok or not uid: sys.exit("⛔ ما لقيت META_IG_TOKEN وMETA_IG_USER_ID بالبيئة — حطهم (حساب انستقرام مهني + مفتاح ميتا) وأعد.")
+    reels, url = [], GRAPH + f"/{uid}/media?" + urllib.parse.urlencode({"fields": "id,media_product_type,timestamp,permalink,caption", "limit": 50})
+    while url and len(reels) < a.max:
+        r = _graph_get(url, tok)
+        if "_http" in r: sys.exit(f"⛔ ميتا رجّعت {r['_http']}: {r['_body']}")
+        reels += [m for m in r.get("data", []) if m.get("media_product_type") == "REELS"]
+        url = (r.get("paging") or {}).get("next")
+    reels = reels[:a.max]
+    def one(m):
+        r = _graph_get(GRAPH + f"/{m['id']}/insights?" + urllib.parse.urlencode({"metric": "reach,ig_reels_avg_watch_time,reels_skip_rate,views"}), tok)
+        v = {d["name"]: d["values"][0]["value"] for d in r.get("data", [])} if "data" in r else {}
+        return {"id": m["id"], "date": m["timestamp"][:10], "url": m.get("permalink", ""), "reach": v.get("reach"), "views": v.get("views"),
+                "skip": v.get("reels_skip_rate"), "watch_s": round(v["ig_reels_avg_watch_time"] / 1000, 1) if v.get("ig_reels_avg_watch_time") is not None else None,
+                "cap": re.sub(r"\s+", " ", (m.get("caption") or ""))[:60]}
+    with ThreadPoolExecutor(8) as ex: rows = list(ex.map(one, reels))
+    ok = [r for r in rows if r["skip"] is not None and (r["reach"] or 0) >= 200]   # وصول أقل من 200 = نسخة تجربة خفية، ما تدخل بالحكم
+    if len(ok) < 12: sys.exit(f"⛔ ريلات فيها نسبة تخطي {len(ok)} بس — أقل من 12، ما أحكم.")
+    import statistics as S
+    sk = sorted(r["skip"] for r in ok); q1, _, q3 = S.quantiles(sk, n=4)
+    by = sorted(ok, key=lambda r: r["skip"]); k = len(by) // 4
+    top, bot = by[:k], by[-k:]
+    out = {"generated": __import__("datetime").datetime.now().isoformat(timespec="seconds"), "reels": len(ok), "from": min(r["date"] for r in ok),
+           "skip_median": round(S.median(sk), 1), "skip_q1": round(q1, 1), "skip_q3": round(q3, 1),
+           "best_quarter": {"skip_max": top[-1]["skip"], "median_reach": round(S.median(r["reach"] for r in top))},
+           "worst_quarter": {"skip_min": bot[0]["skip"], "median_reach": round(S.median(r["reach"] for r in bot))},
+           "rows": sorted(ok, key=lambda r: r["date"], reverse=True)}
+    os.makedirs(os.path.dirname(a.out), exist_ok=True); json.dump(out, open(a.out, "w"), ensure_ascii=False, indent=1)
+    print(f"✓ {len(ok)} ريل من {out['from']} → {a.out}")
+    print(perf_line(out))
+
+def _perf_load():
+    try: return json.load(open(PERF_FILE))
+    except Exception: return None
+
+def perf_line(d=None):
+    d = d or _perf_load()
+    if not d: return None
+    b, w = d["best_quarter"], d["worst_quarter"]
+    ratio = f" ({b['median_reach']/w['median_reach']:.1f}× أعلى)" if w["median_reach"] else ""
+    return (f"📊 ريلاتك ({d['reels']} من {d['from']}): وسيط التخطي بأول 3 ثواني {d['skip_median']}٪ · أفضل ربع ≤{b['skip_max']}٪ وسيط وصوله {b['median_reach']:,} "
+            f"مقابل {w['median_reach']:,} لأسوأ ربع (≥{w['skip_min']}٪){ratio} — هدف الهوك الجديد: تحت {d['skip_q1']}٪. (مقياس ميتا «تقديري وتحت التطوير»)")
+
+def perf_top(argv):
+    d = _perf_load()
+    if not d: sys.exit("⛔ ما فيه أرقام — شغّل: python3 22_hook.py perf-sync")
+    n = int(argv[0]) if argv else 5
+    by = sorted(d["rows"], key=lambda r: r["skip"])
+    for title, grp in (("🟢 الأقل تخطّياً (هوكهم شد)", by[:n]), ("🔴 الأكثر تخطّياً (الهوك ضيّع المشاهد)", by[::-1][:n])):
+        print(title)
+        for r in grp: print(f"  {r['skip']:>5}٪ تخطي · وصول {r['reach']:>7,} · مشاهدة {r['watch_s']} ث · {r['date']} · {r['url']}")
+    print(perf_line(d))
 
 def suggest(W):
     S = load_sentences(W)
@@ -302,6 +378,8 @@ if __name__ == "__main__":
     if "--words" in argv:
         k = argv.index("--words"); WORDS = os.path.abspath(argv[k + 1]); del argv[k:k + 2]
         if not os.path.exists(WORDS): sys.exit(f"⛔ ملف الكلام {WORDS} مو موجود")
+    if argv and argv[0] == "perf-sync": perf_sync(argv[1:]); sys.exit(0)
+    if argv and argv[0] == "perf-top": perf_top(argv[1:]); sys.exit(0)
     if len(argv) < 2: sys.exit(__doc__)
     cmd, W = argv[0], os.path.abspath(argv[1])
     if cmd != "overlay" and not os.path.isdir(W): sys.exit(f"⛔ المجلد {W} مو موجود — عط مجلد شغل الريل (فيه caps.json)")
