@@ -7,13 +7,22 @@
 
 ---
 
-## قبل أي شي — نصيحة الموديل والجهد (مرة وحدة بالجلسة)
-أول رسالة بالجلسة، قل للمستخدم بسطرين (ولا تكررها):
-> «للنتيجة الأقوى: **Opus 5.5** والجهد **max**. يصرف من حدّك أكثر، بس المونتاج يطلع أحسن بوايد.»
-- **بالشات (claude.ai / التطبيق):** من قائمة الموديل جنب زر الإرسال ← Opus 5.5 ← Effort ← Max.
-- **Claude Code (الطرفية، الديسكتوب، تبويب Code بالجوال):** يكتب `/model opus` ثم `/effort max`.
-- لو هو أصلاً على Opus 5.5 (تعرف موديلك) قل الجهد بس. لا تقترح «ultracode» للمونتاج: يقسم الشغل على وكلاء وكل واحد يرسم بذوق، والصرف يتضاعف — وكيل واحد بجهد max أحسن لفيديو واحد.
-- لا تعطي أرقام صرف أو دقائق — ما انقاست.
+## Step -1 — Model suggestion (every skill, once per session, before anything else)
+
+Editing quality depends on the model and the effort level. Check yourself first, then at most one gentle suggestion. Never a gate.
+
+1. **Check:** you know your own model ID. If effort is visible to you, check it too; if not, treat it as unknown.
+2. **Already good** (Opus 5.5 or a stronger model, and effort `high` or above) → say nothing. Continue.
+3. **Otherwise** write the user two short lines in THEIR language (Arabic by default, Kuwaiti dialect if they use it), then continue the work in the same turn:
+   > «للمونتاج أنصحك بـ**Opus 5.5 أو أقوى** وبجهد **high أو أعلى** — النتيجة تطلع أحسن بوايد. تقدر تغيّرها وتكمل، وأنا ماشي بشغلي.»
+4. **How to switch** (only if they ask or look unsure):
+   - Chat (claude.ai / app): model menu next to the send button → Opus 5.5 or newer → Effort → High or above.
+   - Claude Code (terminal, desktop, mobile Code tab): `/model opus` then `/effort high`.
+5. **Rules:**
+   - ⛔ Never block, never refuse, never wait for an answer. It is a suggestion, not a requirement.
+   - Once per session. If they ignore it or say no, drop it for good.
+   - No cost, speed or minute figures — none were measured.
+   - Do not suggest `ultracode` for a single video: it splits the work across agents and each draws with its own taste. One agent at high effort is better.
 
 ## قبل أي تنفيذ — وسّع الطلب
 
