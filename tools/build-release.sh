@@ -14,6 +14,8 @@ rm -rf "$P/img" "$P/package.json" "$P/package-lock.json" "$P/motion/.gitignore"
 ( cd "$P/motion/moves" && zip -qr previews.zip previews && rm -rf previews )
 # ونفس الشي لمكتبة three.js (25 ملف ← 1) — motion/vendor.js يفكها أول مرة
 ( cd "$P/motion" && zip -qr vendor.zip vendor && rm -rf vendor )
+# والأمثلة الشغّالة (examples/* ← 1) — motion/vendor.js و35_moves.py plan يفكونها أول مرة
+( cd "$P/motion" && zip -qr examples.zip examples -x '*/.DS_Store' && rm -rf examples )
 # متجر المستودع القديم (من قبل majed-plugins) — ما له شغل داخل ملف البلقن، يبقى بالمستودع حق اللي ركّبوا من الرابط القديم
 rm -f "$T/.claude-plugin/marketplace.json"
 mkdir -p dist; rm -f dist/majed-video.plugin dist/video-ad-editor.skill

@@ -57,6 +57,15 @@ def ensure_previews(moves_dir):
                     (d / Path(n).name).write_bytes(f.read(n))
 
 
+def ensure_examples():
+    """الأمثلة الشغّالة (motion/examples) بملف البلقن zip واحد — نفكّها أول مرة."""
+    import zipfile
+    m = SKILL / "motion"; z = m / "examples.zip"
+    if z.exists() and not (m / "examples" / "devices-3d" / "project.json").exists():
+        with zipfile.ZipFile(z) as f:
+            f.extractall(m)
+
+
 def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
@@ -230,6 +239,7 @@ def _h(*a):
 
 
 def plan(title, family="auto", cues=(), dry=False, style="auto"):
+    ensure_examples()
     cat = catalog()
     off = set((load_profile().get("moves") or {}).get("off", []))
     if sys.platform != "darwin":                           # حركات القصّ (mac: true) تحتاج Vision بالماك — برّاه ما تنختار

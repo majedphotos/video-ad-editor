@@ -112,6 +112,15 @@ For a custom transition, set `type: (X, A, B, k, opts) => {…}`. A and B are th
 | strokes | `drawPath(X, svgPathD \| [[x,y],…], k, {width,color,cap,smooth,glow,glowColor,tip:{r,color,glow},from})` draws a hand-drawn stroke and returns the pen tip `[x,y]`. `pathInfo(src)` returns `{len,at(l),path}`. |
 | motion-kit | `MK` is `scripts/motion-kit.js` (odometer, statCard, lineChart, compareBars, kinetic, techFrame, timeline, commentBox, stamp, statGrid, iconArray, burst, shake). The globals `X, BG, INK, ACC, CLAY, MUT, FONT` are shimmed from the project palette before every draw, so you can call `ctx.MK.odometer(t, {...})` directly. |
 
+### Real devices, physics springs and 3D words (`motion/kit3d.mjs`)
+Not part of `ctx`; import it from a scene with `import * as K from '/motion/kit3d.mjs'`. Guide: `references/devices-3d.md`. Working example: `motion/examples/devices-3d/`.
+| group | exports |
+|---|---|
+| physics | `springStep(u,f,z)` · `track(v0,[{at,to,f,z,antic}])` (several spring targets in a row) · `throwOut` · `speed` · `camRig(t,[{at,pose,f,z,roll,zoom}])` + `applyCam(cam,r)` |
+| devices | `await loadDevice(ctx,'phone'\|'mac',{url,height\|width,shot,screenMat,hideScreen,tint})` · `fallbackDevice` · `studio(ctx,st,{floorY,grid})` · `shotTexture(ctx,imgName)` · `screenPoint` · `zoomPose(THREE,dev,u,v,d)` · `hideGlass(devs,on)` · `sheen(ctx,dev).set(k,a)` · `wireDraw(ctx,dev).set(y,on)` (needs `renderer.localClippingEnabled`) · `featureRing(ctx,cam,dev,[u0,v0,u1,v1],k,alpha)` |
+| 3D words | `await loadWords(url)` + `await ready3DText()` then `word3D(ctx,text,{depth,bevel,face,side})`; paths come from `scripts/45_text3d.py` |
+| sound | `whooshes(fn,{from,to,r,thr,pitch})` · `dedupeCues` — used by `scripts/46_motion_sfx.mjs <proj>` with `<proj>/motion.mjs` |
+
 ## 4. Example: 3D scene with bloom
 ```js
 MOTION.scene({ id: 'core',

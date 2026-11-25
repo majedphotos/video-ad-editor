@@ -1,0 +1,126 @@
+{
+ "name": "devices-3d — آيفون وماك بوك حقيقيين (GLB) + رسم بالخطوط + زوم على الشاشة + كلمات مجسّمة + صوت من الحركة",
+ "fps": 60,
+ "width": 1080,
+ "height": 1920,
+ "bpm": 120,
+ "beatsPerBar": 4,
+ "beatOffset": 0,
+ "palette": {
+  "bg": "#F0EEE6",
+  "ink": "#1F1F1D",
+  "acc": "#D97757",
+  "clay": "#BD5D3A",
+  "hi": "#E8A283",
+  "mut": "#8A847A"
+ },
+ "fonts": {
+  "display": "Cairo",
+  "body": "Cairo",
+  "num": "Inter"
+ },
+ "images": {
+  "phoneShot": "assets/phone.jpg",
+  "macShot": "assets/mac.jpg"
+ },
+ "post": {
+  "grain": 0.025,
+  "vignette": 0.08
+ },
+ "timing": {
+  "keepOriginal": true,
+  "snap": "none",
+  "startPad": 0,
+  "tail": 0.6
+ },
+ "sections": [
+  {
+   "name": "intro",
+   "at": 0
+  }
+ ],
+ "scenes": [
+  {
+   "id": "s1",
+   "file": "scenes/s1_devices.js",
+   "lines": [
+    "l1",
+    "l2",
+    "l3",
+    "l4",
+    "l5",
+    "l6"
+   ]
+  },
+  {
+   "id": "s2",
+   "file": "scenes/s2_words.js",
+   "lines": [
+    "l7",
+    "l8"
+   ],
+   "transition": {
+    "type": "push",
+    "dur": 0.45,
+    "dir": "up",
+    "ease": "expoInOut"
+   }
+  },
+  {
+   "id": "s3",
+   "file": "scenes/s3_logo.js",
+   "lines": [
+    "l9"
+   ],
+   "transition": {
+    "type": "zoom",
+    "dur": 0.4
+   }
+  },
+  {
+   "id": "s4",
+   "file": "scenes/s4_free.js",
+   "lines": [
+    "l10"
+   ],
+   "transition": {
+    "type": "push",
+    "dur": 0.45,
+    "dir": "rtl",
+    "ease": "expoInOut"
+   }
+  },
+  {
+   "id": "s5",
+   "file": "scenes/s5_cta.js",
+   "lines": [
+    "l11",
+    "l12"
+   ],
+   "transition": {
+    "type": "push",
+    "dur": 0.45,
+    "dir": "up",
+    "ease": "expoInOut"
+   }
+  }
+ ],
+ "devices": {
+  "phone": {
+   "url": "models/phone.glb",
+   "screenMat": "BsXHDwLKqtDOfrW",
+   "hideScreen": true,
+   "lens": [
+    0.075,
+    0.27,
+    -0.045
+   ]
+  },
+  "mac": {
+   "url": "models/mac.glb",
+   "screenMat": "HlQwFCAPWzetDQy",
+   "hideScreen": true
+  }
+ },
+ "logoWord": "شعارك"
+}
