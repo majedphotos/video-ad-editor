@@ -2826,5 +2826,164 @@
     if (ctx.cue) { for (let k = 0; k < 5; k++) ctx.cue('tick', T0 + build * k / 5, { id: 'as' + k + '@' + s, g: 0.03 }); if (REV) ctx.cue('air', tr, { id: 'asr@' + s, d: 0.7, g: 0.025 }); }
   };
 
+  /* 109 قطار الموت على كلمة — سكة قطار موت ثلاثية الأبعاد تمشي على حدود كلمة تكتبها (بخطك الحقيقي)، وراكبينها شخصيات صغيرة بعرباتها.
+     الكاميرا درون سباق بلقطة وحدة: تلحق القطار فوق التلة (تصوير بطيء لحظة القمة)، تنزل وياه، تمشي جنب الركاب، وبعدها تصعد حلزوني لين تنكشف السكة كلها من فوق: كلمة.
+     موشن بس (تحتاج ctx.stage3D) — بريل الكلام ما تشتغل. الحركة ترسم الإطار كله (سما وأرض)، فحطها أول شي بالمشهد وارسم كتابتك فوقها.
+     o: {s, word='كلود' (عربي أو إنقليزي، كلمة أو كلمتين), family='display', weight=900,
+         at | key        ← ثانية «القفلة» (الكلمة كاملة ومعدولة من فوق) أو كلمة من كلامه. الطيران يبدأ قبلها بـdur. بلا at ولا key = s + dur
+         dur=10          ← طول الطيران كله بالثواني (أقل شي 6.8). الزيادة تروح لملاحقة القطار، والصعود ثابت 4.4 ث
+         view='fpv' | 'top' (من فوق وبس، بلا طيران — للقطة سريعة أو لتبديل كلمات ورا بعض),
+         riders=50, perTrain=5, rider='bot' | 'claude', color=P.acc (الراكب), cart=P.ink, rail=P.ink,
+         hill=1 (ارتفاع التلال — 0 = سكة مسطحة), slowmo=true (تصوير بطيء عند القمة), roll=0 (لفّات كاملة وقت الصعود، 1 = لفة تقفل على الكلمة),
+         scale=1 (حجم الكلمة بالعالم), shake=1, alpha=1}
+     الوقت كله من t (بلا تراكم). أول نداء يبني السكة (ثانية تقريباً). كل o له مسرحه، فلا تسوي أكثر من 3 أو 4 كلمات بفيلم واحد.
+     بعد القفلة الكاميرا واقفة فوق والقطارات تكمل تمشي — خل المشهد يكمل ثانيتين عشان الكلمة تنقرا. */
+  const wcTrace = (ctx, str, fam, wt) => {
+    const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+    let fs = 480; const m = mk(8, 8).getContext('2d'); m.font = ctx.font(fam, wt, fs); const tw = m.measureText(str).width; if (tw > 5400) fs = Math.floor(fs * 5400 / tw);
+    const W = Math.ceil(tw * fs / 480 + 280), H = Math.ceil(fs * 2.4), c = mk(W, H), x = c.getContext('2d', { willReadFrequently: true });
+    x.font = ctx.font(fam, wt, fs); x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.fillStyle = '#000'; x.fillText(str, W / 2, H * 0.62);
+    const d = x.getImageData(0, 0, W, H).data, on = (i, j) => i >= 0 && j >= 0 && i < W && j < H && d[(j * W + i) * 4 + 3] > 127;
+    const out = new Map(), K = (a, b) => b * (W + 1) + a, add = (a, b, e, f) => { const k = K(a, b); if (!out.has(k)) out.set(k, []); out.get(k).push([e, f]); };
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (on(i, j)) {            // حدود كل حرف على شبكة زوايا البكسلات — الحرف دايماً على يمين الماشي
+      if (!on(i, j - 1)) add(i, j, i + 1, j); if (!on(i + 1, j)) add(i + 1, j, i + 1, j + 1); if (!on(i, j + 1)) add(i + 1, j + 1, i, j + 1); if (!on(i - 1, j)) add(i, j + 1, i, j); }
+    const loops = [];
+    for (const [k0, arr] of out) while (arr.length) { const sx = k0 % (W + 1), sy = (k0 - sx) / (W + 1); let p = arr.pop(); const L = [[sx, sy]];
+      while (p && !(p[0] === sx && p[1] === sy)) { L.push(p); const a = out.get(K(p[0], p[1])); p = a && a.pop(); }
+      if (L.length > 60 * fs / 480) loops.push(L); }
+    return { loops: loops.sort((a, b) => b.length - a.length), fs };
+  };
+  const wcBuild = (ctx, o) => {
+    const THREE = ctx.THREE, V3 = THREE.Vector3, P = ctx.P, STEP = 0.25, Yv = new V3(0, 1, 0), dark = lum(P.bg) < 115, sm3 = k => { k = cl(k); return k * k * (3 - 2 * k); };
+    const tr = wcTrace(ctx, String(o.word || 'كلود'), o.family || 'display', o.weight || 900), q = tr.fs / 480, sc = 0.059 / q * (o.scale || 1);
+    if (!tr.loops.length) return { dead: true };
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; tr.loops.forEach(l => l.forEach(p => { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; }));
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, RW = (x1 - x0) * sc / 2, RD = (y1 - y0) * sc / 2;
+    const smooth = (pts, r, n) => { let A = pts; const m = A.length; for (let z = 0; z < n; z++) { const B = new Array(m); for (let i = 0; i < m; i++) { let ax = 0, ay = 0; for (let k = -r; k <= r; k++) { const p = A[(i + k + m * 8) % m]; ax += p[0]; ay += p[1]; } B[i] = [ax / (2 * r + 1), ay / (2 * r + 1)]; } A = B; } return A; };
+    const resamp = (pts, step) => { const m = pts.length, cum = [0]; for (let i = 0; i < m; i++) { const a = pts[i], b = pts[(i + 1) % m]; cum.push(cum[i] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
+      const L = cum[m], k = Math.max(8, Math.round(L / step)), R = []; let j = 0; for (let e = 0; e < k; e++) { const d = e * L / k; while (cum[j + 1] < d) j++; const a = pts[j], b = pts[(j + 1) % m], f = (d - cum[j]) / (cum[j + 1] - cum[j] || 1); R.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]); } return R; };
+    const loops = tr.loops.map(l => { const big = l.length > 700 * q, pl = resamp(smooth(l, big ? Math.max(3, Math.round(14 * q)) : Math.max(2, Math.round(5 * q)), 3).map(p => [(p[0] - cx) * sc, (p[1] - cy) * sc]), STEP);
+      let ar = 0; for (let i = 0; i < pl.length; i++) { const a = pl[i], b = pl[(i + 1) % pl.length]; ar += a[0] * b[1] - b[0] * a[1]; }
+      return { pl, n: pl.length, L: pl.length * STEP, outer: ar > 0 }; }).filter(l => l.L > 3);
+    const main = loops.filter(l => l.outer).sort((a, b) => b.L - a.L)[0] || loops[0]; main.main = true;
+    /* نقطة الفراق (الدرون يترك القطار ويصعد): على الحافة الجنوبية والقطار ماشي غرب، شرق الوسط — والتلة الكبيرة قبلها بـ45 وحدة */
+    let iD = 0, best = -1e9; for (let i = 0; i < main.n; i++) { const a = main.pl[(i - 2 + main.n) % main.n], b = main.pl[(i + 2) % main.n], tx = (b[0] - a[0]) / Math.hypot(b[0] - a[0], b[1] - a[1] || 1e-6), p = main.pl[i];
+      const v = (tx < -0.6 ? 0 : -60) + p[1] - 0.5 * Math.abs(p[0] - 0.75 * RW); if (v > best) { best = v; iD = i; } }
+    const iH = ((iD - Math.round(Math.min(45, main.L * 0.4) / STEP)) % main.n + main.n) % main.n, hk = o.hill != null ? +o.hill : 1;
+    const hgt = (lp, i) => { const u = i / lp.n, k1 = Math.max(lp.main ? 1 : 2, Math.round(lp.L / 53)), k2 = Math.max(2 * k1 + 1, Math.round(lp.L / 24)), T = 6.2832;
+      if (lp.main) { let du = Math.abs(i - iH); du = Math.min(du, lp.n - du) * STEP; return 0.5 + hk * (2.9 + 1.9 * Math.sin(T * k1 * u + 0.6) + Math.sin(T * k2 * u + 2.1) + 8.5 * Math.exp(-Math.pow(du / 6.4, 2))); }
+      return lp.L >= 40 ? 0.6 + hk * (2.4 + 1.7 * Math.sin(T * k1 * u + 1) + 0.7 * Math.sin(T * k2 * u)) : 1.3; };
+    const GR = 9, V0 = 5.5;
+    loops.forEach(lp => { const n = lp.n; lp.P = lp.pl.map((p, i) => new V3(p[0], hgt(lp, i), p[1])); lp.T = []; lp.B = []; lp.N = []; let hm = 0;
+      for (let i = 0; i < n; i++) { const t = lp.P[(i + 1) % n].clone().sub(lp.P[(i - 1 + n) % n]).normalize(), b = t.clone().cross(Yv).normalize(); lp.T.push(t); lp.B.push(b); lp.N.push(b.clone().cross(t).normalize()); if (lp.P[i].y > hm) hm = lp.P[i].y; }
+      const cum = new Float64Array(n + 1); for (let i = 0; i < n; i++) cum[i + 1] = cum[i] + STEP / Math.sqrt(V0 * V0 + 2 * GR * (hm - (lp.P[i].y + lp.P[(i + 1) % n].y) / 2)); lp.cum = cum; lp.per = cum[n]; });
+    const at = (lp, d) => { const f = (((d / STEP) % lp.n) + lp.n) % lp.n, i = Math.floor(f), j = (i + 1) % lp.n, k = f - i; return { p: lp.P[i].clone().lerp(lp.P[j], k), t: lp.T[i].clone().lerp(lp.T[j], k).normalize(), b: lp.B[i].clone().lerp(lp.B[j], k).normalize(), n: lp.N[i].clone().lerp(lp.N[j], k).normalize() }; };
+    const sAt = (lp, tm) => { const c = lp.cum; let u = ((tm % lp.per) + lp.per) % lp.per, a = 0, b = lp.n; while (b - a > 1) { const m = (a + b) >> 1; if (c[m] <= u) a = m; else b = m; } return (a + (u - c[a]) / (c[a + 1] - c[a])) * STEP; };
+    const tAt = (lp, d) => { const f = (((d / STEP) % lp.n) + lp.n) % lp.n, i = Math.floor(f); return lp.cum[i] + (f - i) * (lp.cum[i + 1] - lp.cum[i]); };
+    /* التوقيت: ملاحقة A ثانية ثم صعود CL — والتصوير البطيء عند القمة ياكل 2*KW من زمن العالم */
+    const dur = Math.max(6.8, +o.dur || 10), CL = 4.4, KW = 0.168; let slow = o.slowmo !== false && hk > 0.3, A = 0, off = 0, tc = 0;
+    for (let z = 0; z < 2; z++) { A = Math.max(2.2, dur - (slow ? 2 * KW : 0) - CL); off = tAt(main, iD * STEP + 2.4) - A;
+      const dt = (((tAt(main, iD * STEP + 2.4) - tAt(main, iH * STEP + 2.4)) % main.per) + main.per) % main.per; tc = A - dt; if (slow && !(tc > 0.6 && tc < A - 1.4)) slow = false; else break; }
+    const erf = x => { const g = x < 0 ? -1 : 1; x = Math.abs(x); const k = 1 / (1 + 0.3275911 * x); return g * (1 - (((((1.061405429 * k - 1.453152027) * k) + 1.421413741) * k - 0.284496736) * k + 0.254829592) * k * Math.exp(-x * x)); };
+    const lc = tc + KW, warp = slow ? (lt => lt - KW * (erf((lt - lc) / 0.38) + erf(lc / 0.38))) : (lt => lt);
+    /* المسرح */
+    const st = ctx.stage3D({ fov: 96, near: 0.12, far: 9000, camera: [0, 30, 60], background: null, env: 'room', tone: 'neutral' });
+    st.renderer.shadowMap.enabled = true; st.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const sun = new THREE.DirectionalLight(0xfff4e6, 1.9); sun.position.set(28, 70, 34); sun.castShadow = true;
+    Object.assign(sun.shadow.camera, { left: -RW - 22, right: RW + 22, top: RD + 28, bottom: -RD - 28, near: 1, far: 220 }); sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
+    st.add(sun); st.add(sun.target); st.add(new THREE.AmbientLight(0xffffff, 0.42));
+    const C = c => new THREE.Color(c), rail = o.rail || P.ink, card = P.card || '#FFFFFF';
+    const cGround = dark ? mixc(P.bg, P.ink, 0.04) : mixc(P.bg, P.mut || P.ink, 0.05), cHor = dark ? mixc(P.bg, P.ink, 0.1) : mixc(P.bg, card, 0.35), cZen = dark ? mixc(P.bg, '#000000', 0.4) : mixc(P.bg, card, 0.85);
+    const fog = new THREE.Fog(C(cHor), 55, 190);
+    const mRail = new THREE.MeshStandardMaterial({ color: C(rail), roughness: 0.55, metalness: 0.2, envMapIntensity: 0.4 }), mTie = new THREE.MeshStandardMaterial({ color: C(mixc(rail, P.bg, 0.22)), roughness: 0.9, envMapIntensity: 0.2 }), mPil = new THREE.MeshStandardMaterial({ color: C(mixc(P.bg, P.ink, dark ? 0.4 : 0.25)), roughness: 0.95, envMapIntensity: 0.15 });
+    const tube = (pts, r) => { const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), pts.length, r, 6, true), mRail); m.castShadow = true; st.add(m); };
+    let nTie = 0, nPil = 0; loops.forEach(lp => { nTie += Math.ceil(lp.n / 3); nPil += Math.ceil(lp.n / 14); });
+    const ties = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.07, 0.14), mTie, nTie), pils = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.13, 0.16, 1, 8), mPil, nPil);
+    const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), S3 = new V3(), v = new V3(); let ti = 0, pi = 0;
+    loops.forEach(lp => { const g = lp.L >= 40 ? 0.8 : 0.5;
+      tube(lp.P.map((p, i) => p.clone().addScaledVector(lp.B[i], g / 2)), 0.075); tube(lp.P.map((p, i) => p.clone().addScaledVector(lp.B[i], -g / 2)), 0.075); tube(lp.P.map((p, i) => p.clone().addScaledVector(lp.N[i], -0.3)), 0.15);
+      for (let i = 0; i < lp.n; i += 3) { M.makeBasis(lp.B[i], lp.N[i], lp.T[i]); M.scale(S3.set(g + 0.25, 1, 1)); M.setPosition(v.copy(lp.P[i]).addScaledVector(lp.N[i], -0.07)); ties.setMatrixAt(ti++, M); }
+      for (let i = 0; i < lp.n; i += 14) { const h = Math.max(0.1, lp.P[i].y - 0.4); M.compose(v.set(lp.P[i].x, h / 2, lp.P[i].z), Q.identity(), S3.set(1, h, 1)); pils.setMatrixAt(pi++, M); } });
+    ties.count = ti; pils.count = pi; [ties, pils].forEach(m => { m.castShadow = true; m.frustumCulled = false; st.add(m); });
+    const base = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000), new THREE.MeshBasicMaterial({ color: C(cGround) })); base.rotation.x = -Math.PI / 2; base.position.y = -0.04; st.add(base);
+    const pc = document.createElement('canvas'); pc.width = pc.height = 256; const pg = pc.getContext('2d'); pg.strokeStyle = mixc(P.bg, P.mut || P.ink, dark ? 0.3 : 0.42); pg.lineWidth = 7; pg.strokeRect(0, 0, 256, 256);
+    const ptx = new THREE.CanvasTexture(pc); ptx.wrapS = ptx.wrapT = THREE.RepeatWrapping; ptx.repeat.set(400, 400); ptx.anisotropy = 16; ptx.colorSpace = THREE.SRGBColorSpace;
+    const pave = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshBasicMaterial({ map: ptx, transparent: true, depthWrite: false })); pave.rotation.x = -Math.PI / 2; pave.position.y = -0.02; st.add(pave);
+    const sg = new THREE.SphereGeometry(3400, 32, 24), col = [], ps = sg.attributes.position, c0 = C(cHor), c1 = C(cZen), ck = new THREE.Color();
+    for (let i = 0; i < ps.count; i++) { ck.copy(c0).lerp(c1, Math.pow(cl(ps.getY(i) / 3400 / 0.55), 0.7)); col.push(ck.r, ck.g, ck.b); }
+    sg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    const sky = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.frustumCulled = false; st.add(sky);
+    const gnd = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.22 })); gnd.rotation.x = -Math.PI / 2; gnd.receiveShadow = true; st.add(gnd);
+    /* ساحة بشكل الكلمة: كل حلقة برّانية شكل، وكل فتحة (عين الواو، الميم…) خرم بالشكل اللي يحتويها */
+    const inside = (pl, x, y) => { let c = false; for (let i = 0, j = pl.length - 1; i < pl.length; j = i++) { const a = pl[i], b = pl[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+    const outs = loops.filter(l => l.outer), shp = outs.map(l => new THREE.Shape(l.pl.map(p => new THREE.Vector2(p[0], -p[1]))));
+    loops.filter(l => !l.outer).forEach(h => { const k = outs.findIndex(l => inside(l.pl, h.pl[0][0], h.pl[0][1])); if (k >= 0) shp[k].holes.push(new THREE.Path(h.pl.map(p => new THREE.Vector2(p[0], -p[1])))); });
+    if (shp.length) { const plaza = new THREE.Mesh(new THREE.ShapeGeometry(shp), new THREE.MeshStandardMaterial({ color: C(mixc(P.bg, P.ink, dark ? 0.12 : 0.07)), roughness: 1, envMapIntensity: 0.1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); plaza.rotation.x = -Math.PI / 2; plaza.position.y = 0.03; plaza.receiveShadow = true; st.add(plaza); }
+    /* القطارات: riders راكب بالضبط، موزعين على الحلقات الكبيرة بحسب طولها */
+    const NR = Math.max(1, Math.round(o.riders != null ? +o.riders : 50)), PT = Math.max(1, Math.round(o.perTrain || 5)), nT = Math.ceil(NR / PT);
+    const big = [main].concat(loops.filter(l => l.outer && !l.main && l.L >= 40).sort((a, b) => b.L - a.L)).slice(0, nT), tot = big.reduce((a, l) => a + l.L, 0); let left = nT;
+    for (let i = big.length - 1; i >= 1; i--) { big[i].k = Math.max(1, Math.min(left - i, Math.round(nT * big[i].L / tot))); left -= big[i].k; } main.k = left;
+    const carts = []; big.forEach(l => { for (let a = 0; a < l.k; a++) for (let c = 0; c < PT && carts.length < NR; c++) carts.push({ l, off: (l.main ? off : 0) + a * l.per / l.k, c }); });
+    for (let a = 0; carts.length < NR; a++) carts.push({ l: main, off: off + (a + 0.5) * main.per / Math.max(1, main.k), c: carts.length % PT });
+    const NC = carts.length, rc = o.color || P.acc;
+    const cm = new THREE.InstancedMesh(new ctx.RoundedBoxGeometry(0.98, 0.42, 1.04, 3, 0.09), new THREE.MeshStandardMaterial({ color: C(o.cart || P.ink), roughness: 0.7, envMapIntensity: 0.3 }), NC);
+    const U = 0.9 / 8, parts = [], eyes = [], box = (a, b, r0, r1, dz, zc = 0) => { const g = new THREE.BoxGeometry((b - a + 1) * 0.5 * U, (r1 - r0 + 1) * U, dz); g.translate(((a + b + 1) * 0.25 - 4.5) * U, (5 - (r0 + r1 + 1) / 2) * U, zc); return g; };
+    if (o.rider === 'claude') { parts.push(box(3, 14, 0, 3, 0.5), box(1, 2, 2, 2, 0.24), box(15, 16, 2, 2, 0.24)); [4, 6, 11, 13].forEach(x => parts.push(box(x, x, 4, 4, 0.14, 0.15), box(x, x, 4, 4, 0.14, -0.15))); eyes.push(box(5, 5, 1, 1, 0.02, 0.26), box(12, 12, 1, 1, 0.02, 0.26)); }
+    else { parts.push(box(4, 13, 0, 4, 0.46)); eyes.push(box(6, 7, 1, 2, 0.02, 0.24), box(10, 11, 1, 2, 0.02, 0.24)); }
+    const bm = new THREE.InstancedMesh(ctx.BufferGeometryUtils.mergeGeometries(parts), new THREE.MeshStandardMaterial({ color: C(rc), roughness: 0.85, envMapIntensity: 0.35 }), NC);
+    const rr = rgb(rc), ey = new THREE.InstancedMesh(ctx.BufferGeometryUtils.mergeGeometries(eyes), new THREE.MeshBasicMaterial({ color: C(0.2126 * rr[0] + 0.7152 * rr[1] + 0.0722 * rr[2] > 120 ? '#1B1A17' : '#FFFFFF') }), NC);
+    [cm, bm, ey].forEach(m => { m.frustumCulled = false; m.castShadow = true; st.add(m); }); ey.castShadow = false;
+    /* مسار الدرون: نقاط بزمنها وبينها منحنى ناعم. ملاحقة (نسبة للقطار البطل، دايماً على جهة الحرف من السكة) ثم صعود حلزوني حول الكلمة */
+    const kfv = (x, ks) => { const K2 = []; ks.forEach(k => { if (!K2.length || k[0] > K2[K2.length - 1][0]) K2.push(k); }); if (x <= K2[0][0]) return K2[0][1]; for (let i = 1; i < K2.length; i++) if (x <= K2[i][0]) return lerp(K2[i - 1][1], K2[i][1], sm3((x - K2[i - 1][0]) / (K2[i][0] - K2[i - 1][0]))); return K2[K2.length - 1][1]; };
+    const HT = Math.max(40, RW / 0.2623 * 1.224, RD / 0.4663 * 2.3), hero = tau => sAt(main, tau + off);
+    const rel = tau => { const r = A - tau, back = kfv(r, [[0, 0.4], [0.3, 1.0], [0.7, 2.0], [1.1, 3.4], [1.5, 4.6], [2.2, 5.6], [3.5, 6.2], [A, 7.2], [A + 0.5, 8.2]]), side = kfv(r, [[0, 1.9], [1.5, 1.9], [2.6, 1.0], [3.6, 0.5], [A + 0.5, 0.2]]), up = kfv(r, [[0, 1.5], [1.1, 1.5], [1.5, 1.7], [1.9, 2.2], [3.0, 2.4], [A + 0.5, 2.7]]);
+      const f = at(main, hero(tau) - 2.4 - back); return f.p.addScaledVector(f.b, side).addScaledVector(Yv, up + 0.22 * Math.max(0, f.p.y - 4)); };
+    const WP = [[-0.5, rel(-0.5)]], nA = Math.max(2, Math.round(A / 0.4)); for (let i = 0; i <= nA; i++) WP.push([A * i / nA, rel(A * i / nA)]);
+    const PD = WP[WP.length - 1][1], tD = at(main, hero(A) - 0.8).t.clone().setY(0).normalize(), Qp = PD.clone().addScaledVector(tD, 9.5).setY(PD.y + 5.2);
+    WP.push([A + 0.3, PD.clone().addScaledVector(tD, 4.5).setY(PD.y + 1.6)], [A + 0.6, Qp]);
+    const th1 = Math.atan2(Qp.z, Qp.x), r1 = Math.hypot(Qp.x, Qp.z), dir = (Qp.x * tD.z - Qp.z * tD.x) >= 0 ? 1 : -1, Rout = Math.max(r1, 0.6 * RW + 8);
+    for (let g = 1.0; g < CL - 0.05; g += 0.4) { const k = (g - 0.6) / (CL - 0.6), th = th1 + dir * 0.95 * Math.PI * (1 - Math.pow(1 - k, 1.6)), r = lerp(r1, Rout, sm3(k / 0.3)) * (1 - sm3((k - 0.3) / 0.7)); WP.push([A + g, new V3(r * Math.cos(th), lerp(Qp.y, HT, Math.pow(k, 1.5)), r * Math.sin(th))]); }
+    WP.push([A + CL, new V3(0, HT * 1.007, 0)], [A + CL + 0.6, new V3(0, HT * 0.993, 0)], [A + CL + 1.6, new V3(0, HT, 0)], [A + CL + 4, new V3(0, HT * 0.996, 0)]);
+    const TG = WP.map((w, i) => { if (i === WP.length - 1) return new V3(); const a = WP[Math.max(0, i - 1)], b = WP[Math.min(WP.length - 1, i + 1)]; return b[1].clone().sub(a[1]).multiplyScalar(1 / (b[0] - a[0])); });
+    const pos = (tau, out) => { const n = WP.length; if (tau <= WP[0][0]) return out.copy(WP[0][1]); if (tau >= WP[n - 1][0]) return out.copy(WP[n - 1][1]); let i = 0; while (WP[i + 1][0] < tau) i++;
+      const dt = WP[i + 1][0] - WP[i][0], e = (tau - WP[i][0]) / dt, e2 = e * e, e3 = e2 * e; return out.set(0, 0, 0).addScaledVector(WP[i][1], 2 * e3 - 3 * e2 + 1).addScaledVector(TG[i], (e3 - 2 * e2 + e) * dt).addScaledVector(WP[i + 1][1], -2 * e3 + 3 * e2).addScaledVector(TG[i + 1], (e3 - e2) * dt); };
+    const qTop = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(new V3(0, 1, 0), new V3(0, 0, 0), new V3(0, 0, -1)));
+    return { st, loops, main, carts, cm, bm, ey, at, sAt, hero, pos, warp, qTop, fog, sky, pave, gnd, A, CL, HT, dur, RW, RD, slow, M, v, xa: new V3(), p: new V3(), a: new V3(), b: new V3(), lp: new V3(), up: new V3(), m4: new THREE.Matrix4(), q: new THREE.Quaternion(), qs: new THREE.Quaternion(), e: new THREE.Euler(), z: new V3(0, 0, 1), o3: new V3(0, 0.7, 0) };
+  };
+  FX.wordCoaster = (ctx, t, o) => {
+    const s = +o.s || 0; if (t < s - 0.02 || !ctx.stage3D || !ctx.THREE) return;
+    if (!o._W) o._W = wcBuild(ctx, o); const W = o._W; if (W.dead) return;
+    const X = ctx.X, E = ctx.E, st = W.st, cam = st.camera, M = W.M, v = W.v, sm3 = k => { k = cl(k); return k * k * (3 - 2 * k); };
+    const T = whenOf(ctx, o, s), t0 = (T != null ? T : s + W.dur) - W.dur, top = o.view === 'top', lt = top ? t - s : t - t0, tau = top ? lt : W.warp(lt), A = W.A, sg = tau - A;
+    W.carts.forEach((c, i) => { const f = W.at(c.l, W.sAt(c.l, tau + c.off) - c.c * 1.2);
+      M.makeBasis(W.xa.copy(f.b).negate(), f.n, f.t); M.setPosition(v.copy(f.p).addScaledVector(f.n, 0.3)); W.cm.setMatrixAt(i, M); M.setPosition(v.copy(f.p).addScaledVector(f.n, 0.5)); W.bm.setMatrixAt(i, M); W.ey.setMatrixAt(i, M); });
+    [W.cm, W.bm, W.ey].forEach(m => m.instanceMatrix.needsUpdate = true);
+    const p = W.p, a = W.a, b = W.b, lp = W.lp; let kTop = 1;
+    if (top) { p.set(0, W.HT, 0); W.q.copy(W.qTop); }
+    else {
+      W.pos(tau, p); const h2 = 0.2; W.pos(tau + h2, a).add(W.pos(tau - h2, b)).addScaledVector(p, -2).multiplyScalar(1 / (h2 * h2));                          // التسارع ← ميلان الدرون باللفة
+      const sp = W.pos(tau + 0.05, b).distanceTo(W.pos(tau - 0.05, lp)) / 0.1;
+      W.pos(tau + 0.42, lp); if (lp.distanceTo(p) < 0.5) lp.copy(p).add(b.set(0, -1, -0.01));
+      const kd = sm3(sg / 0.4) * (1 - sm3((sg - 2.0) / 0.6)); if (kd > 0) lp.y = lerp(lp.y, p.y - 0.62 * Math.hypot(lp.x - p.x, lp.z - p.z), kd);
+      const wH = sg <= 0 ? lerp(0.45, 1, sm3((-sg - 1.2) / 0.7)) : 0.45 * (1 - sm3(sg / 0.35)), wC = sm3((sg - 0.4) / 1.1);
+      if (wH > 0) lp.lerp(W.at(W.main, W.hero(tau) - 1.6).p.add(W.o3), wH);
+      a.y = 0; if (a.length() > 30) a.setLength(30); a.multiplyScalar(1 - wC); W.up.set(0, 26, 0).add(a).normalize();
+      W.m4.lookAt(p, lp, W.up); W.q.setFromRotationMatrix(W.m4);
+      if (wC > 0) { W.m4.lookAt(p, b.set(0, 0, 0), W.up); W.q.slerp(W.qs.setFromRotationMatrix(W.m4), wC); }
+      kTop = E.sineInOut(cl((sg - (W.CL - 1.3)) / 1.25)); W.q.slerp(W.qTop, kTop);
+      if (o.roll) { const kr = E.cubicInOut(cl((sg - 1.6) / (W.CL - 1.65))); if (kr > 0 && kr < 1) W.q.multiply(W.qs.setFromAxisAngle(W.z, -6.2832 * o.roll * kr)); }
+      const nz = (f, ph) => Math.sin(tau * f + ph) + 0.6 * Math.sin(tau * f * 1.83 + ph * 2.3) + 0.4 * Math.sin(tau * f * 3.1 + ph * 0.7);
+      const sh = (o.shake != null ? +o.shake : 1) * (0.25 + 0.75 * Math.min(1, sp / 18)) * (1 - 0.6 * kTop) * Math.PI / 180;
+      if (sh > 0) W.q.multiply(W.qs.setFromEuler(W.e.set(0.22 * sh * nz(9.1, 1) + 0.5 * sh * nz(1.3, 4), 0.2 * sh * nz(7.7, 2) + 0.5 * sh * nz(1.1, 5), 0.38 * sh * nz(8.3, 3) + 0.9 * sh * nz(0.9, 6))));
+    }
+    cam.position.copy(p); cam.quaternion.copy(W.q); const alt = p.y;
+    cam.fov = top ? 50 : lerp(96, 50, E.sineInOut(cl((sg - 2.0) / (W.CL - 2.15)))); cam.near = Math.max(0.12, Math.min(20, (alt - 12) * 0.15)); cam.far = 9000; cam.updateProjectionMatrix();
+    st.scene.fog = W.fog; W.fog.near = 55 + alt * 3; W.fog.far = 190 + alt * 9; W.sky.position.copy(p);
+    W.pave.material.opacity = cl(1 - (alt - 12) / 45); W.gnd.material.opacity = lerp(0.22, 0.11, cl((alt - 30) / 80));
+    st.draw(X, o.alpha != null ? { alpha: +o.alpha } : {});
+  };
+  /* معلومات للكاتب: كم ثانية بين بداية الطيران والقفلة، ووين تبدأ مرحلة الصعود — تنفع لتوقيت الكتابة والأصوات */
+  FX.wordCoaster.info = (ctx, o) => { if (!o._W) o._W = wcBuild(ctx, o); const W = o._W; return W.dead ? null : { dur: W.dur, chase: W.A + (W.slow ? 0.336 : 0), climb: W.CL, height: W.HT, width: W.RW * 2, riders: W.carts.length, loops: W.loops.length }; };
+
   G.FX = FX;
 })();
