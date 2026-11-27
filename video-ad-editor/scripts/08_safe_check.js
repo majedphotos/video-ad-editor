@@ -16,12 +16,15 @@ const W=path.resolve(process.argv[2])+path.sep;
 const MOVES_SRC={'moves.js':path.join(__dirname,'..','motion','moves.js'),'moves-compose.js':path.join(__dirname,'moves-compose.js'),'styles.js':path.join(__dirname,'..','motion','styles.js')};
 function movesCopy(){ const h=fs.readFileSync(W+'compose.html','utf8');
   for(const [f,src] of Object.entries(MOVES_SRC)) if(h.includes('src="'+f+'"')&&!fs.existsSync(W+f)&&fs.existsSync(src)){ fs.copyFileSync(src,W+f); console.log('🎞️ نسخت '+f+' لمجلد الشغل'); }
+  /* 🎨 ستايلات المستخدم المسروقة (35_moves.py steal): نسخة styles.js بمجلد الشغل تنكتب من جديد مسبوقة فيها — وإلا useStyle('<مسروق>') ما يلقاه */
+  if(h.includes('src="styles.js"')&&fs.existsSync(MOVES_SRC['styles.js'])){ try{ fs.writeFileSync(W+'styles.js',require(MOVES_SRC['styles.js']).bundle()); }catch(e){ console.log('⚠ styles bundle: '+e.message); } }
   /* 74 آية بسكينة: الخط العثماني يتحمّل من مجلد الشغل (MV.needFont) */
   const QF=path.join(__dirname,'..','motion','fonts','AmiriQuran-Regular.ttf'); if(h.includes('ayahCalm')&&!fs.existsSync(W+'AmiriQuran-Regular.ttf')&&fs.existsSync(QF)){ fs.copyFileSync(QF,W+'AmiriQuran-Regular.ttf'); console.log('🎞️ نسخت خط Amiri Quran لمجلد الشغل'); }
   /* 🎨 بنك الستايلات: MV.useStyle يحمّل خطوط الستايل من مجلد الشغل */
   if(h.includes('useStyle')){ const FD=path.join(__dirname,'..','motion','fonts'); for(const f of fs.readdirSync(FD).filter(f=>/\.ttf$/.test(f)&&!/Quran/.test(f))) if(!fs.existsSync(W+f)) fs.copyFileSync(path.join(FD,f),W+f); } }
 async function movesInject(p){ if(await p.evaluate(()=>!!(window.FX&&window.MV&&window.STYLES))) return;
-  for(const f of ['styles.js','moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(src) await p.addScriptTag({path:src}); } }
+  for(const f of ['styles.js','moves.js','moves-compose.js']){ const src=[W+f,MOVES_SRC[f]].find(x=>fs.existsSync(x)); if(!src) continue;
+    if(f==='styles.js'&&src===MOVES_SRC[f]){ try{ await p.addScriptTag({content:require(src).bundle()}); continue; }catch(e){} } await p.addScriptTag({path:src}); } }
 const SHOT=process.argv.includes('--shot');
 const CFG=JSON.parse(fs.readFileSync(W+'sfx.json','utf8'));
 const THEME=fs.existsSync(W+'theme.json')?JSON.parse(fs.readFileSync(W+'theme.json','utf8')):{};

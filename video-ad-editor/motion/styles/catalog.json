@@ -1,6 +1,108 @@
 {
  "version": 1,
  "note": "مولّد من motion/styles.js — لا تعدّله بيدك",
+ "vocab": {
+  "surface": [
+   "clean",
+   "solid",
+   "paper",
+   "kraft",
+   "grid",
+   "riso",
+   "newspaper",
+   "blueprint",
+   "studio",
+   "pastel",
+   "devgrid",
+   "video",
+   "film"
+  ],
+  "card": [
+   "soft",
+   "glass",
+   "clipping",
+   "torn",
+   "manila",
+   "rule",
+   "block",
+   "sketch",
+   "window",
+   "misreg",
+   "column",
+   "outline",
+   "osd",
+   "brutal",
+   "toon",
+   "white"
+  ],
+  "label": [
+   "clean",
+   "notif",
+   "highlight",
+   "slap",
+   "stamp",
+   "masthead",
+   "bar",
+   "circled",
+   "prompt",
+   "misreg",
+   "headline",
+   "callout",
+   "osd",
+   "boxed",
+   "extrude",
+   "pill",
+   "chip"
+  ],
+  "person": [
+   "plain",
+   "warm",
+   "sticker",
+   "outline",
+   "halftone"
+  ],
+  "vfx": [
+   "plain",
+   "film",
+   "vhs"
+  ],
+  "sigs": [
+   "tape",
+   "pin",
+   "string",
+   "typewriter",
+   "redact",
+   "arrow",
+   "code",
+   "tag",
+   "breadcrumb",
+   "mascot",
+   "bubble",
+   "dimension",
+   "shake",
+   "spin"
+  ],
+  "personality": [
+   "calm",
+   "clean",
+   "snappy",
+   "bouncy",
+   "mechanical",
+   "organic",
+   "soft"
+  ],
+  "fonts": [
+   "IBM Plex Sans Arabic",
+   "Lalezar",
+   "Aref Ruqaa",
+   "Readex Pro",
+   "Noto Kufi Arabic",
+   "Cairo",
+   "Tajawal",
+   "Inter",
+   "ui-monospace, Menlo, Consolas, monospace"
+  ]
+ },
  "styles": [
   {
    "id": "keynote",
@@ -355,6 +457,73 @@
    ],
    "moment": false,
    "needsCut": true
+  },
+  {
+   "id": "floatPanels",
+   "name": "ألواح عائمة",
+   "desc": "سماوي ناعم بدواير ضوء، كروت لقطات شاشة عائمة فوق الراس، والشخص مقصوص بلوح مدوّر تحت — كلمتين بخطين",
+   "families": [
+    "editorial",
+    "calm"
+   ],
+   "cues": [
+    "tool",
+    "ai",
+    "tech",
+    "explain",
+    "list"
+   ],
+   "blend": [
+    "keynote",
+    "terminal",
+    "devCard"
+   ],
+   "moment": false,
+   "needsCut": true,
+   "density": "heavy",
+   "moves": [
+    "blurIn",
+    "dipFade",
+    "zoomWipe",
+    "slideOver",
+    "bentoCut",
+    "terminalType"
+   ],
+   "cut": {
+    "avgShot": 3.65,
+    "medianShot": 3.79,
+    "cutsPerMin": 15.6,
+    "hook3s": 0,
+    "pace": "هادي",
+    "regularity": 0.46,
+    "hardCuts": 15,
+    "softTransitions": 3,
+    "motionLabel": "ثابت",
+    "beatSync": 0.39
+   },
+   "caption": {
+    "pos": "middle",
+    "size": "l",
+    "box": "none",
+    "anim": "pop",
+    "words": 2,
+    "color": "#10141A",
+    "highlight": "كلمة بخط ثاني مائل (الرقعة) أو كلمة مضبّبة رمادية"
+   },
+   "transitions": [
+    "غمضة بيضا (فريم أبيض) بين كل قسم وقسم — 24 dipFade",
+    "زوم يدخل بالكرت ويقطع على اللي بعده (ZOOM THROUGH CUT) — 14 zoomWipe",
+    "الكروت تطلع من تحت وتكبر بنعومة فوق الراس — 25 slideOver",
+    "الكلمة الثانوية تدخل مضبّبة وتصفى — 2 blurIn",
+    "الخلفية تتبدّل بين الأقسام: سماوي فاتح ← كحلي غامق ← أخضر بشبكة"
+   ],
+   "notes": [
+    "الشخص دايماً تحت (ثلث الإطار) مقصوص داخل لوح بزوايا مدوّرة، والفوق كله للكروت",
+    "ثلاث كروت طولية جنب بعض وتحت كل واحد كلمة بخط مائل كبير",
+    "لقطات شاشة حقيقية (طرفية، جيت هب، ملفات) مو أيقونات",
+    "كرت أرقام: ثلاث خانات برقم ضخم وتسمية صغيرة",
+    "قصة كل 3.6 ث تقريباً بس الكروت تتحرك داخل اللقطة فالإحساس أسرع"
+   ]
   }
  ]
 }

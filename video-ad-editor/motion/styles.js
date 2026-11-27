@@ -32,7 +32,7 @@
   };
   const MONO = 'ui-monospace, Menlo, Consolas, monospace';
 
-  /* ══ التوكنز: 17 ستايل (من البحث labs: styles-research — الخط من الموجود بالمحرّك بس) ══
+  /* ══ التوكنز: 18 ستايل (17 + مثال مسروق) (من البحث labs: styles-research — الخط من الموجود بالمحرّك بس) ══
      families = عائلات بنك الحركات اللي تناسبه · personality = إيزنق كل الحركات · needsCut = السطح يبدّل خلفية الفيديو (يحتاج قصّ الشخص)
      cues = متى يناسب (يقراها 35_moves.py) · blend = أحلى خلطات · lockAcc = لونه جزء من هويته (ما ياخذ لون هوية المستخدم) */
   const TOK = {
@@ -87,7 +87,23 @@
     devCard: { name: 'كرت أداة', desc: 'كريمي بشبكة وأشعة، كرت أبيض، breadcrumb، كلمة أكسنت بالرقعة وchips', families: ['calm', 'editorial'], personality: 'clean',
       palette: { bg: '#F4EFE6', ink: '#1F1D1A', acc: '#C8643B', mut: '#8A847A', paper: '#FFFFFF', line: '#E7E0D4' }, fonts: { display: 'IBM Plex Sans Arabic', body: 'IBM Plex Sans Arabic', num: 'Inter', accent: 'Aref Ruqaa', mono: MONO },
       post: { grain: 0, vignette: 0.06 }, surface: 'devgrid', card: 'white', label: 'chip', person: 'plain', needsCut: true, cues: ['tool', 'skill', 'free', 'launch', 'fact'], blend: ['keynote', 'terminal', 'studio3D'] },
+    // 🕵️ ستايل مسروق (35_moves.py steal) — نفس الصيغة + أرقام القص والكابشن والانتقالات المقاسة من الأصل. مثال: references/styles.md §6
+    floatPanels: { name: "ألواح عائمة", desc: "سماوي ناعم بدواير ضوء، كروت لقطات شاشة عائمة فوق الراس، والشخص مقصوص بلوح مدوّر تحت — كلمتين بخطين", families: ["editorial", "calm"], personality: "clean", palette: {"bg": "#B2CFF4", "ink": "#10141A", "acc": "#16815D", "mut": "#6C717F", "hi": "#F5D547", "paper": "#EDF1F6"}, fonts: {"display": "Readex Pro", "body": "IBM Plex Sans Arabic", "num": "Inter", "hand": "Aref Ruqaa"}, post: {"grain": 0, "vignette": 0.05}, surface: "clean", card: "soft", label: "clean", person: "plain", needsCut: true, density: "heavy", sigs: ["code", "tag"], cues: ["tool", "ai", "tech", "explain", "list"], blend: ["keynote", "terminal", "devCard"], moves: ["blurIn", "dipFade", "zoomWipe", "slideOver", "bentoCut", "terminalType"], cut: {"avgShot": 3.65, "medianShot": 3.79, "cutsPerMin": 15.6, "hook3s": 0, "pace": "هادي", "regularity": 0.46, "hardCuts": 15, "softTransitions": 3, "motionLabel": "ثابت", "beatSync": 0.39}, caption: {"pos": "middle", "size": "l", "box": "none", "anim": "pop", "words": 2, "color": "#10141A", "highlight": "كلمة بخط ثاني مائل (الرقعة) أو كلمة مضبّبة رمادية"}, transitions: ["غمضة بيضا (فريم أبيض) بين كل قسم وقسم — 24 dipFade", "زوم يدخل بالكرت ويقطع على اللي بعده (ZOOM THROUGH CUT) — 14 zoomWipe", "الكروت تطلع من تحت وتكبر بنعومة فوق الراس — 25 slideOver", "الكلمة الثانوية تدخل مضبّبة وتصفى — 2 blurIn", "الخلفية تتبدّل بين الأقسام: سماوي فاتح ← كحلي غامق ← أخضر بشبكة"], notes: ["الشخص دايماً تحت (ثلث الإطار) مقصوص داخل لوح بزوايا مدوّرة، والفوق كله للكروت", "ثلاث كروت طولية جنب بعض وتحت كل واحد كلمة بخط مائل كبير", "لقطات شاشة حقيقية (طرفية، جيت هب، ملفات) مو أيقونات", "كرت أرقام: ثلاث خانات برقم ضخم وتسمية صغيرة", "قصة كل 3.6 ث تقريباً بس الكروت تتحرك داخل اللقطة فالإحساس أسرع"], source: {"note": "مسروق بـsteal من ريل تعليمي (نوفمبر 2026) — مثال الصيغة"} },
   };
+  /* ══ ستايلات المستخدم المسروقة (35_moves.py steal) — تنحفظ برّا البلقن (~/.video-ad-editor/styles/*.json) عشان التحديث ما يمسحها.
+     نفس صيغة TOK بالضبط + حقول وصف (cut · caption · transitions · moves · notes · source). بالمتصفح توصل كـG.STYLES_USER
+     (render.js و04_render_frames يحطونها قبل هالملف — STYLES.bundle())، وبنود (node) تنقرا من المجلد مباشرة. */
+  function userDir() { try { const os = require('os'), path = require('path'); return path.join(process.env.VAE_HOME || path.join(os.homedir(), '.video-ad-editor'), 'styles'); } catch (e) { return null; } }
+  function readUser() {
+    if (G.STYLES_USER) return G.STYLES_USER;
+    const out = {}, dir = typeof require !== 'undefined' && typeof window === 'undefined' ? userDir() : null;
+    if (!dir) return out;
+    try { const fs = require('fs'), path = require('path'); if (!fs.existsSync(dir)) return out;
+      fs.readdirSync(dir).filter(f => f.endsWith('.json')).forEach(f => { try { const j = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); if (j && j.id) out[j.id] = j; } catch (e) {} }); } catch (e) {}
+    return out;
+  }
+  const USER = readUser();
+  Object.entries(USER).forEach(([id, t]) => { if (!TOK[id]) TOK[id] = Object.assign({ user: true }, t); });   // البنك يغلب لو تكرر الاسم
 
   /* ══ أدوات مشتركة ══ */
   const tiles = {};
@@ -345,14 +361,22 @@
   /* الخطوط اللي يحتاجها ستايل (لـcompose: MV.needFont) */
   function fontsOf(spec) { const T = resolve(spec), out = []; Object.values(T.fonts || {}).forEach(f => { (FONT_FILES[f] || []).forEach(([file, weight]) => out.push({ family: f, file, weight })); });
     return out.filter((x, i, a) => a.findIndex(y => y.file === x.file) === i); }
-  const list = () => Object.entries(TOK).map(([id, t]) => ({ id, name: t.name, desc: t.desc, families: t.families, cues: t.cues, blend: t.blend, moment: !!t.moment, needsCut: !!t.needsCut }));
-  G.STYLES = { make, resolve, list, fontsOf, tokens: TOK, FONT_FILES, version: 1 };
+  const STOLEN = ['density', 'moves', 'cut', 'caption', 'transitions', 'notes'];   // حقول الستايل المسروق (35_moves.py plan يطبعها ويقدّم حركاته)
+  const list = (all = true) => Object.entries(TOK).filter(([, t]) => all || !t.user).map(([id, t]) => Object.assign({ id, name: t.name, desc: t.desc, families: t.families, cues: t.cues, blend: t.blend, moment: !!t.moment, needsCut: !!t.needsCut },
+    t.user ? { user: true } : {}, Object.fromEntries(STOLEN.filter(k => t[k] != null).map(k => [k, t[k]]))));
+  /* المفردات المسموحة — 35_moves.py steal --save يفحص الستايل المسروق عليها (لا قيمة من برّا البنك) */
+  const vocab = () => ({ surface: Object.keys(SURF).concat(['video', 'film']), card: Object.keys(CARD), label: Object.keys(LABEL), person: Object.keys(PER), vfx: Object.keys(VID),
+    sigs: Object.keys(SIGS), personality: Object.keys(PERSONALITY), fonts: Object.keys(FONT_FILES).concat([MONO]) });
+  /* bundle() (node) — نص styles.js مسبوق بستايلات المستخدم، للمتصفح (render.js / 04_render_frames / 08_safe_check) */
+  function bundle() { const fs = require('fs'), u = {}; Object.entries(TOK).forEach(([id, t]) => { if (t.user) u[id] = t; });
+    return '/* STYLES_USER — ستايلات المستخدم (35_moves.py steal) */\nglobalThis.STYLES_USER = Object.assign(globalThis.STYLES_USER || {}, ' + JSON.stringify(u) + ');\n' + fs.readFileSync(__filename, 'utf8'); }
+  G.STYLES = { make, resolve, list, vocab, bundle, fontsOf, tokens: TOK, FONT_FILES, version: 1 };
   if (typeof module !== 'undefined') module.exports = G.STYLES;
 })();
 /* node motion/styles.js --catalog → يكتب motion/styles/catalog.json (يقراه scripts/35_moves.py لاختيار ستايل الفيديو). شغّله بعد أي تعديل بـTOK. */
 if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module && process.argv.includes('--catalog')) {
   const fs = require('fs'), path = require('path'), S = module.exports, out = path.join(__dirname, 'styles', 'catalog.json');
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, JSON.stringify({ version: 1, note: 'مولّد من motion/styles.js — لا تعدّله بيدك', styles: S.list() }, null, 1));
-  console.log('✓ ' + out + ' (' + S.list().length + ' ستايل)');
+  fs.writeFileSync(out, JSON.stringify({ version: 1, note: 'مولّد من motion/styles.js — لا تعدّله بيدك', vocab: S.vocab(), styles: S.list(false) }, null, 1));
+  console.log('✓ ' + out + ' (' + S.list(false).length + ' ستايل بالبنك — ستايلات المستخدم تنقرا من مجلده وقت التشغيل)');
 }

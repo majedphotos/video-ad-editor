@@ -38,6 +38,9 @@ function serve() {
       else if (u.startsWith('/@logos/')) file = path.join(LOGOS, u.slice(8));
       else file = path.join(ROOT, u);
       if (u === '/' || u === '') { rsp.writeHead(302, { Location: '/motion/engine.html?proj=/proj/' }); return rsp.end(); }
+      if (u === '/motion/styles.js') {   // 🎨 ستايلات المستخدم المسروقة (35_moves.py steal) تنحط قبل البنك
+        try { const src = require('./styles.js').bundle(); rsp.writeHead(200, { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' }); return rsp.end(src); } catch (e) { console.log('  ⚠ styles bundle: ' + e.message); }
+      }
       fs.readFile(file, (err, data) => {
         if (err) { rsp.writeHead(404); return rsp.end('404 ' + u); }
         rsp.writeHead(200, { 'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); rsp.end(data);
